@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src\config\config_loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src\core\init.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src\core\loop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src\theme\theme_loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\backends\imgui_impl_opengl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\backends\imgui_impl_sdl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\imgui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\imgui_demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\imgui_tables.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor\src_extern\imgui\imgui_widgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\_Coding\CPP\DecDialogueEditor\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{B166EB55-41EC-35F4-A3CC-51B3ECBE53DE}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
