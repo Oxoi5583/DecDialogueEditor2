@@ -1,12 +1,31 @@
 #include "config/config_loader.h"
 #include "DecToolsBox/debug/messenger.h"
+#include <exception>
 
-ConfigLoader::ConfigLoader(){
-    if(!m_load_setting()){
-        ERROR_MSG("Setting JSON first loading failed : " << m_setting_path);
-        exit(-1);
+void ConfigLoader::load(){
+    if(m_is_first_load){
+        if(!m_load_setting()){
+            ERROR_MSG("Setting JSON first loading failed : " << m_setting_path);
+            exit(-1);
+        }else{
+            SUCCESS_MSG("Setting JSON first loaded successfully : " << m_setting_path);
+        }
+        m_is_first_load = false;
     }else{
-        SUCCESS_MSG("Setting JSON first loaded successfully : " << m_setting_path);
+        if(!m_load_setting()){
+            ERROR_MSG("Setting JSON loading failed. Setting will not be changed : " << m_setting_path);
+        }else{
+            SUCCESS_MSG("Setting JSON loaded successfully : " << m_setting_path);
+        }
+    }
+}
+void ConfigLoader::save(){
+    if(!m_is_first_load){
+        if(!m_save_setting()){
+            ERROR_MSG("Setting JSON saving failed. Setting will not be changed : " << m_setting_path);
+        }else{
+            SUCCESS_MSG("Setting JSON saving successfully : " << m_setting_path);
+        }
     }
 }
 
@@ -39,11 +58,16 @@ bool ConfigLoader::m_load_setting(){
     }
 }
 bool ConfigLoader::m_save_setting(){
-    std::ofstream f(m_setting_path);
-    f << std::setw(4) << m_setting_data << std::endl;
-    return true;
+    try {
+        std::ofstream f(m_setting_path);
+        f << std::setw(4) << m_setting_data << std::endl;
+        return true;
+    } catch (std::exception) {
+        return false;
+    }
 }
 
-nlohmann::json ConfigLoader::get_config(){
+nlohmann::json ConfigLoader::get_config_obj(){
     return m_setting_data;
 }
+

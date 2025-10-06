@@ -1,6 +1,7 @@
 #include "theme/theme_loader.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "config/config_loader.h"
+#include "imgui/imgui.h"
 #include "nlohmann/json.hpp"
 #include <cstdlib>
 #include <filesystem>
@@ -11,6 +12,9 @@ bool ThemeLoader::m_is_theme_folder_exists(){
 }
 bool ThemeLoader::m_is_default_theme_exists(){
     return std::filesystem::exists(m_default_theme_file);
+}
+bool ThemeLoader::m_is_default_theme_valid(){
+    return m_check_theme_file_valid(m_default_theme_file).is_valid;
 }
 ThemeLoader::CheckResult ThemeLoader::m_check_theme_file_valid(std::string p_path){
     std::ifstream f(p_path);
@@ -30,6 +34,25 @@ ThemeLoader::CheckResult ThemeLoader::m_check_theme_file_valid(std::string p_pat
         if(!data.contains(key)){
             ERROR_MSG("Theme JSON key" << key << " not found : " << p_path);
             error_found++;
+        }else{
+            if(key != "Name"){
+                std::string value = data[key];
+                if(value.length() == 6 || value.length() == 8){
+                    int illegal_char_count = 0;
+                    for(char c : value){
+                        if(!m_acceptable_char.contains(c)){
+                            illegal_char_count++;
+                        }
+                    }
+                    if(illegal_char_count > 0){
+                        ERROR_MSG("Theme JSON value " << value << " of key " << key << " is illegal (Unacceptable Character) : " << p_path);
+                        error_found++;
+                    }
+                }else{
+                    ERROR_MSG("Theme JSON value " << value << " of key " << key << " is illegal (Wrong Length) : " << p_path);
+                    error_found++;
+                }
+            }
         }
     }
 
@@ -77,6 +100,13 @@ void ThemeLoader::load(){
         }
         return;
     }
+    if(!m_is_default_theme_valid()){
+        ERROR_MSG("Theme Loading Error : default theme is invalid to load");
+        if(m_is_first_load){
+            exit(-1);
+        }
+        return;
+    }
 
     m_load_all_theme_files();
 
@@ -88,7 +118,8 @@ void ThemeLoader::load(){
 
 
 std::string ThemeLoader::get_color_string(std::string p_key){
-    std::string using_theme_name = ConfigLoader::Ref()->get_config()["UsingTheme"];
+    std::string using_theme_name;
+    ConfigLoader::Ref()->get_config("UsingTheme", using_theme_name);
     json theme_data = m_themes_json_objs[using_theme_name];
 
     if(theme_data.contains(p_key)){
@@ -97,29 +128,29 @@ std::string ThemeLoader::get_color_string(std::string p_key){
         return "000000";
     }
 }
-Color ThemeLoader::get_color(std::string p_key){
+ImVec4 ThemeLoader::get_color(std::string p_key){
     std::string color_string = get_color_string(p_key);
-    Color ret;
+    ImVec4 ret;
     if(color_string.length() == 8){
         std::string r_str = color_string.substr(0, 2);
         std::string g_str = color_string.substr(2, 2);
         std::string b_str = color_string.substr(4, 2);
         std::string a_str = color_string.substr(6, 2);
 
-        ret.r = (float)std::stoi(r_str, nullptr, 16) / 255.0;
-        ret.g = (float)std::stoi(g_str, nullptr, 16) / 255.0;
-        ret.b = (float)std::stoi(b_str, nullptr, 16) / 255.0;
-        ret.a = (float)std::stoi(a_str, nullptr, 16) / 255.0;
+        ret.x = (float)std::stoi(r_str, nullptr, 16) / 255.0;
+        ret.y = (float)std::stoi(g_str, nullptr, 16) / 255.0;
+        ret.z = (float)std::stoi(b_str, nullptr, 16) / 255.0;
+        ret.w = (float)std::stoi(a_str, nullptr, 16) / 255.0;
     }
     if(color_string.length() == 6){
         std::string r_str = color_string.substr(0, 2);
         std::string g_str = color_string.substr(2, 2);
         std::string b_str = color_string.substr(4, 2);
 
-        ret.r = (float)std::stoi(r_str, nullptr, 16) / 255.0;
-        ret.g = (float)std::stoi(g_str, nullptr, 16) / 255.0;
-        ret.b = (float)std::stoi(b_str, nullptr, 16) / 255.0;
-        ret.a = 1;
+        ret.x = (float)std::stoi(r_str, nullptr, 16) / 255.0;
+        ret.y = (float)std::stoi(g_str, nullptr, 16) / 255.0;
+        ret.z = (float)std::stoi(b_str, nullptr, 16) / 255.0;
+        ret.w = 1;
     }
     return ret;
 }

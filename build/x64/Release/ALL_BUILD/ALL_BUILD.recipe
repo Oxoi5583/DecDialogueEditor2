@@ -2,13 +2,13 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>E:\_Coding\CPP\DecDialogueEditor\build\x64\Release\ZERO_CHECK</FullPath>
+      <FullPath>E:\_Coding\CPP\DecDialogueEditor2\build\x64\Release\ZERO_CHECK</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>E:\_Coding\CPP\DecDialogueEditor\bin\DecDialogueEditor.exe</FullPath>
+      <FullPath>E:\_Coding\CPP\DecDialogueEditor2\bin\DecDialogueEditor.exe</FullPath>
     </ProjectOutput>
     <ProjectOutput>
-      <FullPath>E:\_Coding\CPP\DecDialogueEditor\build\x64\Release\ALL_BUILD</FullPath>
+      <FullPath>E:\_Coding\CPP\DecDialogueEditor2\build\x64\Release\ALL_BUILD</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

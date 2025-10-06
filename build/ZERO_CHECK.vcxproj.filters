@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="E:\_Coding\CPP\DecDialogueEditor\build\CMakeFiles\d646a0e8d313ff7a80c11d0de2d1528a\generate.stamp.rule">
+    <CustomBuild Include="E:\_Coding\CPP\DecDialogueEditor2\build\CMakeFiles\7a9903d57456f4bc136ebe6e0fa46e76\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{E603B53E-5565-367A-8B0D-CDBB1B355D41}</UniqueIdentifier>
+      <UniqueIdentifier>{34D5CA37-FBF9-3E0C-85CC-272C8ABA8309}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

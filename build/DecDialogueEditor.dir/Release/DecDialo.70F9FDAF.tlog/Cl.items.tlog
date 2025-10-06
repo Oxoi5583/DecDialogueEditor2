@@ -1,0 +1,12 @@
+E:\_Coding\CPP\DecDialogueEditor2\src\config\config_loader.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\config_loader.obj
+E:\_Coding\CPP\DecDialogueEditor2\src\core\init.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\init.obj
+E:\_Coding\CPP\DecDialogueEditor2\src\core\loop.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\loop.obj
+E:\_Coding\CPP\DecDialogueEditor2\src\main.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\main.obj
+E:\_Coding\CPP\DecDialogueEditor2\src\theme\theme_loader.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\theme_loader.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\backends\imgui_impl_opengl3.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui_impl_opengl3.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\backends\imgui_impl_sdl3.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui_impl_sdl3.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\imgui.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\imgui_demo.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui_demo.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\imgui_draw.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui_draw.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\imgui_tables.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui_tables.obj
+E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\imgui_widgets.cpp;E:\_Coding\CPP\DecDialogueEditor2\build\DecDialogueEditor.dir\Release\imgui_widgets.obj
