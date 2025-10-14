@@ -5,6 +5,7 @@
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float2.hpp"
+#include "struct/rect2.h"
 
 void EngineEventHub::polling(){
     m_mouse_wheel = vec2();
@@ -68,9 +69,14 @@ vec2 EngineEventHub::get_mouse_position(){
     return m_mouse_position;
 }
 vec2 EngineEventHub::get_mouse_world_position(){
-    mat4 camera_origin_transform = mat4(1.0f);
-    camera_origin_transform = glm::translate(camera_origin_transform, vec3(GraphCamera::Ref()->get_origin(),0.0f));
-    return camera_origin_transform * vec4(m_mouse_position,0.0f,1.0f);
+    Rect2 zoomed_rect = GraphCamera::Ref()->get_zoomed_rect();
+    vec2 zoomed_size = zoomed_rect.get_size();
+
+    Rect2 viewport_rect2 = GraphCamera::Ref()->get_rect();
+    vec2 viewport_size = viewport_rect2.get_size();
+    vec2 mouse_pos_ratio = m_mouse_position / viewport_size;
+
+    return GraphCamera::Ref()->screen_to_world(zoomed_size * mouse_pos_ratio);
 }
 vec2 EngineEventHub::get_mouse_wheel(){
     return m_mouse_wheel;

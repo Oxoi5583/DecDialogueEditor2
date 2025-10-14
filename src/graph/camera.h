@@ -39,8 +39,12 @@ public:
     vec2 get_zoomed_size() const;
     float get_zoom() const;
     Rect2 get_rect() const;
+    Rect2 get_zoomed_rect() const;
 
     mat4 get_view() const;
     mat4 get_origin_view() const;
     mat4 get_projection() const;
+
+    vec2 world_to_screen(vec2 p_pos);
+    vec2 screen_to_world(vec2 p_pos);
 };

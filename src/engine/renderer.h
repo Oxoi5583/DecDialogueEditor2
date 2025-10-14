@@ -6,6 +6,7 @@
 #include "DecToolsBox/abstract/singleton.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_float4.hpp"
 
 using namespace glm;
 
@@ -30,6 +31,9 @@ private:
     Binary instanced_circle_fragment_shader;
     Binary instanced_circle_shader_programme;
 
+    Binary instanced_line_vertex_shader;
+    Binary instanced_line_fragment_shader;
+    Binary instanced_line_shader_programme;
     struct {
         std::vector<mat4> transforms;
         std::vector<vec4> colors;
@@ -67,11 +71,23 @@ private:
         };
     } m_draw_circle_instanced_buffer;
     
+    struct {
+        std::vector<mat4> fm_point_transforms;
+        std::vector<vec2> fm_point;
+        std::vector<vec2> to_point;
+        std::vector<vec4> colors;
+        float vertices[16] = {
+            0.0f,  0.0f,
+            0.0f, 1.0f,
+        };
+    } m_draw_line_instanced_buffer;
+
     template<typename  T>
     void m_quick_clear_list(std::vector<T>& p_list);
 
     void m_render_rect();
     void m_render_circle();
+    void m_render_line();
 public:
     Binary craete_shader_binary(ShaderType p_type, const char* p_src);
     void compile();
@@ -81,4 +97,5 @@ public:
     void clear_draw_list();
     void draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id);
     void draw_circle(vec2 p_pos, float p_radius, vec4 p_color, TextureId p_id);
+    void draw_line(vec2 p_fm, vec2 p_to, vec4 p_color);
 };

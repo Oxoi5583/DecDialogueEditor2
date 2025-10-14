@@ -51,12 +51,15 @@ vec2 GraphCamera::get_size() const{
     return m_rect.get_size();
 }
 vec2 GraphCamera::get_zoomed_size() const{
-    mat4 transform = mat4(1.0f);
-    transform = glm::scale(transform, vec3(m_zoom, m_zoom, 0.0f));
-    return vec4(m_rect.get_size(), 0.0f, 1.0f) * transform;
+    return vec4(m_rect.get_size() / m_zoom, 0.0f, 1.0f);
 }
 float GraphCamera::get_zoom() const{
     return m_zoom;
+}
+Rect2 GraphCamera::get_zoomed_rect() const{
+    Rect2 ret = m_rect;
+    ret.set_size(get_zoomed_size());
+    return ret;
 }
 Rect2 GraphCamera::get_rect() const{
     return m_rect;
@@ -73,3 +76,14 @@ mat4 GraphCamera::get_projection() const{
     return m_projection;
 }
 
+
+vec2 GraphCamera::world_to_screen(vec2 p_pos){
+    mat4 transform = mat4(1.0f);
+    transform = glm::translate(transform, vec3(get_zoomed_rect().get_left_top(),0.0f));
+    return inverse(transform) * vec4(p_pos, 0.0f, 1.0f);
+}
+vec2 GraphCamera::screen_to_world(vec2 p_pos){
+    mat4 transform = mat4(1.0f);
+    transform = glm::translate(transform, vec3(get_zoomed_rect().get_left_top(),0.0f));
+    return transform * vec4(p_pos, 0.0f, 1.0f);
+}

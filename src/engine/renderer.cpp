@@ -38,7 +38,7 @@ layout (location = 2) in mat4 transform;
 uniform mat4 view;
 uniform mat4 projection;
 
-layout (location = 6) in vec4 v_color;
+layout (location = 6) in vec4 i_color;
 
 out vec4 f_color;
 out vec2 f_uv;
@@ -46,7 +46,7 @@ out vec2 f_uv;
 void main() {
     gl_Position = projection * view * transform * vec4(a_pos, 0.0, 1.0);
 
-    f_color = v_color;
+    f_color = i_color;
     f_uv = a_uv;
 }
 )";
@@ -72,7 +72,7 @@ layout (location = 2) in mat4 transform;
 uniform mat4 view;
 uniform mat4 projection;
 
-layout (location = 6) in vec4 v_color;
+layout (location = 6) in vec4 i_color;
 
 out vec4 f_color;
 out vec2 f_uv;
@@ -80,7 +80,7 @@ out vec2 f_uv;
 void main() {
     gl_Position = projection * view * transform * vec4(a_pos, 0.0, 1.0);
 
-    f_color = v_color;
+    f_color = i_color;
     f_uv = a_uv;
 }
 )";
@@ -98,6 +98,37 @@ void main() {
     float alpha = 1.0 - step(0.5, dist);
 
     FragColor = vec4(f_color.rgb,f_color.a * alpha);
+}
+)";
+const char* instanced_line_vertex_shader_src = R"(
+#version 330 core
+layout (location = 0) in vec2 a_pos;
+layout (location = 1) in vec2 instance_start;
+layout (location = 2) in vec2 instance_end;
+layout (location = 3) in vec4 instance_start_transform;
+
+uniform mat4 view;
+uniform mat4 projection;
+
+layout (location = 7) in vec4 i_color;
+
+out vec4 f_color;
+
+void main() {
+    vec2 real_pos = mix(instance_start, instance_end, a_pos);
+    gl_Position = projection * view * instance_start_transform * vec4(real_pos, 0.0, 1.0);
+
+    f_color = i_color;
+}
+)";
+const char* instanced_line_fragment_shader_src = R"(
+#version 330 core
+in vec4 f_color;
+
+out vec4 FragColor;
+
+void main() {
+    FragColor = f_color;
 }
 )";
 
@@ -152,6 +183,17 @@ void EngineRenderer::compile(){
 
     glDeleteShader(instanced_circle_vertex_shader);
     glDeleteShader(instanced_circle_fragment_shader);
+    
+    instanced_line_vertex_shader = craete_shader_binary(GL_VERTEX_SHADER, instanced_line_vertex_shader_src);
+    instanced_line_fragment_shader = craete_shader_binary(GL_FRAGMENT_SHADER, instanced_line_fragment_shader_src);
+
+    instanced_line_shader_programme = glCreateProgram();
+    glAttachShader(instanced_line_shader_programme, instanced_line_vertex_shader);
+    glAttachShader(instanced_line_shader_programme, instanced_line_fragment_shader);
+    glLinkProgram(instanced_line_shader_programme);
+
+    glDeleteShader(instanced_line_vertex_shader);
+    glDeleteShader(instanced_line_fragment_shader);
 }
 
 void EngineRenderer::m_render_rect(){
@@ -177,19 +219,18 @@ void EngineRenderer::m_render_rect(){
 
     glUseProgram(instanced_rect_shader_programme);
 
-    uint position_location = 2;
-    GLuint instance_position_VBO;
-    glGenBuffers(1, &instance_position_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instance_position_VBO);
+    uint transform_location = 2;
+    GLuint instance_transform_VBO;
+    glGenBuffers(1, &instance_transform_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_transform_VBO);
     glBufferData(GL_ARRAY_BUFFER, m_draw_rect_instanced_buffer.transforms.size() * sizeof(mat4), m_draw_rect_instanced_buffer.transforms.data(), GL_STATIC_DRAW);
     std::size_t vec4_size = sizeof(vec4);
     for (int i = 0; i < 4; ++i) {
-        glVertexAttribPointer(position_location + i, 4, GL_FLOAT, GL_FALSE,
+        glVertexAttribPointer(transform_location + i, 4, GL_FLOAT, GL_FALSE,
             sizeof(mat4), (void*)(i * vec4_size));
-        glEnableVertexAttribArray(position_location + i);
-        glVertexAttribDivisor(position_location + i, 1);
+        glEnableVertexAttribArray(transform_location + i);
+        glVertexAttribDivisor(transform_location + i, 1);
     }
-
     
     uint color_location = 6;
     GLuint instance_color_VBO;
@@ -232,17 +273,17 @@ void EngineRenderer::m_render_circle(){
 
     glUseProgram(instanced_circle_shader_programme);
 
-    uint position_location = 2;
-    GLuint instance_position_VBO;
-    glGenBuffers(1, &instance_position_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instance_position_VBO);
+    uint transform_location = 2;
+    GLuint instance_transform_VBO;
+    glGenBuffers(1, &instance_transform_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_transform_VBO);
     glBufferData(GL_ARRAY_BUFFER, m_draw_circle_instanced_buffer.transforms.size() * sizeof(mat4), m_draw_circle_instanced_buffer.transforms.data(), GL_STATIC_DRAW);
     std::size_t vec4_size = sizeof(vec4);
     for (int i = 0; i < 4; ++i) {
-        glVertexAttribPointer(position_location + i, 4, GL_FLOAT, GL_FALSE,
+        glVertexAttribPointer(transform_location + i, 4, GL_FLOAT, GL_FALSE,
             sizeof(mat4), (void*)(i * vec4_size));
-        glEnableVertexAttribArray(position_location + i);
-        glVertexAttribDivisor(position_location + i, 1);
+        glEnableVertexAttribArray(transform_location + i);
+        glVertexAttribDivisor(transform_location + i, 1);
     }
     
     uint color_location = 6;
@@ -264,11 +305,79 @@ void EngineRenderer::m_render_circle(){
 
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_draw_circle_instanced_buffer.transforms.size()));
 }
+void EngineRenderer::m_render_line(){
+    Binary VAO;
+    Binary VBO;
+    Binary EBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(m_draw_line_instanced_buffer.vertices), m_draw_line_instanced_buffer.vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glUseProgram(instanced_line_shader_programme);
+
+    uint instance_start_location = 1;
+    GLuint instance_start_VBO;
+    glGenBuffers(1, &instance_start_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_start_VBO);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.fm_point.size() * sizeof(vec2), m_draw_line_instanced_buffer.fm_point.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(instance_start_location, 2, GL_FLOAT, GL_FALSE,2 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(instance_start_location);
+    glVertexAttribDivisor(instance_start_location, 1);
+    
+    uint instance_end_location = 2;
+    GLuint instance_end_VBO;
+    glGenBuffers(1, &instance_end_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_end_VBO);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.to_point.size() * sizeof(vec2), m_draw_line_instanced_buffer.to_point.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(instance_end_location, 2, GL_FLOAT, GL_FALSE,2 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(instance_end_location);
+    glVertexAttribDivisor(instance_end_location, 1);
+
+    uint transform_location = 3;
+    GLuint instance_transform_VBO;
+    glGenBuffers(1, &instance_transform_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_transform_VBO);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.fm_point_transforms.size() * sizeof(mat4), m_draw_line_instanced_buffer.fm_point_transforms.data(), GL_STATIC_DRAW);
+    std::size_t vec4_size = sizeof(vec4);
+    for (int i = 0; i < 4; ++i) {
+        glVertexAttribPointer(transform_location + i, 4, GL_FLOAT, GL_FALSE,
+            sizeof(mat4), (void*)(i * vec4_size));
+        glEnableVertexAttribArray(transform_location + i);
+        glVertexAttribDivisor(transform_location + i, 1);
+    }
+    
+    uint color_location = 7;
+    GLuint instance_color_VBO;
+    glGenBuffers(1, &instance_color_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_color_VBO);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.colors.size() * sizeof(vec4), m_draw_line_instanced_buffer.colors.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(color_location, 4, GL_FLOAT, GL_FALSE,4 * sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(color_location);
+    glVertexAttribDivisor(color_location, 1);
+    
+    GLuint view_loc = glGetUniformLocation(instanced_line_shader_programme, "view");
+    glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(m_view_buffer));
+    GLuint projection_loc = glGetUniformLocation(instanced_line_shader_programme, "projection");
+    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(m_projection_buffer));
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glDrawElementsInstanced(GL_LINES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_draw_line_instanced_buffer.fm_point_transforms.size()));
+}
 
 void EngineRenderer::render(){
     m_view_buffer = GraphCamera::Ref()->get_view();
     m_projection_buffer = GraphCamera::Ref()->get_projection();
 
+    m_render_line();
     m_render_rect();
     m_render_circle();
 
@@ -343,7 +452,13 @@ void EngineRenderer::clear_draw_list(){
     m_quick_clear_list(m_draw_circle_instanced_buffer.radiuses);
     m_quick_clear_list(m_draw_circle_instanced_buffer.colors);
     m_quick_clear_list(m_draw_circle_instanced_buffer.texture_ids);
+    
+    m_quick_clear_list(m_draw_line_instanced_buffer.fm_point_transforms);
+    m_quick_clear_list(m_draw_line_instanced_buffer.fm_point);
+    m_quick_clear_list(m_draw_line_instanced_buffer.to_point);
+    m_quick_clear_list(m_draw_line_instanced_buffer.colors);
 }
+
 
 void EngineRenderer::draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id){
     m_draw_rect_instanced_buffer.texture_ids.push_back(p_id);
@@ -361,4 +476,12 @@ void EngineRenderer::draw_circle(vec2 p_pos, float p_radius, vec4 p_color, Textu
     transform = glm::scale(transform, vec3(p_radius * 2, p_radius * 2,0.0f));
     m_draw_circle_instanced_buffer.transforms.push_back(transform);
     m_draw_circle_instanced_buffer.radiuses.push_back(p_radius);
+}
+void EngineRenderer::draw_line(vec2 p_fm, vec2 p_to, vec4 p_color){
+    mat4 transform = mat4(1.0);
+    transform = glm::translate(transform, vec3(p_fm,0.0f));
+    m_draw_line_instanced_buffer.fm_point_transforms.push_back(transform);
+    m_draw_line_instanced_buffer.fm_point.push_back(p_fm);
+    m_draw_line_instanced_buffer.to_point.push_back(p_to);
+    m_draw_line_instanced_buffer.colors.push_back(p_color);
 }
