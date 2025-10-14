@@ -341,9 +341,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\config\config_loader.cpp" />
-    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\core\init.cpp" />
-    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\core\loop.cpp" />
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\engine\event_hub.cpp" />
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\engine\renderer.cpp" />
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\engine\window.cpp" />
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\graph\camera.cpp" />
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\graph\grid.cpp" />
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\main.cpp" />
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\struct\rect2.cpp" />
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\theme\theme_loader.cpp" />
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\backends\imgui_impl_opengl3.cpp" />
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src_extern\imgui\backends\imgui_impl_sdl3.cpp" />

@@ -1,4 +1,10 @@
 
+#include "engine/event_hub.h"
+#include "engine/renderer.h"
+#include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_float4.hpp"
+#include "graph/camera.h"
+#include "struct/rect2.h"
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -12,62 +18,47 @@
 
 #include <DecToolsBox/debug/messenger.h>
 
-#include "SDL3/SDL_render.h"
-#include "core/init.h"
-#include "core/loop.h"
+#include "engine/window.h"
 #include "theme/theme_loader.h"
 #include "config/config_loader.h"
+
 
 int main(int argc, char* argv[]) {
     ThemeLoader::Ref()->load();
     ConfigLoader::Ref()->load();
 
-    SDL_Window* window = CoreInitializer::Ref()->get_sdl_window();
-    SDL_Renderer* renderer = CoreInitializer::Ref()->get_sdl_renderer();
-    ImGuiIO& io = CoreInitializer::Ref()->get_imgui_io();
-    ImGuiStyle& style = CoreInitializer::Ref()->get_imgui_style();
+    EngineWindow::Ref()->init();
+    EngineRenderer::Ref()->compile();
 
-    bool show_demo_window = true;
-    bool show_another_window = false;
+    GraphCamera::Ref()->init();
 
-    bool done = false;
-    while (CoreLoop::Ref()->poll()) {
-        CoreLoop::Ref()->new_frame();    
-        ImVec4 clear_color = CoreLoop::Ref()->get_clear_color();
+    while (EngineWindow::Ref()->is_running()){
+        EngineEventHub::Ref()->polling();
+        EngineWindow::Ref()->begin();
 
+        GraphCamera::Ref()->update();
+        
+        EngineRenderer::Ref()->clear_draw_list();
+        
+        Rect2 r = Rect2(vec2(0,0),vec2(50,50));
+        EngineRenderer::Ref()->draw_rect(r, vec4(255,0,0,255), 0);
 
-        ImGuiStyle& style = ImGui::GetStyle();
-        style.WindowRounding = 4.0f;
-        style.FrameRounding  = 3.0f;
-        style.GrabRounding   = 2.0f;
-        style.WindowPadding  = ImVec2(8, 8);
-        style.ItemSpacing    = ImVec2(6, 4);
+        EngineRenderer::Ref()->draw_circle(r.get_left_top(), 5, vec4(0,0,255,255), 0);
 
-        ImVec4* colors = style.Colors;
-        colors[ImGuiCol_TitleBgActive]          = ImVec4(0.10f, 0.10f, 0.12f, 1.0f);
-        colors[ImGuiCol_WindowBg]        = ImVec4(0.10f, 0.10f, 0.12f, 1.0f);
-        colors[ImGuiCol_Button]          = ImVec4(0.20f, 0.35f, 0.50f, 1.0f);
-        colors[ImGuiCol_ButtonHovered]   = ImVec4(0.25f, 0.45f, 0.70f, 1.0f);
-        colors[ImGuiCol_ButtonActive]    = ImVec4(0.15f, 0.30f, 0.50f, 1.0f);
+        EngineRenderer::Ref()->draw_circle(GraphCamera::Ref()->get_origin(), 20, vec4(255,255,0,255), 0);
+        EngineRenderer::Ref()->draw_circle(GraphCamera::Ref()->get_target(), 5, vec4(0,255,0,255), 0);
 
+        vec2 mouse_pos = EngineEventHub::Ref()->get_mouse_world_position();
+        DEBUG_MSG("mouse_pos : (" << mouse_pos.x << "," << mouse_pos.y << ")");
+        EngineRenderer::Ref()->draw_circle(mouse_pos, 20, vec4(0,0,0,255), 0);
 
-        ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x / 5, io.DisplaySize.y));
-        ImGui::Begin("Sidebar", nullptr,
-            ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoCollapse);
+        GraphCamera::Ref()->set_target(GraphCamera::Ref()->get_target() - vec2(10,0));
 
-        ImGui::Text("Tools");
-        ImGui::Separator();
-        if (ImGui::Button("New Node")) { /* ... */ }
-
-    ImGui::End();
-        // Rendering
-        CoreLoop::Ref()->render();
+        EngineRenderer::Ref()->render();
+        EngineWindow::Ref()->end();
     }
 
-    CoreInitializer::Ref()->destory_all();
+    EngineRenderer::Ref()->destory_all();
+    EngineWindow::Ref()->destory_all();
     return 0;
 }

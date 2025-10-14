@@ -4,13 +4,25 @@
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\config\config_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\core\init.cpp">
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\engine\event_hub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\core\loop.cpp">
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\engine\renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\engine\window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\graph\camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\graph\grid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\struct\rect2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="E:\_Coding\CPP\DecDialogueEditor2\src\theme\theme_loader.cpp">
