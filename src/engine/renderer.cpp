@@ -103,20 +103,42 @@ void main() {
 const char* instanced_line_vertex_shader_src = R"(
 #version 330 core
 layout (location = 0) in vec2 a_pos;
-layout (location = 1) in vec2 instance_start;
-layout (location = 2) in vec2 instance_end;
-layout (location = 3) in vec4 instance_start_transform;
+layout (location = 1) in float width;
+layout (location = 2) in vec2 instance_start;
+layout (location = 3) in vec2 instance_end;
 
 uniform mat4 view;
 uniform mat4 projection;
 
-layout (location = 7) in vec4 i_color;
+layout (location = 10) in vec4 i_color;
 
 out vec4 f_color;
 
+mat2 rotate(float angle) {
+    return mat2(cos(angle), -sin(angle),
+                sin(angle),  cos(angle));
+}
+
 void main() {
-    vec2 real_pos = mix(instance_start, instance_end, a_pos);
-    gl_Position = projection * view * instance_start_transform * vec4(real_pos, 0.0, 1.0);
+    float half_width = width / 2.0;
+    float dist = distance(instance_start, instance_end);
+    vec2 dir = normalize(instance_end - instance_start);
+
+    vec2 l_dir = rotate(radians(-90.0)) * dir;
+    vec2 r_dir = rotate(radians(90.0)) * dir;
+
+    vec2 left_down = instance_start + (l_dir * half_width);
+    vec2 right_down = instance_start + (r_dir * half_width);
+    vec2 left_up = left_down + (dir * dist);
+    vec2 right_up = right_down + (dir * dist);
+
+    vec2 real_pos = mix(
+        mix(left_down, right_down, a_pos.x),
+        mix(left_up, right_up, a_pos.x),
+        a_pos.y
+    );
+
+    gl_Position = projection * view * vec4(real_pos, 0.0, 1.0);
 
     f_color = i_color;
 }
@@ -306,6 +328,7 @@ void EngineRenderer::m_render_circle(){
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_draw_circle_instanced_buffer.transforms.size()));
 }
 void EngineRenderer::m_render_line(){
+    DEBUG_MSG("line count : " << m_draw_line_instanced_buffer.colors.size());
     Binary VAO;
     Binary VBO;
     Binary EBO;
@@ -320,40 +343,39 @@ void EngineRenderer::m_render_line(){
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(m_draw_line_instanced_buffer.indices), m_draw_line_instanced_buffer.indices, GL_STATIC_DRAW);
+    
     glUseProgram(instanced_line_shader_programme);
 
-    uint instance_start_location = 1;
+    uint instance_width_location = 1;
+    GLuint instance_width_VBO;
+    glGenBuffers(1, &instance_width_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instance_width_VBO);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.widths.size() * sizeof(float), m_draw_line_instanced_buffer.widths.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(instance_width_location, 1, GL_FLOAT, GL_FALSE,sizeof(float), (void*)(0));
+    glEnableVertexAttribArray(instance_width_location);
+    glVertexAttribDivisor(instance_width_location, 1);
+
+    uint instance_start_location = 2;
     GLuint instance_start_VBO;
     glGenBuffers(1, &instance_start_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, instance_start_VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.fm_point.size() * sizeof(vec2), m_draw_line_instanced_buffer.fm_point.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.fm_points.size() * sizeof(vec2), m_draw_line_instanced_buffer.fm_points.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(instance_start_location, 2, GL_FLOAT, GL_FALSE,2 * sizeof(float), (void*)(0));
     glEnableVertexAttribArray(instance_start_location);
     glVertexAttribDivisor(instance_start_location, 1);
     
-    uint instance_end_location = 2;
+    uint instance_end_location = 3;
     GLuint instance_end_VBO;
     glGenBuffers(1, &instance_end_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, instance_end_VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.to_point.size() * sizeof(vec2), m_draw_line_instanced_buffer.to_point.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.to_points.size() * sizeof(vec2), m_draw_line_instanced_buffer.to_points.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(instance_end_location, 2, GL_FLOAT, GL_FALSE,2 * sizeof(float), (void*)(0));
     glEnableVertexAttribArray(instance_end_location);
     glVertexAttribDivisor(instance_end_location, 1);
 
-    uint transform_location = 3;
-    GLuint instance_transform_VBO;
-    glGenBuffers(1, &instance_transform_VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instance_transform_VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_draw_line_instanced_buffer.fm_point_transforms.size() * sizeof(mat4), m_draw_line_instanced_buffer.fm_point_transforms.data(), GL_STATIC_DRAW);
-    std::size_t vec4_size = sizeof(vec4);
-    for (int i = 0; i < 4; ++i) {
-        glVertexAttribPointer(transform_location + i, 4, GL_FLOAT, GL_FALSE,
-            sizeof(mat4), (void*)(i * vec4_size));
-        glEnableVertexAttribArray(transform_location + i);
-        glVertexAttribDivisor(transform_location + i, 1);
-    }
-    
-    uint color_location = 7;
+    uint color_location = 10;
     GLuint instance_color_VBO;
     glGenBuffers(1, &instance_color_VBO);
     glBindBuffer(GL_ARRAY_BUFFER, instance_color_VBO);
@@ -370,7 +392,7 @@ void EngineRenderer::m_render_line(){
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glDrawElementsInstanced(GL_LINES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_draw_line_instanced_buffer.fm_point_transforms.size()));
+    glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_draw_line_instanced_buffer.fm_points.size()));
 }
 
 void EngineRenderer::render(){
@@ -453,9 +475,9 @@ void EngineRenderer::clear_draw_list(){
     m_quick_clear_list(m_draw_circle_instanced_buffer.colors);
     m_quick_clear_list(m_draw_circle_instanced_buffer.texture_ids);
     
-    m_quick_clear_list(m_draw_line_instanced_buffer.fm_point_transforms);
-    m_quick_clear_list(m_draw_line_instanced_buffer.fm_point);
-    m_quick_clear_list(m_draw_line_instanced_buffer.to_point);
+    m_quick_clear_list(m_draw_line_instanced_buffer.fm_points);
+    m_quick_clear_list(m_draw_line_instanced_buffer.to_points);
+    m_quick_clear_list(m_draw_line_instanced_buffer.widths);
     m_quick_clear_list(m_draw_line_instanced_buffer.colors);
 }
 
@@ -477,11 +499,9 @@ void EngineRenderer::draw_circle(vec2 p_pos, float p_radius, vec4 p_color, Textu
     m_draw_circle_instanced_buffer.transforms.push_back(transform);
     m_draw_circle_instanced_buffer.radiuses.push_back(p_radius);
 }
-void EngineRenderer::draw_line(vec2 p_fm, vec2 p_to, vec4 p_color){
-    mat4 transform = mat4(1.0);
-    transform = glm::translate(transform, vec3(p_fm,0.0f));
-    m_draw_line_instanced_buffer.fm_point_transforms.push_back(transform);
-    m_draw_line_instanced_buffer.fm_point.push_back(p_fm);
-    m_draw_line_instanced_buffer.to_point.push_back(p_to);
+void EngineRenderer::draw_line(vec2 p_fm, vec2 p_to, vec4 p_color, float p_width){
+    m_draw_line_instanced_buffer.fm_points.push_back(p_fm);
+    m_draw_line_instanced_buffer.to_points.push_back(p_to);
     m_draw_line_instanced_buffer.colors.push_back(p_color);
+    m_draw_line_instanced_buffer.widths.push_back(p_width);
 }

@@ -5,6 +5,7 @@
 #include "glm/ext/vector_float3.hpp"
 #include "glm/ext/vector_float4.hpp"
 #include "graph/camera.h"
+#include "graph/grid.h"
 #include "struct/rect2.h"
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]) {
     EngineRenderer::Ref()->compile();
 
     GraphCamera::Ref()->init();
-    GraphCamera::Ref()->set_zoom(0.1);
+
     while (EngineWindow::Ref()->is_running()){
         EngineEventHub::Ref()->polling();
         EngineWindow::Ref()->begin();
@@ -40,6 +41,8 @@ int main(int argc, char* argv[]) {
         GraphCamera::Ref()->update();
         
         EngineRenderer::Ref()->clear_draw_list();
+        
+        GraphGrid::Ref()->draw();
         
         /*
         Rect2 r = Rect2(vec2(0,0),vec2(50,50));
@@ -57,9 +60,6 @@ int main(int argc, char* argv[]) {
         //DEBUG_MSG("mouse_world_pos(screen) : (" << mouse_screen_pos.x << "," << mouse_screen_pos.y << ")");
         */
 
-        vec2 mouse_world_pos = EngineEventHub::Ref()->get_mouse_world_position();
-        EngineRenderer::Ref()->draw_line(vec2(0.0f,0.0f), mouse_world_pos, vec4(0,0,0,255));
-    
         /*
         float radius = 150;
         vec2 target_pos = vec2(radius, 0);

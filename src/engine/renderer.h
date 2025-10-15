@@ -72,13 +72,20 @@ private:
     } m_draw_circle_instanced_buffer;
     
     struct {
-        std::vector<mat4> fm_point_transforms;
-        std::vector<vec2> fm_point;
-        std::vector<vec2> to_point;
+        std::vector<vec2> fm_points;
+        std::vector<vec2> to_points;
+        std::vector<float> widths;
         std::vector<vec4> colors;
-        float vertices[16] = {
-            0.0f,  0.0f,
-            0.0f, 1.0f,
+        float vertices[8] = {
+            1.0f, 1.0f,
+            1.0f, 0.0f,
+            0.0f, 0.0f,
+            0.0f, 1.0f
+        };
+
+        unsigned int indices[6] = {
+            0, 1, 3,
+            1, 2, 3
         };
     } m_draw_line_instanced_buffer;
 
@@ -97,5 +104,5 @@ public:
     void clear_draw_list();
     void draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id);
     void draw_circle(vec2 p_pos, float p_radius, vec4 p_color, TextureId p_id);
-    void draw_line(vec2 p_fm, vec2 p_to, vec4 p_color);
+    void draw_line(vec2 p_fm, vec2 p_to, vec4 p_color, float p_width);
 };

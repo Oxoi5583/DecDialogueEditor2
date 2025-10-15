@@ -1,7 +1,16 @@
 #include "graph/grid.h"
+#include "DecToolsBox/debug/messenger.h"
+#include "engine/renderer.h"
+#include "graph/camera.h"
+#include "struct/rect2.h"
 #include <cstddef>
+#include <vector>
 
-void GraphGrid::create_grid(){
+
+GraphGrid::GraphGrid(){
+    m_create_grid();
+}
+void GraphGrid::m_create_grid(){
     double size_x = m_grid_columns * m_grid_interval;
     double size_y = m_grid_rows * m_grid_interval;
     double start_x = - (size_x / 2);
@@ -26,9 +35,18 @@ void GraphGrid::create_grid(){
 }
 
 void GraphGrid::draw(){
-    ImVec2 pos = ImGui::GetWindowPos();
-    ImVec2 size = ImGui::GetWindowSize();
+    Rect2 window_rect = GraphCamera::Ref()->get_zoomed_rect();
+    vec2 left_top = window_rect.get_left_top();
+    vec2 right_down = window_rect.get_right_down();
+    std::vector<GraphGridLine> lines = get_range_lines(
+            left_top.x, left_top.y,
+            right_down.x, right_down.y
+        );
+
     
+    for(GraphGridLine& line : lines){
+        EngineRenderer::Ref()->draw_line(line.start, line.end, m_color, m_width);
+    }
 }
 
 std::vector<GraphGridLine> GraphGrid::get_range_lines(float p_lefttop_x, float p_lefttop_y,
