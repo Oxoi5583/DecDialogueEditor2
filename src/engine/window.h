@@ -29,7 +29,7 @@ private:
 
     const char* m_main_window_title;
 
-    ImVec4 m_clear_color = ThemeLoader::Ref()->get_color("BrandColour");
+    vec4 m_clear_color = ThemeLoader::Ref()->get_color("BrandColour");
 
     bool m_is_running = true;
 

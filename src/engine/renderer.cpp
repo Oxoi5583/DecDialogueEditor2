@@ -328,7 +328,6 @@ void EngineRenderer::m_render_circle(){
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_draw_circle_instanced_buffer.transforms.size()));
 }
 void EngineRenderer::m_render_line(){
-    DEBUG_MSG("line count : " << m_draw_line_instanced_buffer.colors.size());
     Binary VAO;
     Binary VBO;
     Binary EBO;

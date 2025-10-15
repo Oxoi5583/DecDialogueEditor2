@@ -5,10 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "glm/glm.hpp"
+#include "glm/vec4.hpp"
 #include "imgui/imgui.h"
 #include "nlohmann/json.hpp"
 
 using namespace nlohmann;
+using namespace glm;
 
 
 class ThemeLoader : public Singleton<ThemeLoader>{
@@ -54,5 +57,5 @@ public:
     void load();
 
     std::string get_color_string(std::string p_key);
-    ImVec4 get_color(std::string p_key);
+    vec4 get_color(std::string p_key);
 };

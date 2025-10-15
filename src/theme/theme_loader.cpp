@@ -128,9 +128,9 @@ std::string ThemeLoader::get_color_string(std::string p_key){
         return "000000";
     }
 }
-ImVec4 ThemeLoader::get_color(std::string p_key){
+vec4 ThemeLoader::get_color(std::string p_key){
     std::string color_string = get_color_string(p_key);
-    ImVec4 ret;
+    vec4 ret;
     if(color_string.length() == 8){
         std::string r_str = color_string.substr(0, 2);
         std::string g_str = color_string.substr(2, 2);

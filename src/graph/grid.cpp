@@ -1,8 +1,10 @@
 #include "graph/grid.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "config/config_loader.h"
 #include "engine/renderer.h"
 #include "graph/camera.h"
 #include "struct/rect2.h"
+#include "theme/theme_loader.h"
 #include <cstddef>
 #include <vector>
 
@@ -35,6 +37,8 @@ void GraphGrid::m_create_grid(){
 }
 
 void GraphGrid::draw(){
+    m_color = ThemeLoader::Ref()->get_color("SecondaryColour1");
+
     Rect2 window_rect = GraphCamera::Ref()->get_zoomed_rect();
     vec2 left_top = window_rect.get_left_top();
     vec2 right_down = window_rect.get_right_down();
