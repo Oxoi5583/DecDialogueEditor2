@@ -28,6 +28,7 @@ private:
     SDL_GLContext m_sdl_gl_context;
 
     const char* m_main_window_title;
+    const char* m_glsl_version = "#version 420 core";
 
     vec4 m_clear_color = ThemeLoader::Ref()->get_color("BrandColour");
 

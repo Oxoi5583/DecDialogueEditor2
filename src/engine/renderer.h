@@ -4,6 +4,7 @@
 #include <struct/rect2.h>
 #include <vector>
 #include "DecToolsBox/abstract/singleton.h"
+#include "engine/texture_loader.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float4.hpp"
@@ -23,18 +24,26 @@ private:
     Binary basic_fragment_shader;
     Binary basic_shader_programme;
 
-    Binary instanced_rect_vertex_shader;
-    Binary instanced_rect_fragment_shader;
-    Binary instanced_rect_shader_programme;
 
-    Binary instanced_circle_vertex_shader;
-    Binary instanced_circle_fragment_shader;
-    Binary instanced_circle_shader_programme;
+    struct { 
+        Binary VAO;
+        Binary VBO;
+        Binary EBO;
 
-    Binary instanced_line_vertex_shader;
-    Binary instanced_line_fragment_shader;
-    Binary instanced_line_shader_programme;
-    struct {
+        GLuint view_loc;
+        GLuint projection_loc;
+
+        struct {
+            Binary transform_vbo;
+            Binary color_vbo;
+        } instance_data;
+
+        struct {
+            Binary vertex_shader;
+            Binary fragment_shader;
+            Binary programme;
+        } shader;
+
         std::vector<mat4> transforms;
         std::vector<vec4> colors;
         std::vector<unsigned int> texture_ids;
@@ -50,9 +59,27 @@ private:
             0, 1, 3,
             1, 2, 3
         };
-    } m_draw_rect_instanced_buffer;
+    } m_rect_data;
 
     struct {
+        Binary VAO;
+        Binary VBO;
+        Binary EBO;
+
+        GLuint view_loc;
+        GLuint projection_loc;
+
+        struct {
+            Binary transform_vbo;
+            Binary color_vbo;
+        } instance_data;
+
+        struct {
+            Binary vertex_shader;
+            Binary fragment_shader;
+            Binary programme;
+        } shader;
+        
         std::vector<mat4> transforms;
         std::vector<float> radiuses;
         std::vector<vec4> colors;
@@ -69,9 +96,30 @@ private:
             0, 1, 3,
             1, 2, 3
         };
-    } m_draw_circle_instanced_buffer;
+    } m_circle_data;
     
     struct {
+        Binary VAO;
+        Binary VBO;
+        Binary EBO;
+        
+        GLuint view_loc;
+        GLuint projection_loc;
+
+
+        struct {
+            Binary width_vbo;
+            Binary start_vbo;
+            Binary end_vbo;
+            Binary color_vbo;
+        } instance_data;
+
+        struct {
+            Binary vertex_shader;
+            Binary fragment_shader;
+            Binary programme;
+        } shader;
+
         std::vector<vec2> fm_points;
         std::vector<vec2> to_points;
         std::vector<float> widths;
@@ -87,17 +135,22 @@ private:
             0, 1, 3,
             1, 2, 3
         };
-    } m_draw_line_instanced_buffer;
+    } m_line_data;
 
     template<typename  T>
     void m_quick_clear_list(std::vector<T>& p_list);
 
+    void m_compile();
+    void m_init_render_rect();
+    void m_init_render_circle();
+    void m_init_render_line();
+    void m_init_uniform_loc();
     void m_render_rect();
     void m_render_circle();
     void m_render_line();
 public:
     Binary craete_shader_binary(ShaderType p_type, const char* p_src);
-    void compile();
+    void init();
     void render();
     void destory_all();
 

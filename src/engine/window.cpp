@@ -52,9 +52,10 @@ void EngineWindow::m_init_sdl_set_gl_attribute(){
     const int step = ENGINE_INIT_STEP;
     m_init_check_step(step);
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
@@ -75,6 +76,7 @@ void EngineWindow::m_init_create_sdl_renderer(){
     const int step = ENGINE_INIT_STEP;
     m_init_check_step(step);
 
+    /*
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, NULL);
     if (!m_sdl_renderer) {
         ERROR_MSG("SDL_CreateRenderer Error: " << SDL_GetError());
@@ -82,6 +84,7 @@ void EngineWindow::m_init_create_sdl_renderer(){
         SDL_Quit();
         exit(-1);
     }
+    */
 }
 void EngineWindow::m_init_create_sdl_gl_context(){
     const int step = ENGINE_INIT_STEP;
@@ -104,36 +107,8 @@ void EngineWindow::m_init_imgui_Engine(){
     const int step = ENGINE_INIT_STEP;
     m_init_check_step(step);
 
-    // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100 (WebGL 1.0)
-    const char* glsl_version = "#version 100";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(IMGUI_IMPL_OPENGL_ES3)
-    // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
-    const char* glsl_version = "#version 300 es";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(__APPLE__)
-    // GL 3.2 Engine + GLSL 150
-    const char* glsl_version = "#version 150";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_Engine);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#endif
+    
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& m_imgui_io = ImGui::GetIO();
@@ -149,7 +124,7 @@ void EngineWindow::m_init_imgui_Engine(){
     m_imgui_style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
 
     ImGui_ImplSDL3_InitForOpenGL(m_sdl_window, m_sdl_gl_context);
-    ImGui_ImplOpenGL3_Init(glsl_version);
+    ImGui_ImplOpenGL3_Init(m_glsl_version);
 }
 void EngineWindow::m_init_sdl_show_window(){
     const int step = ENGINE_INIT_STEP;
@@ -178,8 +153,6 @@ void EngineWindow::m_job_gl_clear(){
     glClear(GL_COLOR_BUFFER_BIT);
 
 
-
-    gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
     glm::vec2 cameraPos(0.0f, 0.0f);
     float cameraZoom = 1.0f;
     float cameraRotation = 0.0f;
