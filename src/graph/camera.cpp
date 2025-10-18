@@ -1,6 +1,8 @@
 #include "graph/camera.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "SDL3/SDL_video.h"
+#include "engine/input_hub.h"
+#include "engine/input_key.h"
 #include "engine/window.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_float4x4.hpp"
@@ -29,7 +31,30 @@ void GraphCamera::m_job_update_projection(){
         -1.0f, 1.0f
     );
 }
+void GraphCamera::m_job_update_control(){
+    vec2 motion = vec2(0.0f,0.0f);
+
+    const double speed = 5;
+    if(EngineInputHub::Ref()->keyboard_is_down(K_UP)){
+        motion.y -= speed;
+    }
+    if(EngineInputHub::Ref()->keyboard_is_down(K_DOWN)){
+        motion.y += speed;
+    }
+    if(EngineInputHub::Ref()->keyboard_is_down(K_LEFT)){
+        motion.x -= speed;
+    }
+    if(EngineInputHub::Ref()->keyboard_is_down(K_RIGHT)){
+        motion.x += speed;
+    }
+
+    vec2 old_target = this->get_target();
+    vec2 new_target = old_target + motion;
+
+    this->set_target(new_target);
+}
 void GraphCamera::update(){
+    m_job_update_control();
     m_job_update_window_size_buffer();
     m_job_update_view();
     m_job_update_projection();

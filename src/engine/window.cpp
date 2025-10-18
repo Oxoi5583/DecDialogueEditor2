@@ -3,7 +3,7 @@
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_mouse.h"
 #include "SDL3/SDL_video.h"
-#include "engine/event_hub.h"
+#include "engine/input_hub.h"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_int3.hpp"
 #include <glm/gtc/matrix_transform.hpp>
@@ -193,8 +193,8 @@ void EngineWindow::m_job_set_delay_if_minimized(){
     }
 }
 void EngineWindow::m_job_close_event_handle(){
-    if(EngineEventHub::Ref()->is_close_requested()){
-        if(EngineEventHub::Ref()->get_close_window_id() == SDL_GetWindowID(m_sdl_window)){
+    if(EngineInputHub::Ref()->is_close_requested()){
+        if(EngineInputHub::Ref()->get_close_window_id() == SDL_GetWindowID(m_sdl_window)){
             this->close();
         }
     }

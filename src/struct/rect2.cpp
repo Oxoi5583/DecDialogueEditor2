@@ -1,5 +1,7 @@
 #include "struct/rect2.h"
 #include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_float3.hpp"
+#include "glm/geometric.hpp"
 #include <vector>
 
 Rect2::Rect2() = default;
@@ -76,3 +78,35 @@ std::vector<vec2> Rect2::get_points() const{
 }
 
 
+bool Rect2::is_point_inside(vec2 p_pos){
+    vec2 lt_pos = this->get_left_top();
+    vec2 ld_pos = this->get_left_down();
+    vec2 rd_pos = this->get_right_down();
+    vec2 rt_pos = this->get_right_top();
+
+    vec3 rect_dir[4] = {
+        vec3(ld_pos - lt_pos, 0.0f),
+        vec3(rd_pos - ld_pos, 0.0f),
+        vec3(rt_pos - rd_pos, 0.0f),
+        vec3(lt_pos - rt_pos, 0.0f),
+    };
+    vec3 pos_dir[4] = {
+        vec3(p_pos - lt_pos, 0.0f),
+        vec3(p_pos - ld_pos, 0.0f),
+        vec3(p_pos - rd_pos, 0.0f),
+        vec3(p_pos - rt_pos, 0.0f),
+    };
+    float cross_ret[4] = {
+        glm::cross(rect_dir[0], pos_dir[0]).z,
+        glm::cross(rect_dir[1], pos_dir[1]).z,
+        glm::cross(rect_dir[2], pos_dir[2]).z,
+        glm::cross(rect_dir[3], pos_dir[3]).z,
+    };
+
+    if(cross_ret[0] * cross_ret[1] < 0) return false;
+    if(cross_ret[1] * cross_ret[2] < 0) return false;
+    if(cross_ret[2] * cross_ret[3] < 0) return false;
+    if(cross_ret[3] * cross_ret[0] < 0) return false;
+
+    return true;
+}

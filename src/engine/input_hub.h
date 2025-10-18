@@ -3,13 +3,14 @@
 #include "DecToolsBox/abstract/singleton.h"
 #include "SDL3/SDL_events.h"
 #include <glm/glm.hpp>
+#include <set>
+#include <unordered_set>
+#include "engine/input_key.h"
 
 using namespace glm;
 
-class EngineEventHub : public Singleton<EngineEventHub>{
+class EngineInputHub : public Singleton<EngineInputHub>{
 private:
-    SDL_Event m_sdl_event;
-
     vec2 m_mouse_position;
     vec2 m_mouse_wheel;
     bool m_mouse_left_button_just_clicked = false;
@@ -21,7 +22,14 @@ private:
 
     bool m_is_close_requested = false;
     SDL_WindowID m_close_window_id;
-
+    
+    std::unordered_set<EngineKeycode> m_keyboard_down_buffer;
+    std::unordered_set<EngineKeycode> m_keyboard_just_down_buffer;
+    std::unordered_set<EngineKeycode> m_keyboard_just_up_buffer;
+    void m_redirect_keyboard_down_buffer(SDL_Keycode p_key);
+    void m_redirect_keyboard_up_buffer(SDL_Keycode p_key);
+    void m_store_keyboard_down_buffer(SDL_Keycode p_key);
+    void m_store_keyboard_up_buffer(SDL_Keycode p_key);
 public:
     vec2 get_mouse_position();
     vec2 get_mouse_world_position();
@@ -35,6 +43,10 @@ public:
 
     bool is_close_requested();
     Uint32 get_close_window_id();
+
+    bool keyboard_is_just_down(EngineKeycode p_key);
+    bool keyboard_is_just_up(EngineKeycode p_key);
+    bool keyboard_is_down(EngineKeycode p_key);
 
     void polling();
 };

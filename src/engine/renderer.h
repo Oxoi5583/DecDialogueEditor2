@@ -25,7 +25,11 @@ private:
     Binary basic_shader_programme;
 
 
-    struct { 
+    struct {
+        const int max_render_size = 500000;
+        const uint transform_location = 2;
+        uint color_location = 6;
+
         Binary VAO;
         Binary VBO;
         Binary EBO;
@@ -62,6 +66,10 @@ private:
     } m_rect_data;
 
     struct {
+        const int max_render_size = 500000;
+        const uint transform_location = 2;
+        const uint color_location = 6;
+
         Binary VAO;
         Binary VBO;
         Binary EBO;
@@ -99,6 +107,12 @@ private:
     } m_circle_data;
     
     struct {
+        const int max_render_size = 500000;
+        const uint instance_width_location = 1;
+        const uint instance_start_location = 2;
+        const uint instance_end_location = 3;
+        const uint color_location = 10;
+
         Binary VAO;
         Binary VBO;
         Binary EBO;

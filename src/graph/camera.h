@@ -22,6 +22,7 @@ private:
     void m_job_update_window_size_buffer();
     void m_job_update_view();
     void m_job_update_projection();
+    void m_job_update_control();
 public:
     GraphCamera()
     : m_view(mat4(1.0f))
