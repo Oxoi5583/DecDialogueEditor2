@@ -234,7 +234,7 @@ public:
             if(d_front == nullptr && d_back == nullptr){
                 first = nullptr;
                 last = nullptr;
-            }
+            } 
             if(d_front == nullptr && d_back != nullptr){
                 storage[d_back].front = nullptr;
                 first = d_back;
