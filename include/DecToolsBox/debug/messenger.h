@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <memory>
@@ -72,12 +71,6 @@ class DebugOutputWrapper : public OutputWrapper{
 public:
     void print(std::string p_str) override{
         std::cout << "\033[34m" << p_str << "\033[0m" << std::endl;
-    }
-};
-class SuccessOutputWrapper : public OutputWrapper{
-public:
-    void print(std::string p_str) override{
-        std::cout << "\033[32m" << p_str << "\033[0m" << std::endl;
     }
 };
 	
@@ -168,36 +161,17 @@ private:
         ret += "[";
         ret += m_type;
         ret += "]";
-
-        int padding_space_count1 = 10 - ret.length();
-        for(int i = 0; i < padding_space_count1; i++){
-            ret += " ";
-        }
-
         ret += "[";
         ret += GetSystemTime();
         ret += "]";
-
-        int padding_space_count2 = 21 - ret.length();
-        for(int i = 0; i < padding_space_count2; i++){
-            ret += " ";
-        }
-
         if(m_caller != ""){
             ret += "[";
             ret += m_caller;
-            ret += "]";
+            ret += "] ";
         }else{
-            ret += " ";
+            ret+= " ";
         }
-
-        int padding_space_count3 = 50 - ret.length();
-        for(int i = 0; i < padding_space_count3; i++){
-            ret += " ";
-        }
-
-        ret += "|";
-
+        ret += "|| ";
         ret += m_stream.str();
 
         m_output->print(ret);
@@ -209,7 +183,6 @@ private:
 static Messenger debug_messenger = {std::make_unique<DebugOutputWrapper>(), "DEBUG"};
 static Messenger info_messenger = {std::make_unique<OutputWrapper>(), "INFO"};
 static Messenger error_messenger = {std::make_unique<ErrorOutputWrapper>(), "ERROR"};
-static Messenger success_messenger = {std::make_unique<SuccessOutputWrapper>(), "SUCCESS"};
 
 
 }
@@ -219,4 +192,3 @@ static Messenger success_messenger = {std::make_unique<SuccessOutputWrapper>(), 
 #define DEBUG_MSG(P_ARGS) DecToolsBox::debug_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
 #define INFO_MSG(P_ARGS) DecToolsBox::info_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
 #define ERROR_MSG(P_ARGS) DecToolsBox::error_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
-#define SUCCESS_MSG(P_ARGS) DecToolsBox::success_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END

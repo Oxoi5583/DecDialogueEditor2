@@ -231,6 +231,10 @@ public:
         if(storage.contains(p_ptr)){
             T* d_front = storage[p_ptr].front;
             T* d_back = storage[p_ptr].back;
+            if(d_front == nullptr && d_back == nullptr){
+                first = nullptr;
+                last = nullptr;
+            }
             if(d_front == nullptr && d_back != nullptr){
                 storage[d_back].front = nullptr;
                 first = d_back;

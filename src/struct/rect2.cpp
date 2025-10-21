@@ -78,7 +78,7 @@ std::vector<vec2> Rect2::get_points() const{
 }
 
 
-bool Rect2::is_point_inside(vec2 p_pos){
+bool Rect2::is_point_intersect(vec2 p_pos){
     vec2 lt_pos = this->get_left_top();
     vec2 ld_pos = this->get_left_down();
     vec2 rd_pos = this->get_right_down();

@@ -31,5 +31,6 @@ public:
     GraphGrid();
     std::vector<GraphGridLine> get_range_lines(float p_lefttop_x, float p_lefttop_y,
                                                float p_rightdown_x, float p_rightdown_y);
+    void init();
     void draw();
 };

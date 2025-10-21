@@ -48,6 +48,6 @@ public:
     bool keyboard_is_just_up(EngineKeycode p_key);
     bool keyboard_is_down(EngineKeycode p_key);
 
-    void polling();
+    void polling_sdl_event();
 };
 

@@ -23,19 +23,19 @@ bool MouseServer::m_is_clicked_on_world(){
 }
 void MouseServer::m_emit_event_if_left_just_clicked_on_world(){
     if(m_is_just_clicked_on_world()){
-        EventMouseJustClickedOnWorld event = {m_world_mouse_pos};
+        EventMouseJustClickedOnWorld event = {true, m_world_mouse_pos};
         EventServer::Ref()->emit(event);
     }
 }
 void MouseServer::m_emit_event_if_left_clicked_on_world(){
     if(m_is_clicked_on_world()){
-        EventMouseClickedOnWorld event = {m_world_mouse_pos};
+        EventMouseClickedOnWorld event = {true, m_world_mouse_pos};
         EventServer::Ref()->emit(event);
     }
 }
 void MouseServer::m_emit_event_if_left_released(){
     if(EngineInputHub::Ref()->is_mouse_left_button_just_released()){
-        EventMouseReleased event = {m_world_mouse_pos};
+        EventMouseReleased event = {true, m_world_mouse_pos};
         EventServer::Ref()->emit(event);
     }
 }

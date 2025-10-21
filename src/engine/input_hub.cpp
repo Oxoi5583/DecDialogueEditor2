@@ -10,7 +10,7 @@
 #include "imgui/backends/imgui_impl_sdl3.h"
 #include <unordered_set>
 
-void EngineInputHub::polling(){
+void EngineInputHub::polling_sdl_event(){
     m_mouse_wheel = vec2();
     m_mouse_left_button_just_clicked = false;
     m_mouse_right_button_just_clicked = false;

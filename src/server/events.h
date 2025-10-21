@@ -4,15 +4,19 @@
 
 using namespace glm;
 
-struct EventMouseJustClickedOnWorld{
+struct EventBase{
+    bool is_event_occurred = false;
+};
+
+struct EventMouseJustClickedOnWorld : public EventBase{
     vec2 click_pos;
 };
 
-struct EventMouseClickedOnWorld{
+struct EventMouseClickedOnWorld : public EventBase{
     vec2 click_pos;
 };
 
-struct EventMouseReleased{
+struct EventMouseReleased : public EventBase{
     vec2 click_pos;
 };
 

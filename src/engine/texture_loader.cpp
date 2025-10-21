@@ -24,9 +24,14 @@ void EngineTextureLoader::load(){
         }
     }
 }
+void EngineTextureLoader::init(){
+    load();
+}
 
 bool EngineTextureLoader::m_load_texture(){
     m_texture_array_index.clear();
+
+    int error_found = 0;
 
     if(!m_is_first_load){
         glDeleteTextures(1, &m_texture_array);
@@ -45,6 +50,7 @@ bool EngineTextureLoader::m_load_texture(){
         std::cout << "GL_RENDERER: " << glGetString(GL_RENDERER) << std::endl;
         ERROR_MSG("Current OpenGL Version : " << reinterpret_cast<const char*>(glGetString(GL_VERSION)));
         ERROR_MSG("Please upgrade OpenGL to >4.2 version.");
+        error_found++;
     }
 
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, log2(std::max(m_width, m_height)) + 1, GL_RGBA, m_width, m_height, m_file_names.size());
@@ -56,40 +62,30 @@ bool EngineTextureLoader::m_load_texture(){
 
         if(!fs::exists(file_name)){
             ERROR_MSG("Texture file not exists : " << file_name);
+            error_found++;
             continue;
         }
 
         fs::path fs_file_name = fs::path(file_name);
         if(fs_file_name.extension().string() != ".png"){
             ERROR_MSG("Texture file is not .png : " << file_name);
+            error_found++;
             continue;
         }
-
         
         int w, h, channels;
         unsigned char* data = stbi_load(file_name.c_str(), &w, &h, &channels, 4);
-        /*
-        GLuint texture_data;
-        glGenTextures(1, &texture_data);
-        glBindTexture(GL_TEXTURE_2D, texture_data);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        */
         
         bool is_image_loaded = true;
         if(data == nullptr){
             is_image_loaded = false;
             ERROR_MSG("Texture is not able to read : " << file_name);
+            error_found++;
         }
         if(w != m_width || h != m_height){
             is_image_loaded = false;
             ERROR_MSG("Texture size is not " << m_width << "," << m_height << " : " << file_name);
+            error_found++;
         }
 
         if(is_image_loaded){
@@ -101,8 +97,19 @@ bool EngineTextureLoader::m_load_texture(){
             SUCCESS_MSG("Texture loaded successfully : " << file_name);
         }else{
             ERROR_MSG("Texture loading failed : " << file_name);
+            error_found++;
         }
 
         stbi_image_free(data);
     }
+
+    if(error_found){
+        return false;
+    }else{
+        return true;
+    }
+}
+
+GLuint& EngineTextureLoader::get_data(){
+    return m_texture_array;
 }

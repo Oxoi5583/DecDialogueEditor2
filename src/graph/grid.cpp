@@ -9,9 +9,7 @@
 #include <vector>
 
 
-GraphGrid::GraphGrid(){
-    m_create_grid();
-}
+GraphGrid::GraphGrid(){}
 void GraphGrid::m_create_grid(){
     double size_x = m_grid_columns * m_grid_interval;
     double size_y = m_grid_rows * m_grid_interval;
@@ -35,7 +33,9 @@ void GraphGrid::m_create_grid(){
         m_vertical_lines.emplace(fm_line_x,line);
     }
 }
-
+void GraphGrid::init(){
+    m_create_grid();
+}
 void GraphGrid::draw(){
     m_color = ThemeLoader::Ref()->get_color("SecondaryColour1");
 

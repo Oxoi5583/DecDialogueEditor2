@@ -32,5 +32,5 @@ public:
     vec2 get_center() const;
     std::vector<vec2> get_points() const;
 
-    bool is_point_inside(vec2 p_pos);
+    bool is_point_intersect(vec2 p_pos);
 };

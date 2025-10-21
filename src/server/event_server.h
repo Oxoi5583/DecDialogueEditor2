@@ -21,6 +21,18 @@ public:
         return ret;
     }
     template<typename EventType>
+    EventType poll_first(){
+        if(!m_events_buffer.contains(typeid(EventType))){
+            return EventType();
+        }
+        EventType ret;
+        for(const std::any& a : m_events_buffer[typeid(EventType)]){
+            ret = std::any_cast<EventType>(a);
+            break;
+        }
+        return ret;
+    }
+    template<typename EventType>
     bool has(){
         if(!m_events_buffer.contains(typeid(EventType))){
             return false;
