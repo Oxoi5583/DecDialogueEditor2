@@ -56,7 +56,16 @@ void TimerServer::update(double delta){
 
 
 
-Timer* TimerServer::CreateTimer(double _full_time, bool is_finished){
+Timer* TimerServer::create_timer(TimeUnit _time_unit, bool is_finished){
+    timer_list.push_back(std::shared_ptr<Timer>(new Timer(_time_unit.get_delta())));
+
+    if(is_finished){
+        timer_list.back()->finish();
+    }
+    
+    return timer_list.back().get();
+}
+Timer* TimerServer::create_timer(double _full_time, bool is_finished){
     timer_list.push_back(std::shared_ptr<Timer>(new Timer(_full_time)));
 
     if(is_finished){
@@ -65,7 +74,7 @@ Timer* TimerServer::CreateTimer(double _full_time, bool is_finished){
     
     return timer_list.back().get();
 }
-Timer* TimerServer::CreateTimer(double* _full_time_ptr, bool is_finished){
+Timer* TimerServer::create_timer(double* _full_time_ptr, bool is_finished){
     timer_list.push_back(std::shared_ptr<Timer>(new Timer((double*)_full_time_ptr)));
 
     if(is_finished){
@@ -103,9 +112,59 @@ TimerId::TimerId(){
     id[12] = '\0';
 }
 
-TimerId::~TimerId(){
+TimeUnit::TimeUnit(const TimeUnit& other)
+    : m_type(other.m_type)
+    , m_value(other.m_value)
+    , m_delta(other.m_delta) {}
 
+TimeUnit& TimeUnit::operator=(const TimeUnit& other) {
+    if (this != &other) {
+        m_type = other.m_type;
+        m_value = other.m_value;
+        m_delta = other.m_delta;
+    }
+    return *this;
 }
+
+TimeUnit::TimeUnit(TimeUnit&& other) noexcept
+    : m_type(other.m_type)
+    , m_value(other.m_value)
+    , m_delta(other.m_delta) {}
+
+TimeUnit& TimeUnit::operator=(TimeUnit&& other) noexcept {
+    if (this != &other) {
+        m_type = other.m_type;
+        m_value = other.m_value;
+        m_delta = other.m_delta;
+    }
+    return *this;
+}
+
+uint32_t TimeUnit::get_delta() const{
+    return m_delta;
+}
+
+uint32_t TimeUnit::m_calculate_delta() const{
+    switch (m_type) {
+        case Type::MILLISECOND:
+            return m_value;
+            break;
+        case Type::SECOND:
+            return m_value * 1000; 
+            break;
+        case Type::MINUTE:
+            return m_value * 60000;
+            break;
+        case Type::HOUR:
+            return m_value * 3600000;
+            break;
+        case Type::DAY:
+            return m_value * 86400000;
+            break;
+    }
+}
+
+
 
 // Init Class with pointer
 // In case, Timer created before the origin value was not init.

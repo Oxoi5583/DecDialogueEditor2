@@ -234,7 +234,7 @@ public:
             if(d_front == nullptr && d_back == nullptr){
                 first = nullptr;
                 last = nullptr;
-            } 
+            }
             if(d_front == nullptr && d_back != nullptr){
                 storage[d_back].front = nullptr;
                 first = d_back;
@@ -269,11 +269,56 @@ public:
             }
             return *this;
         }
+        inline Iterator& operator++(int) {
+            auto it = storage->find(current);
+            if (it != storage->end()) {
+                current = it->second.back;
+            } else {
+                current = nullptr;
+            }
+            return *this;
+        }
         inline bool operator!=(const Iterator& other) const { return current != other.current; }
+        inline T* operator->() const { return current; }
     };
 
     Iterator begin() { return Iterator(first, &storage); }
     Iterator end() { return Iterator(nullptr, &storage); }
+
+    
+    class ReverseIterator {
+    private:
+        T* current;
+        std::map<T*, Arrow>* storage;
+
+    public:
+        ReverseIterator(T* start, std::map<T*, Arrow>* storage) : current(start), storage(storage) {}
+
+        inline T* operator*() { return current; }
+        inline ReverseIterator& operator++() {
+            auto it = storage->find(current);
+            if (it != storage->begin()) {
+                current = it->second.front;
+            } else {
+                current = nullptr;
+            }
+            return *this;
+        }
+        inline ReverseIterator& operator++(int) {
+            auto it = storage->find(current);
+            if (it != storage->begin()) {
+                current = it->second.front;
+            } else {
+                current = nullptr;
+            }
+            return *this;
+        }
+        inline bool operator!=(const ReverseIterator& other) const { return current != other.current; }
+        inline T* operator->() const { return current; }
+    };
+
+    ReverseIterator rev_begin() { return ReverseIterator(last, &storage); }
+    ReverseIterator rev_end() { return ReverseIterator(nullptr, &storage); }
 
     inline std::vector<T*> get_vector(){
         std::vector<T*> ret;
@@ -291,3 +336,9 @@ public:
         return ret;
     }
 };
+
+/*
+Note :
+Add Reverse Iterator
+
+*/

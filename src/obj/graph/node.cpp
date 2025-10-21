@@ -1,7 +1,8 @@
-#include "graph/node.h"
+#include "obj/graph/node.h"
+#include "server/object_server.h"
 
 GraphNode::GraphNode(){
-
+    BIND_CLASS(GraphNode);
 }
 GraphNode::~GraphNode(){
 

@@ -25,4 +25,10 @@ void TestObj::post_process(){
     DEBUG_MSG("POST-PROCESS");
 
 }
+void TestObj::draw(){
+    DEBUG_MSG("POST-PROCESS");
+
+}
+
+
 

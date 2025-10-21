@@ -1,8 +1,11 @@
 #pragma once
 
 #include "DecToolsBox/abstract./singleton.h"
+#include "SDL3/SDL_stdinc.h"
+#include <cstdint>
 
 class Timer;
+class TimeUnit;
 
 typedef std::vector<std::shared_ptr<Timer>> TimerList;
 
@@ -23,8 +26,9 @@ public:
     ~TimerServer();
 
     void update(double delta);
-    Timer* CreateTimer(double _full_time, bool is_finished = false);
-    Timer* CreateTimer(double* _full_time_ptr, bool is_finished = false);
+    Timer* create_timer(TimeUnit _time_unit, bool is_finished = false);
+    Timer* create_timer(double _full_time, bool is_finished = false);
+    Timer* create_timer(double* _full_time_ptr, bool is_finished = false);
 
     void free_all();
     int get_timer_count();
@@ -36,11 +40,40 @@ class TimerId{
     public:
         char id[13];
         TimerId();
-        ~TimerId();
+        ~TimerId() = default;
         bool operator ==(const TimerId& other) const;
         bool operator ==(const std::string& other) const;
 };
 
+class TimeUnit{
+public:
+    enum class Type{
+        MILLISECOND,
+        SECOND,
+        MINUTE,
+        HOUR,
+        DAY
+    };
+
+    TimeUnit(Type p_type, double p_value)
+    : m_type(p_type)
+    , m_value(p_value)
+    , m_delta(m_calculate_delta()){};
+    ~TimeUnit(){};
+    TimeUnit(const TimeUnit& other);
+    TimeUnit& operator=(const TimeUnit& other);
+    TimeUnit(TimeUnit&& other) noexcept;
+    TimeUnit& operator=(TimeUnit&& other) noexcept;
+
+
+    uint32_t get_delta() const;
+private:
+    Type m_type;
+    double m_value;
+    uint32_t m_delta;
+
+    uint32_t m_calculate_delta() const;
+};
 
 class Timer{
 

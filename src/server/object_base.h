@@ -9,8 +9,8 @@ class ObjectServer;
 
 class ObjectBase{
 private:
-    OID m_next_id = 100;
-    OID fetch_id();
+    static OID m_next_id;
+    static OID fetch_id();
 
     const OID m_id;
     bool m_is_alive = true;

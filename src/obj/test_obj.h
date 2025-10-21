@@ -14,4 +14,5 @@ public:
     void pre_process();
     void process();
     void post_process();
+    void draw();
 };

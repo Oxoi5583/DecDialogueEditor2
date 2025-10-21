@@ -1,5 +1,6 @@
 #include "server/object_base.h"
 
+OID ObjectBase::m_next_id = 100;
 
 OID ObjectBase::fetch_id(){
     OID return_id = m_next_id;

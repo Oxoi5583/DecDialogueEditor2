@@ -20,3 +20,6 @@ struct EventMouseReleased : public EventBase{
     vec2 click_pos;
 };
 
+struct EventSpawnNode : public EventBase{
+    vec2 spawn_pos;
+};

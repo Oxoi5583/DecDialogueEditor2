@@ -3,8 +3,10 @@
 #include "engine/texture_loader.h"
 #include "graph/camera.h"
 #include "graph/grid.h"
+#include "obj/graph/manager.h"
 #include "obj/test_obj.h"
 #include "server/event_server.h"
+#include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
@@ -36,15 +38,12 @@ int main(int argc, char* argv[]) {
 
     GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();
-
     
-    TestObj* obj = ObjectServer::Ref()->create_object<TestObj>();
-    OID id = obj->get_id();
-    DEBUG_MSG("Test Obj Id : " << id);
-    DEBUG_MSG("Is Alive : " << ObjectServer::Ref()->is_id_valid(id));
+    GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
 
-    obj->queue_free();
-    
+    Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
+    test_timer->start();
+
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
 
@@ -61,14 +60,15 @@ int main(int argc, char* argv[]) {
 
         GraphGrid::Ref()->draw();
 
-
         ObjectServer::Ref()->ready();
         ObjectServer::Ref()->pre_process();
         ObjectServer::Ref()->process();
         ObjectServer::Ref()->post_process();
+        ObjectServer::Ref()->draw();
 
-        //DEBUG_MSG("Is Alive : " << ObjectServer::Ref()->is_id_valid(id));
-
+        if(test_timer->timeout_and_reset()){
+            EventServer::Ref()->emit(EventSpawnNode({true, {0.0f,0.0f}}));
+        }
 
         EngineRenderer::Ref()->render();
         EngineWindow::Ref()->end();
