@@ -1,4 +1,4 @@
-[submodule "DecToolsBox"]
-	path = ./include/DecToolsBox
+[submodule "include/DecToolsBox"]
+	path = include/DecToolsBox
 	url = https://github.com/Oxoi5583/DecToolsBox.git
 	branch = main

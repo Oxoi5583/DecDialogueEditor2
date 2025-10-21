@@ -73,12 +73,7 @@ public:
         std::cout << "\033[34m" << p_str << "\033[0m" << std::endl;
     }
 };
-class SuccessOutputWrapper : public OutputWrapper{
-public:
-    void print(std::string p_str) override{
-        std::cout << "\033[92m" << p_str << "\033[0m" << std::endl;
-    }
-};
+	
 
 enum class Flag{
     FLAG__END,
@@ -188,7 +183,6 @@ private:
 static Messenger debug_messenger = {std::make_unique<DebugOutputWrapper>(), "DEBUG"};
 static Messenger info_messenger = {std::make_unique<OutputWrapper>(), "INFO"};
 static Messenger error_messenger = {std::make_unique<ErrorOutputWrapper>(), "ERROR"};
-static Messenger success_messenger = {std::make_unique<SuccessOutputWrapper>(), "SUCCESS"};
 
 
 }
@@ -198,4 +192,3 @@ static Messenger success_messenger = {std::make_unique<SuccessOutputWrapper>(), 
 #define DEBUG_MSG(P_ARGS) DecToolsBox::debug_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
 #define INFO_MSG(P_ARGS) DecToolsBox::info_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
 #define ERROR_MSG(P_ARGS) DecToolsBox::error_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
-#define SUCCESS_MSG(P_ARGS) DecToolsBox::success_messenger << DecToolsBox::GetCallerInfo(std::source_location::current())  << P_ARGS << DecToolsBox::Flag::FLAG__END
