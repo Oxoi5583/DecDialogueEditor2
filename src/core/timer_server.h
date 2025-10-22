@@ -98,6 +98,14 @@ public:
     void modify_full_time_and_finish(double _t);
     void jump_to(double _t);
 
+    bool timeout_and_reset_in_cycle(uint32_t cycle, double interval = 0);
+    bool timeout_and_reset_in_cycle(uint32_t cycle, TimeUnit interval);
+    bool is_cycle_done();
+    void reset_cycle();
+    void finish_cycle();
+    int get_current_cycle();
+
+
     Timer(Timer& t);
 
     enum class Mode{
@@ -111,6 +119,17 @@ public:
     friend class std::vector<std::unique_ptr<Timer>>;
 
 private:
+    static constexpr int default_max_run_cycle = -1;
+    int max_run_cycle = -1;
+    int run_cycle = -1;
+
+    bool is_interval_done();
+    void reset_interval();
+    bool is_cycle_interval_start = false;
+    double cycle_interval = 0;
+    double max_cycle_interval = 0;
+
+
     TimerId id = TimerId();
     Timer::Mode state = Timer::Mode::ST_TIMER_ENABLE;
     double time = 0;

@@ -9,7 +9,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "imgui/imgui.h"
-#include "struct/rect2.h"
+#include "struct/shape/rect2.h"
 
 void GraphCamera::init(){
     m_rect = Rect2(vec2(0.0f,0.0f), vec2(0.0f,0.0f));

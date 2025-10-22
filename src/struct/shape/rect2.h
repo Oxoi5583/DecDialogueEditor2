@@ -1,14 +1,18 @@
 #pragma once
 
 #include "glm/ext/vector_float2.hpp"
+#include "struct/shape/base.h"
 #include <vector>
 
 using namespace glm;
 
-struct Rect2{
+struct Rect2 : public ShapeBase {
 private:
     vec2 m_position;
     vec2 m_size;
+
+    bool m_cross_product(vec2 p_pos);
+    bool m_compare_xy(vec2 p_pos);
 public:
     Rect2();
     Rect2(const vec2& p_position, const vec2& p_size);
@@ -32,5 +36,5 @@ public:
     vec2 get_center() const;
     std::vector<vec2> get_points() const;
 
-    bool is_point_intersect(vec2 p_pos);
+    bool is_point_intersect(vec2 p_pos) override;
 };

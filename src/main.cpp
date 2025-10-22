@@ -4,7 +4,6 @@
 #include "graph/camera.h"
 #include "graph/grid.h"
 #include "obj/graph/manager.h"
-#include "obj/test_obj.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -52,7 +51,6 @@ int main(int argc, char* argv[]) {
         
         double delta = EngineWindow::Ref()->get_delta();
 
-        EventServer::Ref()->flush();
         MouseServer::Ref()->update();
         GraphCamera::Ref()->update();
         TimerServer::Ref()->update(delta);
@@ -66,9 +64,24 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->post_process();
         ObjectServer::Ref()->draw();
 
-        if(test_timer->timeout_and_reset()){
-            EventServer::Ref()->emit(EventSpawnNode({true, {0.0f,0.0f}}));
+        if(test_timer->timeout_and_reset_in_cycle(3)){
+            DEBUG_MSG("Spawn!!");
+            EventSpawnNode event;
+            event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
+            EventServer::Ref()->emit(event);
         }
+
+        if(EventServer::Ref()->has<EventMouseHoverObj>()){
+            EventMouseHoverObj event = EventServer::Ref()->poll_first<EventMouseHoverObj>();
+            if(event.is_event_occurred){
+                vec2 pos = EventServer::Ref()->poll_first<EventMouseHoverObj>().hovering_pos;
+                DEBUG_MSG("Hovering " << event.obj_id);
+                EngineRenderer::Ref()->draw_circle(event.hovering_pos, 5.0f, vec4(0.0f,1.0f,1.0f,1.0f), 0);
+                EngineRenderer::Ref()->draw_rect({event.hovering_pos, vec2(15.0f,15.0f)}, vec4(0.0f,1.0f,1.0f,1.0f), 0);
+            }
+        }
+
+        EventServer::Ref()->flush();
 
         EngineRenderer::Ref()->render();
         EngineWindow::Ref()->end();

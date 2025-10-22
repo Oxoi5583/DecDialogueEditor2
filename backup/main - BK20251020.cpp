@@ -12,7 +12,7 @@
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
-#include "struct/rect2.h"
+#include "struct/shape/rect2.h"
 #include <cstddef>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>

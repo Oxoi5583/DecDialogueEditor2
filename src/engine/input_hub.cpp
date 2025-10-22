@@ -5,7 +5,7 @@
 
 #include "SDL3/SDL_events.h"
 #include "glm/ext/vector_float2.hpp"
-#include "struct/rect2.h"
+#include "struct/shape/rect2.h"
 
 #include "imgui/backends/imgui_impl_sdl3.h"
 #include <unordered_set>

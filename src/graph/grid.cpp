@@ -3,7 +3,7 @@
 #include "config/config_loader.h"
 #include "engine/renderer.h"
 #include "graph/camera.h"
-#include "struct/rect2.h"
+#include "struct/shape/rect2.h"
 #include "theme/theme_loader.h"
 #include <cstddef>
 #include <vector>

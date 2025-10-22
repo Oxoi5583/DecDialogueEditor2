@@ -12,7 +12,7 @@
 void ObjectServer::ready(){
     for(auto it = m_process_list.begin(); it != m_process_list.end(); ++it){
         OID id = it->get_id();
-        DEBUG_MSG("OID (ready) : " << id);
+        //DEBUG_MSG("OID (ready) : " << id);
         if(it->is_alive() && !it->is_ready()){
             auto& functions = m_ready_functions[id];
             for(auto function : functions){
@@ -26,7 +26,7 @@ void ObjectServer::ready(){
 void ObjectServer::pre_process(){
     for(auto it = m_process_list.begin(); it != m_process_list.end(); ++it){
         OID id = it->get_id();
-        DEBUG_MSG("OID (pre_process) : " << id);
+        //DEBUG_MSG("OID (pre_process) : " << id);
         if(it->is_alive() && it->is_ready()){
             auto& functions = m_pre_process_functions[id];
             for(auto function : functions){
@@ -38,7 +38,7 @@ void ObjectServer::pre_process(){
 void ObjectServer::process(){
     for(auto it = m_process_list.begin(); it != m_process_list.end(); ++it){
         OID id = it->get_id();
-        DEBUG_MSG("OID (process) : " << id);
+        //DEBUG_MSG("OID (process) : " << id);
         if(it->is_alive() && it->is_ready()){
             auto& functions = m_process_functions[id];
             for(auto function : functions){
@@ -50,7 +50,7 @@ void ObjectServer::process(){
 void ObjectServer::post_process(){
     for(auto it = m_process_list.begin(); it != m_process_list.end(); ++it){
         OID id = it->get_id();
-        DEBUG_MSG("OID (post_process) : " << id);
+        //DEBUG_MSG("OID (post_process) : " << id);
         if(it->is_alive() && it->is_ready()){
             auto& functions = m_post_process_functions[id];
             for(auto function : functions){
@@ -62,7 +62,7 @@ void ObjectServer::post_process(){
 void ObjectServer::draw(){
     for(auto it = m_process_list.rev_begin(); it != m_process_list.rev_end(); ++it){
         OID id = it->get_id();
-        DEBUG_MSG("OID (draw) : " << id);
+        //DEBUG_MSG("OID (draw) : " << id);
         if(it->is_alive() && it->is_ready()){
             auto& functions = m_draw_functions[id];
             for(auto function : functions){
@@ -76,7 +76,7 @@ void ObjectServer::m_add_buffer_to_process_list(){
     while(!m_obj_buffer.empty()){
         ObjectBase* ptr = m_obj_buffer.front();
         OID new_id = ptr->get_id();
-        m_process_list.push_back(ptr);
+        m_process_list.push_front(ptr);
         m_obj_buffer.pop();
     }
 }

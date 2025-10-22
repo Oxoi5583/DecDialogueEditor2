@@ -200,6 +200,9 @@ void Timer::update(double delta){
     if(this->is_enabled()){
         time = std::clamp(time + delta ,(double)0 , this->full_time);
     }
+    if(this->is_enabled() && is_cycle_interval_start){
+        cycle_interval = std::clamp(cycle_interval + delta ,(double)0 , this->max_cycle_interval);
+    }
 }
 
 void Timer::reset(){
@@ -269,4 +272,55 @@ TimerId Timer::get_id(){
 }
 void Timer::jump_to(double _t){
     this->time = std::clamp<double>(_t, 0, full_time);
+}
+
+
+bool Timer::timeout_and_reset_in_cycle(uint32_t cycle, double interval){
+    if(max_run_cycle == default_max_run_cycle){
+        max_run_cycle = (int)cycle;
+        reset_cycle();
+        max_cycle_interval = interval;
+        reset_interval();
+    }
+
+    if(!is_timeout()){
+        return false;
+    }
+
+    is_cycle_interval_start = true;
+
+    if(is_cycle_done()){
+        return false;
+    }
+    
+    if(is_interval_done()){
+        this->reset();
+        this->reset_interval();
+        run_cycle++;
+    }
+    
+    return true;
+}
+bool Timer::timeout_and_reset_in_cycle(uint32_t cycle, TimeUnit interval){
+    return timeout_and_reset_in_cycle(cycle, interval.get_delta());
+}
+bool Timer::is_cycle_done(){
+    return (run_cycle > max_run_cycle &&  max_run_cycle != default_max_run_cycle);
+}
+void Timer::reset_cycle(){
+    run_cycle = 1;
+}
+void Timer::finish_cycle(){
+    run_cycle = max_run_cycle + 100;
+}
+int Timer::get_current_cycle(){
+    return run_cycle;
+}
+
+bool Timer::is_interval_done(){
+    return cycle_interval >= max_cycle_interval;
+}
+void Timer::reset_interval(){
+    cycle_interval = 0.0f;
+    is_cycle_interval_start = false;
 }

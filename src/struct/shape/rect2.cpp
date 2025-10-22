@@ -1,4 +1,4 @@
-#include "struct/rect2.h"
+#include "struct/shape/rect2.h"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/geometric.hpp"
@@ -78,7 +78,7 @@ std::vector<vec2> Rect2::get_points() const{
 }
 
 
-bool Rect2::is_point_intersect(vec2 p_pos){
+bool Rect2::m_cross_product(vec2 p_pos){
     vec2 lt_pos = this->get_left_top();
     vec2 ld_pos = this->get_left_down();
     vec2 rd_pos = this->get_right_down();
@@ -109,4 +109,22 @@ bool Rect2::is_point_intersect(vec2 p_pos){
     if(cross_ret[3] * cross_ret[0] < 0) return false;
 
     return true;
+}
+
+bool Rect2::m_compare_xy(vec2 p_pos){
+    vec2 left_top = get_left_top();
+    vec2 right_down = get_right_down();
+    
+    if(p_pos.x < left_top.x || p_pos.x > right_down.x){
+        return false;
+    }
+    if(p_pos.y < left_top.y || p_pos.y > right_down.y){
+        return false;
+    }
+    
+    return true;
+}
+
+bool Rect2::is_point_intersect(vec2 p_pos){
+    return m_compare_xy(p_pos);
 }

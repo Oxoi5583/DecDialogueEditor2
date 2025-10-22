@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <struct/rect2.h>
+#include <struct/shape/rect2.h>
 #include <vector>
 #include "DecToolsBox/abstract/singleton.h"
 #include "engine/texture_loader.h"
