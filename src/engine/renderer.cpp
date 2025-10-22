@@ -38,17 +38,21 @@ layout (location = 2) in mat4 transform;
 
 uniform mat4 view;
 uniform mat4 projection;
+uniform sampler2DArray texture_array;
 
 layout (location = 6) in vec4 i_color;
+layout (location = 7) in int i_texture_layer;
 
 out vec4 f_color;
 out vec2 f_uv;
+flat out int f_texture_layer;
 
 void main() {
     gl_Position = projection * view * transform * vec4(a_pos, 0.0, 1.0);
 
     f_color = i_color;
     f_uv = a_uv;
+    f_texture_layer = i_texture_layer;
 }
 )";
 
@@ -56,11 +60,18 @@ const char* instanced_rect_fragment_shader_src = R"(
 #version 330 core
 in vec4 f_color;
 in vec2 f_uv;
+flat in int f_texture_layer;
 
 out vec4 FragColor;
 
+uniform sampler2DArray texture_array;
+
 void main() {
-    FragColor = f_color;
+    if(f_texture_layer == -1){
+        FragColor = f_color;
+    }else{
+        FragColor = texture(texture_array, vec3(f_uv, f_texture_layer));
+    }
 }
 )";
 
@@ -231,6 +242,7 @@ void EngineRenderer::init(){
 void EngineRenderer::m_init_uniform_loc(){
     m_rect_data.view_loc = glGetUniformLocation(m_rect_data.shader.programme, "view");
     m_rect_data.projection_loc = glGetUniformLocation(m_rect_data.shader.programme, "projection");
+    m_rect_data.texture_data_loc = glGetUniformLocation(m_rect_data.shader.programme, "texture_array");
 
     m_circle_data.view_loc = glGetUniformLocation(m_circle_data.shader.programme, "view");
     m_circle_data.projection_loc = glGetUniformLocation(m_circle_data.shader.programme, "projection");
@@ -274,6 +286,14 @@ void EngineRenderer::m_init_render_rect(){
     glVertexAttribPointer(m_rect_data.color_location, 4, GL_FLOAT, GL_FALSE,4 * sizeof(float), (void*)(0));
     glEnableVertexAttribArray(m_rect_data.color_location);
     glVertexAttribDivisor(m_rect_data.color_location, 1);
+
+
+    glGenBuffers(1, &m_rect_data.instance_data.texture_layer_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_rect_data.instance_data.texture_layer_vbo);
+    glBufferData(GL_ARRAY_BUFFER, m_rect_data.max_render_size * sizeof(int), nullptr, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(m_rect_data.texture_layer_location, 1, GL_FLOAT, GL_FALSE, sizeof(int), (void*)(0));
+    glEnableVertexAttribArray(m_rect_data.texture_layer_location);
+    glVertexAttribDivisor(m_rect_data.texture_layer_location, 1);
 }
 void EngineRenderer::m_render_rect(){
     glBindVertexArray(m_rect_data.VAO);
@@ -285,8 +305,15 @@ void EngineRenderer::m_render_rect(){
     glBindBuffer(GL_ARRAY_BUFFER, m_rect_data.instance_data.color_vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, m_rect_data.colors.size() * sizeof(vec4), m_rect_data.colors.data());
 
+    glBindBuffer(GL_ARRAY_BUFFER, m_rect_data.instance_data.texture_layer_vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, m_rect_data.texture_layers.size() * sizeof(int), m_rect_data.texture_layers.data());
+
     glUniformMatrix4fv(m_rect_data.view_loc, 1, GL_FALSE, glm::value_ptr(m_view_buffer));
     glUniformMatrix4fv(m_rect_data.projection_loc, 1, GL_FALSE, glm::value_ptr(m_projection_buffer));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texture_data);
+    glUniform1i(m_rect_data.texture_data_loc, 0);
 
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_rect_data.transforms.size()));
 }
@@ -504,12 +531,12 @@ void EngineRenderer::m_quick_clear_list(std::vector<T>& p_list){
 void EngineRenderer::clear_draw_list(){
     m_quick_clear_list(m_rect_data.transforms);
     m_quick_clear_list(m_rect_data.colors);
-    m_quick_clear_list(m_rect_data.texture_ids);
+    m_quick_clear_list(m_rect_data.texture_layers);
     
     m_quick_clear_list(m_circle_data.transforms);
     m_quick_clear_list(m_circle_data.radiuses);
     m_quick_clear_list(m_circle_data.colors);
-    m_quick_clear_list(m_circle_data.texture_ids);
+    m_quick_clear_list(m_circle_data.texture_layers);
     
     m_quick_clear_list(m_line_data.fm_points);
     m_quick_clear_list(m_line_data.to_points);
@@ -520,7 +547,7 @@ void EngineRenderer::clear_draw_list(){
 
 void EngineRenderer::draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id){
     if(m_rect_data.colors.size() < m_rect_data.max_render_size){
-        m_rect_data.texture_ids.push_back(p_id);
+        m_rect_data.texture_layers.push_back(EngineTextureLoader::Ref()->get_texture_layer(p_id));
         m_rect_data.colors.push_back(p_color);
         mat4 transform = mat4(1.0);
         transform = glm::translate(transform, vec3(p_rect.get_position(),0.0f));
@@ -530,7 +557,7 @@ void EngineRenderer::draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id){
 }
 void EngineRenderer::draw_circle(vec2 p_pos, float p_radius, vec4 p_color, TextureId p_id){
     if(m_circle_data.colors.size() < m_circle_data.max_render_size){
-        m_circle_data.texture_ids.push_back(p_id);
+        m_circle_data.texture_layers.push_back(EngineTextureLoader::Ref()->get_texture_layer(p_id));
         m_circle_data.colors.push_back(p_color);
         mat4 transform = mat4(1.0);
         transform = glm::translate(transform, vec3(p_pos,0.0f));
@@ -546,4 +573,7 @@ void EngineRenderer::draw_line(vec2 p_fm, vec2 p_to, vec4 p_color, float p_width
         m_line_data.colors.push_back(p_color);
         m_line_data.widths.push_back(p_width);
     }
+}
+void EngineRenderer::set_texture_data(GLuint p_data){
+    texture_data = p_data;
 }

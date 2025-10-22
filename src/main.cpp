@@ -71,16 +71,6 @@ int main(int argc, char* argv[]) {
             EventServer::Ref()->emit(event);
         }
 
-        if(EventServer::Ref()->has<EventMouseHoverObj>()){
-            EventMouseHoverObj event = EventServer::Ref()->poll_first<EventMouseHoverObj>();
-            if(event.is_event_occurred){
-                vec2 pos = EventServer::Ref()->poll_first<EventMouseHoverObj>().hovering_pos;
-                DEBUG_MSG("Hovering " << event.obj_id);
-                EngineRenderer::Ref()->draw_circle(event.hovering_pos, 5.0f, vec4(0.0f,1.0f,1.0f,1.0f), 0);
-                EngineRenderer::Ref()->draw_rect({event.hovering_pos, vec2(15.0f,15.0f)}, vec4(0.0f,1.0f,1.0f,1.0f), 0);
-            }
-        }
-
         EventServer::Ref()->flush();
 
         EngineRenderer::Ref()->render();

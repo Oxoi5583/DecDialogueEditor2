@@ -36,14 +36,5 @@ void GraphNode::pre_process(){}
 void GraphNode::process(){}
 void GraphNode::post_process(){}
 void GraphNode::draw(){
-    if(this->was_just_clicked()){
-        m_test_timer->finish();
-        m_test_timer->reset_cycle();
-        m_test_timer->start();
-    }
-    if(m_test_timer->timeout_and_reset_in_cycle(5, TimeUnit(TimeUnit::Type::SECOND, 2.0f))){
-        EngineRenderer::Ref()->draw_rect(m_rect, vec4(1.0f,0.0f,0.0f,1.0f), 0);
-    }else{
-        EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 0);
-    }
+    EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 0);
 }

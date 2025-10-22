@@ -29,7 +29,7 @@ void EngineTextureLoader::init(){
 }
 
 bool EngineTextureLoader::m_load_texture(){
-    m_texture_array_index.clear();
+    m_texture_array_layer.clear();
 
     int error_found = 0;
 
@@ -55,7 +55,7 @@ bool EngineTextureLoader::m_load_texture(){
 
     glTexStorage3D(GL_TEXTURE_2D_ARRAY, log2(std::max(m_width, m_height)) + 1, GL_RGBA, m_width, m_height, m_file_names.size());
 
-    int index = 0;
+    int layer = 0;
     for(auto& it : m_file_names){
         int file_id = it.file_id;
         std::string file_name = it.file_name;
@@ -90,10 +90,10 @@ bool EngineTextureLoader::m_load_texture(){
 
         if(is_image_loaded){
             //glBindTexture(GL_TEXTURE_2D_ARRAY, m_texture_array);
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, m_width, m_height, 1, GL_RGBA8, GL_UNSIGNED_BYTE, data);
-            m_texture_array_index.emplace(file_id, index);
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, m_width, m_height, 1, GL_RGBA8, GL_UNSIGNED_BYTE, data);
+            m_texture_array_layer.emplace(file_id, layer);
 
-            index++;
+            layer++;
             SUCCESS_MSG("Texture loaded successfully : " << file_name);
         }else{
             ERROR_MSG("Texture loading failed : " << file_name);
@@ -102,6 +102,9 @@ bool EngineTextureLoader::m_load_texture(){
 
         stbi_image_free(data);
     }
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if(error_found){
         return false;
@@ -112,4 +115,10 @@ bool EngineTextureLoader::m_load_texture(){
 
 GLuint& EngineTextureLoader::get_data(){
     return m_texture_array;
+}
+int EngineTextureLoader::get_texture_layer(int p_file_id){
+    if(!m_texture_array_layer.contains(p_file_id)){
+        return -1;
+    }
+    return m_texture_array_layer[p_file_id];
 }

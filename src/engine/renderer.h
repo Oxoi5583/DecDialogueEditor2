@@ -24,11 +24,13 @@ private:
     Binary basic_fragment_shader;
     Binary basic_shader_programme;
 
+    GLuint texture_data;
 
     struct {
         const int max_render_size = 500000;
         const uint transform_location = 2;
         uint color_location = 6;
+        uint texture_layer_location = 7;
 
         Binary VAO;
         Binary VBO;
@@ -36,10 +38,12 @@ private:
 
         GLuint view_loc;
         GLuint projection_loc;
+        GLuint texture_data_loc;
 
         struct {
             Binary transform_vbo;
             Binary color_vbo;
+            Binary texture_layer_vbo;
         } instance_data;
 
         struct {
@@ -50,7 +54,7 @@ private:
 
         std::vector<mat4> transforms;
         std::vector<vec4> colors;
-        std::vector<unsigned int> texture_ids;
+        std::vector<int> texture_layers; 
 
         float vertices[16] = {
             0.5f,  0.5f, 1.0f, 1.0f,
@@ -91,7 +95,7 @@ private:
         std::vector<mat4> transforms;
         std::vector<float> radiuses;
         std::vector<vec4> colors;
-        std::vector<unsigned int> texture_ids;
+        std::vector<int> texture_layers;
 
         float vertices[16] = {
             0.5f,  0.5f, 1.0f, 1.0f,
@@ -167,6 +171,8 @@ public:
     void init();
     void render();
     void destory_all();
+
+    void set_texture_data(GLuint p_data);
 
     void clear_draw_list();
     void draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id);

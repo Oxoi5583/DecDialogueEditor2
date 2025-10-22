@@ -16,10 +16,10 @@ private:
         std::string file_name;
     };
     const std::vector<TextureFile> m_file_names = {
-        {1 ,"assets/test_texture.png"},
+        {0 ,"assets/test_texture.png"},
     };
 
-    std::map<int, int> m_texture_array_index;
+    std::map<int, int> m_texture_array_layer;
 
     bool m_load_texture();
 
@@ -29,4 +29,5 @@ public:
     void init();
 
     GLuint& get_data();
+    int get_texture_layer(int p_file_id);
 };
