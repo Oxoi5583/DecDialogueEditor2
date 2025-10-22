@@ -36,5 +36,9 @@ void GraphNode::pre_process(){}
 void GraphNode::process(){}
 void GraphNode::post_process(){}
 void GraphNode::draw(){
-    EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 0);
+    if(this->was_hovered()){
+        EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 1);
+    }else{
+        EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 0);
+    }
 }

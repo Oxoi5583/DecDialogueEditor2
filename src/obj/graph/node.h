@@ -14,7 +14,7 @@ class GraphNode : public ClickableObject{
 private:
     Timer* m_test_timer;
 
-    Rect2 m_rect = {vec2(0.0f, 0.0f), vec2(50.0f, 50.0f)};
+    Rect2 m_rect = {vec2(0.0f, 0.0f), vec2(80.0f, 80.0f)};
     int m_texture_id = 0;
 public:
     GraphNode();

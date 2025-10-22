@@ -1,6 +1,7 @@
 #include "engine/texture_loader.h"
 
 #include "DecToolsBox/debug/messenger.h"
+#include "engine/renderer.h"
 #include <filesystem>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -13,6 +14,7 @@ void EngineTextureLoader::load(){
             ERROR_MSG("Textures first loading failed.");
             exit(-1);
         }else{
+            EngineRenderer::Ref()->set_texture_data(m_texture_array);
             SUCCESS_MSG("Textures first loaded successfully.");
         }
         m_is_first_load = false;
@@ -20,6 +22,7 @@ void EngineTextureLoader::load(){
         if(!m_load_texture()){
             ERROR_MSG("Textures loading failed. Setting will not be changed.");
         }else{
+            EngineRenderer::Ref()->set_texture_data(m_texture_array);
             SUCCESS_MSG("Textures loaded successfully.");
         }
     }
@@ -40,7 +43,7 @@ bool EngineTextureLoader::m_load_texture(){
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_texture_array);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_texture_array);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -52,8 +55,9 @@ bool EngineTextureLoader::m_load_texture(){
         ERROR_MSG("Please upgrade OpenGL to >4.2 version.");
         error_found++;
     }
-
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, log2(std::max(m_width, m_height)) + 1, GL_RGBA, m_width, m_height, m_file_names.size());
+    
+    int mip_levels = static_cast<int>(std::floor(std::log2(std::max(m_width, m_height)))) + 1;
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mip_levels, GL_RGBA8, m_width, m_height, m_file_names.size());
 
     int layer = 0;
     for(auto& it : m_file_names){
@@ -90,7 +94,7 @@ bool EngineTextureLoader::m_load_texture(){
 
         if(is_image_loaded){
             //glBindTexture(GL_TEXTURE_2D_ARRAY, m_texture_array);
-            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, m_width, m_height, 1, GL_RGBA8, GL_UNSIGNED_BYTE, data);
+            glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, layer, m_width, m_height, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
             m_texture_array_layer.emplace(file_id, layer);
 
             layer++;
@@ -103,8 +107,6 @@ bool EngineTextureLoader::m_load_texture(){
         stbi_image_free(data);
     }
 
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     if(error_found){
         return false;

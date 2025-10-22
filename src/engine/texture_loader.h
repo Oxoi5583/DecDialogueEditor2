@@ -17,6 +17,7 @@ private:
     };
     const std::vector<TextureFile> m_file_names = {
         {0 ,"assets/test_texture.png"},
+        {1 ,"assets/test_texture2.png"},
     };
 
     std::map<int, int> m_texture_array_layer;
