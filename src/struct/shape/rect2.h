@@ -24,6 +24,7 @@ public:
     Rect2& operator=(Rect2&& other) noexcept;
 
     void set_position(vec2 p_position) override;
+    void set_left_top(vec2 p_position);
     void set_size(vec2 p_size);
     void set_center(vec2 p_center);
 

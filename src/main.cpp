@@ -3,12 +3,14 @@
 #include "engine/texture_loader.h"
 #include "graph/camera.h"
 #include "graph/grid.h"
+#include "graph/viewport.h"
 #include "obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include <cmath>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -21,6 +23,7 @@
 #endif
 
 #include <DecToolsBox/debug/messenger.h>
+#include "ext/debug/messenger_ext.h"
 
 #include "engine/window.h"
 #include "theme/theme_loader.h"
@@ -37,7 +40,8 @@ int main(int argc, char* argv[]) {
 
     GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();
-    
+    GraphViewport::Ref()->init();
+
     GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
 
     Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
@@ -53,6 +57,7 @@ int main(int argc, char* argv[]) {
 
         MouseServer::Ref()->update();
         GraphCamera::Ref()->update();
+        GraphViewport::Ref()->update();
         TimerServer::Ref()->update(delta);
         ObjectServer::Ref()->clear_garbage();
 
@@ -63,6 +68,16 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->process();
         ObjectServer::Ref()->post_process();
         ObjectServer::Ref()->draw();
+
+        /*
+        double cos_delta = (std::cos(EngineWindow::Ref()->get_total_time() / 5000.0f) + 1.0f) / 2.0f;
+        vec2 win_size = EngineWindow::Ref()->get_window_size();
+        vec2 new_viewport = vec2(win_size.x * (float)cos_delta, win_size.y);
+        GraphViewport::Ref()->set_viewport_position({50.0f,50.0f});
+        GraphViewport::Ref()->set_viewport_size(new_viewport);
+
+        DEBUG_MSG("cos_delta : " << cos_delta << " ; new_viewport_x : " << new_viewport);
+        */
 
         if(test_timer->timeout_and_reset_in_cycle(3)){
             //DEBUG_MSG("Spawn!!");

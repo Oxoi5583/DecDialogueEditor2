@@ -1,10 +1,12 @@
 #include "engine/input_hub.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "ext/debug/messenger_ext.h"
 #include "engine/input_key.h"
 #include "graph/camera.h"
 
 #include "SDL3/SDL_events.h"
 #include "glm/ext/vector_float2.hpp"
+#include "graph/viewport.h"
 #include "struct/shape/rect2.h"
 
 #include "imgui/backends/imgui_impl_sdl3.h"
@@ -622,14 +624,9 @@ vec2 EngineInputHub::get_mouse_position(){
     return m_mouse_position;
 }
 vec2 EngineInputHub::get_mouse_world_position(){
-    Rect2 zoomed_rect = GraphCamera::Ref()->get_zoomed_rect();
-    vec2 zoomed_size = zoomed_rect.get_size();
-
-    Rect2 viewport_rect2 = GraphCamera::Ref()->get_rect();
-    vec2 viewport_size = viewport_rect2.get_size();
-    vec2 mouse_pos_ratio = m_mouse_position / viewport_size;
-
-    return GraphCamera::Ref()->screen_to_world(zoomed_size * mouse_pos_ratio);
+    vec2 viewport_mouse_pos = GraphViewport::Ref()->screen_to_viewport(m_mouse_position);
+    vec2 world_pos = GraphCamera::Ref()->viewport_to_world(viewport_mouse_pos);
+    return world_pos;
 }
 vec2 EngineInputHub::get_mouse_wheel(){
     return m_mouse_wheel;

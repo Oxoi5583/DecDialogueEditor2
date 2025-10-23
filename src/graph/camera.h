@@ -14,7 +14,7 @@ private:
     float m_zoom = 1;
     Rect2 m_rect;
 
-    vec2 m_window_size_buffer;
+    vec2 m_viewport_size_buffer;
     mat4 m_view;
     mat4 m_origin_view;
     mat4 m_projection;
@@ -23,6 +23,7 @@ private:
     void m_job_update_view();
     void m_job_update_projection();
     void m_job_update_control();
+    void m_job_draw_border();
 public:
     GraphCamera()
     : m_view(mat4(1.0f))
@@ -46,6 +47,6 @@ public:
     mat4 get_origin_view() const;
     mat4 get_projection() const;
 
-    vec2 world_to_screen(vec2 p_pos);
-    vec2 screen_to_world(vec2 p_pos);
+    vec2 world_to_viewport(vec2 p_pos);
+    vec2 viewport_to_world(vec2 p_pos);
 };

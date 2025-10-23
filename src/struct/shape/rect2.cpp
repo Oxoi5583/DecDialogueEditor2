@@ -38,6 +38,9 @@ void Rect2::set_size(vec2 p_size){
 void Rect2::set_position(vec2 p_position){
     m_position = p_position;
 }
+void Rect2::set_left_top(vec2 p_position){
+    m_position = p_position + (m_size / 2.0f);
+}
 void Rect2::set_center(vec2 p_center){
     m_position = p_center;
 }
