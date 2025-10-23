@@ -49,27 +49,27 @@ public:
 
         switch (p_type) {
             case FunctionType::FUNC_READY:{
-                DEBUG_MSG("Register ID (FUNC_READY) : " << id);
+                //DEBUG_MSG("Register ID (FUNC_READY) : " << id);
                 m_ready_functions[id].push_back(p_func);
                 break;
             }
             case FunctionType::FUNC_PRE_PROCESS:{
-                DEBUG_MSG("Register ID (FUNC_PRE_PROCESS) : " << id);
+                //DEBUG_MSG("Register ID (FUNC_PRE_PROCESS) : " << id);
                 m_pre_process_functions[id].push_back(p_func);
                 break;
             }
             case FunctionType::FUNC_PROCESS:{
-                DEBUG_MSG("Register ID (FUNC_PROCESS) : " << id);
+                //DEBUG_MSG("Register ID (FUNC_PROCESS) : " << id);
                 m_process_functions[id].push_back(p_func);
                 break;
             }
             case FunctionType::FUNC_POST_PROCESS:{
-                DEBUG_MSG("Register ID (FUNC_POST_PROCESS) : " << id);
+                //DEBUG_MSG("Register ID (FUNC_POST_PROCESS) : " << id);
                 m_post_process_functions[id].push_back(p_func);
                 break;
             }
             case FunctionType::FUNC_DRAW:{
-                DEBUG_MSG("Register ID (FUNC_DRAW) : " << id);
+                //DEBUG_MSG("Register ID (FUNC_DRAW) : " << id);
                 m_draw_functions[id].push_back(p_func);
                 break;
             }

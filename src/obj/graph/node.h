@@ -4,18 +4,21 @@
 #include "engine/renderer.h"
 #include "glm/ext/vector_float2.hpp"
 #include "obj/abstract/clickable.h"
+#include "obj/abstract/dragable.h"
 #include "obj/abstract/hoverable.h"
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
 
 using namespace glm;
 
-class GraphNode : public ClickableObject{
+class GraphNode : public DragableObject{
 private:
     Timer* m_test_timer;
 
-    Rect2 m_rect = {vec2(0.0f, 0.0f), vec2(80.0f, 80.0f)};
+    Rect2& m_rect;
     int m_texture_id = 0;
+
+    Rect2& m_init_shape();
 public:
     GraphNode();
     ~GraphNode();

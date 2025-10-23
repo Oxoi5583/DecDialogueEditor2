@@ -71,7 +71,6 @@ void EngineInputHub::polling_sdl_event(){
                 break;
             }
             case (SDL_EVENT_KEY_UP):{
-                DEBUG_MSG("SDL_EVENT_KEY_UP");
                 m_redirect_keyboard_up_buffer(sdl_event.key.key);
                 break;
             }

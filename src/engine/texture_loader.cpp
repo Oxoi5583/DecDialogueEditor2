@@ -42,11 +42,21 @@ bool EngineTextureLoader::m_load_texture(){
     glGenTextures(1, &m_texture_array);
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_texture_array);
 
+    int mip_levels = static_cast<int>(std::floor(std::log2(std::max(m_width, m_height)))) + 1;
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mip_levels, GL_RGBA8, m_width, m_height, m_file_names.size());
+
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_texture_array);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    //glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        printf("glGenerateMipmap error: 0x%x\n", err);
+    }
 
     if (!glTexStorage3D){
         std::cout << "GL_VENDOR:   "   << glGetString(GL_VENDOR)   << std::endl;
@@ -56,8 +66,6 @@ bool EngineTextureLoader::m_load_texture(){
         error_found++;
     }
     
-    int mip_levels = static_cast<int>(std::floor(std::log2(std::max(m_width, m_height)))) + 1;
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, mip_levels, GL_RGBA8, m_width, m_height, m_file_names.size());
 
     int layer = 0;
     for(auto& it : m_file_names){
@@ -111,6 +119,7 @@ bool EngineTextureLoader::m_load_texture(){
     if(error_found){
         return false;
     }else{
+        glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
         return true;
     }
 }

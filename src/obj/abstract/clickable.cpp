@@ -15,20 +15,18 @@ void ClickableObject::ready(){
 }
 void ClickableObject::pre_process(){
     m_was_just_clicked = false;
-    m_was_clicked = false;
     m_was_just_released = false;
 
     if(this->was_hovered()){
         if(MouseServer::Ref()->is_just_clicked()){
             m_was_just_clicked = true;
-        }
-        if(MouseServer::Ref()->is_clicked()){
             m_was_clicked = true;
         }
     }
-    
+
     if(MouseServer::Ref()->is_just_released()){
         m_was_just_released = true;
+        m_was_clicked = false;
     }
 }
 void ClickableObject::process(){

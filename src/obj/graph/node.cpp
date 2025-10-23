@@ -3,7 +3,15 @@
 #include "core/timer_server.h"
 #include "server/object_server.h"
 
-GraphNode::GraphNode(){
+
+Rect2& GraphNode::m_init_shape(){
+    Rect2 shape = {vec2(0.0f, 0.0f), vec2(50.0f, 50.0f)};
+    this->set_shape(shape);
+    return this->get_shape<Rect2>();
+}
+
+GraphNode::GraphNode()
+: m_rect(m_init_shape()){
     BIND_CLASS(GraphNode);
 }
 GraphNode::~GraphNode(){
@@ -28,7 +36,7 @@ bool GraphNode::is_point_intersect(vec2& p_point){
 }
 
 void GraphNode::ready(){
-    this->set_shape(m_rect);
+
     m_test_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::SECOND, 1.0f), false);
     m_test_timer->stop();
 }
@@ -36,7 +44,7 @@ void GraphNode::pre_process(){}
 void GraphNode::process(){}
 void GraphNode::post_process(){}
 void GraphNode::draw(){
-    if(this->was_hovered()){
+    if(this->was_clicked()){
         EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 1);
     }else{
         EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 0);

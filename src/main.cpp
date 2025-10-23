@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->draw();
 
         if(test_timer->timeout_and_reset_in_cycle(3)){
-            DEBUG_MSG("Spawn!!");
+            //DEBUG_MSG("Spawn!!");
             EventSpawnNode event;
             event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
             EventServer::Ref()->emit(event);

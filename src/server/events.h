@@ -47,3 +47,13 @@ struct EventMouseClickObj : public UniqueEvent{
     vec2 click_pos;
     OID obj_id;
 };
+
+struct EventMouseDragObj : public NonUniqueEvent{
+    vec2 drag_pos;
+    OID obj_id;
+};
+
+struct EventMousePlaceObj : public NonUniqueEvent{
+    vec2 place_pos;
+    OID obj_id;
+};

@@ -1,4 +1,6 @@
 #include "struct/shape/rect2.h"
+#include "DecToolsBox/debug/messenger.h"
+#include "ext/debug/messenger_ext.h"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/geometric.hpp"
@@ -115,6 +117,7 @@ bool Rect2::m_compare_xy(vec2 p_pos){
     vec2 left_top = get_left_top();
     vec2 right_down = get_right_down();
     
+
     if(p_pos.x < left_top.x || p_pos.x > right_down.x){
         return false;
     }

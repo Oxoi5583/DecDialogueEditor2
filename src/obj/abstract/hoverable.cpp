@@ -23,7 +23,7 @@ bool HoverableObject::m_check_hovering(){
     }
 
     vec2 mouse_pos = MouseServer::Ref()->get_mouse_world_position();
-    if(!m_shape->is_point_intersect(mouse_pos)){
+    if(!this->is_point_intersect(mouse_pos)){
         return false;
     }
 
@@ -33,6 +33,7 @@ bool HoverableObject::m_check_hovering(){
     EventServer::Ref()->emit(new_event);
     return true;
 }
+
 
 bool HoverableObject::was_hovered(){
     return m_was_hovered;

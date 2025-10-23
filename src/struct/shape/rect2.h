@@ -23,12 +23,12 @@ public:
     Rect2& operator=(const Rect2& other);
     Rect2& operator=(Rect2&& other) noexcept;
 
+    void set_position(vec2 p_position) override;
     void set_size(vec2 p_size);
-    void set_position(vec2 p_position);
     void set_center(vec2 p_center);
 
     vec2 get_size() const;
-    vec2 get_position() const;
+    vec2 get_position() const override;
     vec2 get_left_top() const;
     vec2 get_left_down() const;
     vec2 get_right_top() const;
