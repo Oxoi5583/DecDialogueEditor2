@@ -1,6 +1,7 @@
 #include "struct/shape/rect2.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "ext/debug/messenger_ext.h"
+#include "glm/common.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/geometric.hpp"
@@ -44,6 +45,18 @@ void Rect2::set_left_top(vec2 p_position){
 void Rect2::set_center(vec2 p_center){
     m_position = p_center;
 }
+void Rect2::set_AABB(vec2 p_left_top, vec2 p_right_down){
+    vec2 left_top = glm::min(p_left_top, p_right_down);
+    vec2 right_down = glm::max(p_left_top, p_right_down);
+
+    vec2 size = right_down - left_top;
+    vec2 center = left_top + (size / 2.0f);
+    set_size(size);
+    set_center(center);
+}
+
+
+
 vec2 Rect2::get_size() const{
     return m_size;
 }
@@ -74,10 +87,10 @@ std::vector<vec2> Rect2::get_points() const{
     vec2 right_top = get_right_top();
     vec2 right_down = get_right_down();
 
-    ret.push_back(left_top);
-    ret.push_back(right_top);
-    ret.push_back(right_down);
-    ret.push_back(left_down);
+    ret[0] = left_top;
+    ret[1] = right_top;
+    ret[2] = right_down;
+    ret[3] = left_down;
 
     return ret;
 }
@@ -119,7 +132,6 @@ bool Rect2::m_cross_product(vec2 p_pos){
 bool Rect2::m_compare_xy(vec2 p_pos){
     vec2 left_top = get_left_top();
     vec2 right_down = get_right_down();
-    
 
     if(p_pos.x < left_top.x || p_pos.x > right_down.x){
         return false;
@@ -133,4 +145,22 @@ bool Rect2::m_compare_xy(vec2 p_pos){
 
 bool Rect2::is_point_intersect(vec2 p_pos){
     return m_compare_xy(p_pos);
+}
+
+bool Rect2::is_rect_intersect(Rect2 p_rect){
+    std::vector<vec2> points = p_rect.get_points();
+    for(vec2 point : points){
+        if(this->is_point_intersect(point)){
+            return true;
+        }
+    }
+
+    std::vector<vec2> rev_points = this->get_points();
+    for(vec2 point : rev_points){
+        if(p_rect.is_point_intersect(point)){
+            return true;
+        }
+    }
+
+    return false;
 }

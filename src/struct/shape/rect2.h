@@ -27,7 +27,8 @@ public:
     void set_left_top(vec2 p_position);
     void set_size(vec2 p_size);
     void set_center(vec2 p_center);
-
+    void set_AABB(vec2 p_left_top, vec2 p_right_down);
+    
     vec2 get_size() const;
     vec2 get_position() const override;
     vec2 get_left_top() const;
@@ -38,4 +39,5 @@ public:
     std::vector<vec2> get_points() const;
 
     bool is_point_intersect(vec2 p_pos) override;
+    bool is_rect_intersect(Rect2 p_rect);
 };

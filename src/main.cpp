@@ -69,18 +69,7 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->post_process();
         ObjectServer::Ref()->draw();
 
-        /*
-        double cos_delta = (std::cos(EngineWindow::Ref()->get_total_time() / 5000.0f) + 1.0f) / 2.0f;
-        vec2 win_size = EngineWindow::Ref()->get_window_size();
-        vec2 new_viewport = vec2(win_size.x * (float)cos_delta, win_size.y);
-        GraphViewport::Ref()->set_viewport_position({50.0f,50.0f});
-        GraphViewport::Ref()->set_viewport_size(new_viewport);
-
-        DEBUG_MSG("cos_delta : " << cos_delta << " ; new_viewport_x : " << new_viewport);
-        */
-
-        if(test_timer->timeout_and_reset_in_cycle(3)){
-            //DEBUG_MSG("Spawn!!");
+        if(test_timer->timeout_and_reset_in_cycle(20)){
             EventSpawnNode event;
             event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
             EventServer::Ref()->emit(event);

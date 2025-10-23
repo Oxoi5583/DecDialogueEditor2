@@ -65,7 +65,6 @@ void GraphCamera::m_job_draw_border(){
     EngineRenderer::Ref()->draw_line(points[1], points[2], vec4(0.0f,0.0f,0.0f,1.0f), 3);
     EngineRenderer::Ref()->draw_line(points[2], points[3], vec4(0.0f,0.0f,0.0f,1.0f), 3);
     EngineRenderer::Ref()->draw_line(points[3], points[0], vec4(0.0f,0.0f,0.0f,1.0f), 3);
-    
 }
 void GraphCamera::update(){
     m_job_update_control();
