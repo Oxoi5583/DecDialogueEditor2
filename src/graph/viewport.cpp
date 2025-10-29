@@ -10,8 +10,7 @@
 
 void GraphViewport::init(){
     m_window_size = EngineWindow::Ref()->get_window_size();
-    m_viewport_rect = Rect2();
-    m_viewport_rect_buffer = {vec2(), m_window_size / 2.0f};
+    m_viewport_rect = {m_window_size / 2.0f, m_window_size};
     m_viewport_rect_buffer = m_viewport_rect;
 }
 
@@ -73,7 +72,6 @@ void GraphViewport::set_viewport(double p_start_x, double p_end_x, double p_star
     double end_x = std::max(p_start_x, p_end_x);
     double end_y = std::max(p_start_y, p_end_y);
     
-
     vec2 pos = {start_x, start_y};
     vec2 size = {end_x - start_x, end_y - start_y};
     set_viewport_position(pos);
@@ -86,7 +84,6 @@ vec2 GraphViewport::screen_to_viewport(vec2 p_pos){
 vec2 GraphViewport::viewport_to_screen(vec2 p_pos){
     return p_pos + m_viewport_rect.get_left_top();
 }
-
 
 void GraphViewport::set_viewport_up_border(double p_y){
     vec2 size = m_viewport_rect_buffer.get_size();
