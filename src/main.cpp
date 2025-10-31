@@ -51,7 +51,11 @@ int main(int argc, char* argv[]) {
     test_timer->start();
 
     Rect2 cam_rect = GraphCamera::Ref()->get_zoomed_rect();
-    EditorSpace space = {EditorSpace::SplitType::VERTICLE, cam_rect.get_position(), cam_rect.get_size()};
+    EditorSpace space = {EditorSpace::SplitType::HORIZONTAL, cam_rect.get_position(), cam_rect.get_size()};
+    space.split_limit.is_enabled = true;
+    space.split_limit.type = EditorSpace::SplitLimit::Type::PROPORTION;
+    space.split_limit.from = EditorSpace::SplitLimit::From::END;
+    space.split_limit.min = 0.3;
     space.split(0.5);
 
     while (EngineWindow::Ref()->is_running()){
@@ -86,22 +90,10 @@ int main(int argc, char* argv[]) {
         space.set_size(cam_rect.get_size());
         space.set_position(cam_rect.get_position());
         space.refresh_children();
-        space.get_children().first->split(0.5);
-        space.get_children().second->split(0.5);
-        space.get_children().first->set_type(EditorSpace::SplitType::HORIZONTAL);
-        space.get_children().second->set_type(EditorSpace::SplitType::HORIZONTAL);
-        space.get_children().first->get_children().first->split(0.3);
-        space.get_children().second->get_children().first->split(0.8);
-        space.get_children().first->get_children().second->split(0.3);
-        space.get_children().second->get_children().second->split(0.8);
-        space.get_children().first->get_children().first->set_type(EditorSpace::SplitType::HORIZONTAL);
-        space.get_children().second->get_children().first->set_type(EditorSpace::SplitType::HORIZONTAL);
-        space.get_children().first->get_children().second->set_type(EditorSpace::SplitType::HORIZONTAL);
-        space.get_children().second->get_children().second->set_type(EditorSpace::SplitType::HORIZONTAL);
-        /*
+        
         double proportion = space.get_proportion(MouseServer::Ref()->get_mouse_world_position());
         space.split(proportion);
-        */
+        
 
         int i = 0;
         for(EditorSpace s : space.get_spaces()){

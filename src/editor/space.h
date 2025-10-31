@@ -10,10 +10,28 @@ using namespace glm;
 
 class EditorSpace : public Rect2{
 public:
-    struct{
-        double first = 0;
-        double second = 0;
-    } size_limit;
+    struct SplitLimit{
+        enum class Type{
+            PROPORTION,
+            VALUE,
+        };
+        enum class From{
+            START,
+            END,
+        };
+
+        double min;
+        double max;
+
+        Type type = Type::PROPORTION;
+        From from = From::START;
+        bool is_enabled = false;
+
+        void enable();
+        void disable();
+    };
+
+    SplitLimit split_limit = {std::numeric_limits<double>::min(), std::numeric_limits<double>::max()};
 
     struct Children{
         EditorSpace* first = nullptr;
@@ -67,4 +85,6 @@ private:
     double m_get_proportion_horizontal(vec2 p_pos) const;
 
     std::vector<EditorSpace> m_spaces;
+
+    double m_clamp_split(double p_value);
 };

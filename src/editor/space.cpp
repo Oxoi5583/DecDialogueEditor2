@@ -6,6 +6,13 @@
 #include <array>
 #include <queue>
 
+void EditorSpace::SplitLimit::enable(){
+    is_enabled = true;
+}
+void EditorSpace::SplitLimit::disable(){
+    is_enabled = false;
+}
+
 EditorSpace::EditorSpace() = default;
 
 EditorSpace::~EditorSpace() = default;
@@ -58,7 +65,50 @@ void EditorSpace::unsplit(){
     m_spaces.clear();
 }
 
+double EditorSpace::m_clamp_split(double p_value){
+    switch (split_limit.type) {
+        case SplitLimit::Type::PROPORTION:{
+            double f_max;
+            double f_min;
+
+            if(split_limit.from == SplitLimit::From::END){
+                f_max = 1.0 - std::min(split_limit.max,split_limit.min);
+                f_min = 1.0 - std::max(split_limit.max,split_limit.min);
+            }else{
+                f_max = std::max(split_limit.max,split_limit.min);
+                f_min = std::min(split_limit.max,split_limit.min);
+            }
+
+            return std::clamp(p_value, f_min, f_max);
+        }
+        case SplitLimit::Type::VALUE:{
+            double f_max = std::max(split_limit.max,split_limit.min);
+            double f_min = std::min(split_limit.max,split_limit.min);
+
+            double total_dist = (m_type == SplitType::HORIZONTAL) ? get_right_top().x - get_left_top().x : get_left_down().y - get_left_top().y;
+
+            double f_max_prop;
+            double f_min_prop;
+
+            if(split_limit.from == SplitLimit::From::END){
+                f_max_prop = 1.0 - std::clamp(f_min/total_dist, 0.0, 1.0);
+                f_min_prop = 1.0 - std::clamp(f_max/total_dist, 0.0, 1.0);
+            }else{
+                f_max_prop = std::clamp(f_max/total_dist, 0.0, 1.0);
+                f_min_prop = std::clamp(f_min/total_dist, 0.0, 1.0);
+            }
+
+            
+            return std::clamp(p_value, f_min_prop, f_max_prop);
+        }
+    }
+}
+
 void EditorSpace::split(double m_proportion){
+    if(split_limit.is_enabled){
+        m_proportion = m_clamp_split(m_proportion);
+    }
+
     m_split = m_proportion;
 
     if(m_spaces.size() == 0){
