@@ -1,5 +1,6 @@
 #include "server/mouse_server.h"
 #include "engine/input_hub.h"
+#include "engine/window.h"
 #include "glm/ext/vector_float2.hpp"
 #include "server/event_server.h"
 #include "server/events.h"
@@ -7,6 +8,7 @@
 void MouseServer::update(){
     m_world_mouse_pos = EngineInputHub::Ref()->get_mouse_world_position();
     m_screen_mouse_pos = EngineInputHub::Ref()->get_mouse_position();
+    m_screen_mouse_pos_center = m_screen_mouse_pos - (EngineWindow::Ref()->get_window_size() / 2.0f);
     m_is_just_clicked = EngineInputHub::Ref()->is_mouse_left_button_just_clicked();
     m_is_clicked = EngineInputHub::Ref()->is_mouse_left_button_clicked();
     m_is_just_released = EngineInputHub::Ref()->is_mouse_left_button_just_released();
@@ -38,6 +40,9 @@ void MouseServer::m_emit_event_if_left_released(){
 
 vec2 MouseServer::get_mouse_screen_position() const{
     return m_screen_mouse_pos;
+}
+vec2 MouseServer::get_mouse_screen_position_center() const{
+    return m_screen_mouse_pos_center;
 }
 
 vec2 MouseServer::get_mouse_world_position() const{

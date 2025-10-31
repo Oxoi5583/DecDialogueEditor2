@@ -2,6 +2,8 @@
 
 #include "DecToolsBox/abstract./singleton.h"
 #include "DecToolsBox/container/ordered_list.h"
+#include "editor/space.h"
+#include "glm/ext/scalar_int_sized.hpp"
 #include "glm/ext/scalar_uint_sized.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/rect2.h"
@@ -11,15 +13,11 @@
 
 using namespace glm;
 
-typedef uint32 LID;
-
-class EditorSpaceBase;
-
-class EditorLayout : Singleton<EditorLayout>{
+class EditorLayout : public Singleton<EditorLayout>{
 private:
-    std::unique_ptr<EditorSpaceBase> m_main_layer = std::make_unique<EditorSpaceBase>();
+    vec2 m_window_size_buffer;
+    EditorSpace m_space;
 public:
     void init();
     void update();
 };
-

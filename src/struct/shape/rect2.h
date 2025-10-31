@@ -38,6 +38,7 @@ public:
     vec2 get_center() const;
     std::vector<vec2> get_points() const;
 
+
     bool is_point_intersect(vec2 p_pos) override;
     bool is_rect_intersect(Rect2 p_rect);
 };

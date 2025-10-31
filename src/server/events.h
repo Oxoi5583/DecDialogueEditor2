@@ -1,5 +1,6 @@
 #pragma once
 
+#include "editor/layout.h"
 #include "glm/ext/vector_float2.hpp"
 #include "server/object_base.h"
 

@@ -9,6 +9,7 @@ class MouseServer : public Singleton<MouseServer> {
 private:
     vec2 m_world_mouse_pos;
     vec2 m_screen_mouse_pos;
+    vec2 m_screen_mouse_pos_center;
     bool m_is_just_clicked;
     bool m_is_clicked;
     bool m_is_just_released;
@@ -20,6 +21,7 @@ public:
     void update();
 
     vec2 get_mouse_screen_position() const;
+    vec2 get_mouse_screen_position_center() const;
     vec2 get_mouse_world_position() const;
     bool is_just_clicked();
     bool is_clicked();

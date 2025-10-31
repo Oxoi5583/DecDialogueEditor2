@@ -1,3 +1,4 @@
+#include "editor/space.h"
 #include "engine/input_hub.h"
 #include "engine/renderer.h"
 #include "engine/texture_loader.h"
@@ -10,12 +11,14 @@
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include "struct/shape/rect2.h"
 #include <cmath>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <vector>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL3/SDL_opengles2.h>
 #else
@@ -47,6 +50,10 @@ int main(int argc, char* argv[]) {
     Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
     test_timer->start();
 
+    Rect2 cam_rect = GraphCamera::Ref()->get_zoomed_rect();
+    EditorSpace space = {EditorSpace::SplitType::VERTICLE, cam_rect.get_position(), cam_rect.get_size()};
+    space.split(0.5);
+
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
 
@@ -73,6 +80,33 @@ int main(int argc, char* argv[]) {
             EventSpawnNode event;
             event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
             EventServer::Ref()->emit(event);
+        }
+
+        Rect2 cam_rect = GraphCamera::Ref()->get_zoomed_rect();
+        space.set_size(cam_rect.get_size());
+        space.set_position(cam_rect.get_position());
+        space.refresh_children();
+        space.get_children().first->split(0.5);
+        space.get_children().second->split(0.5);
+        space.get_children().first->set_type(EditorSpace::SplitType::HORIZONTAL);
+        space.get_children().second->set_type(EditorSpace::SplitType::HORIZONTAL);
+        space.get_children().first->get_children().first->split(0.3);
+        space.get_children().second->get_children().first->split(0.8);
+        space.get_children().first->get_children().second->split(0.3);
+        space.get_children().second->get_children().second->split(0.8);
+        space.get_children().first->get_children().first->set_type(EditorSpace::SplitType::HORIZONTAL);
+        space.get_children().second->get_children().first->set_type(EditorSpace::SplitType::HORIZONTAL);
+        space.get_children().first->get_children().second->set_type(EditorSpace::SplitType::HORIZONTAL);
+        space.get_children().second->get_children().second->set_type(EditorSpace::SplitType::HORIZONTAL);
+        /*
+        double proportion = space.get_proportion(MouseServer::Ref()->get_mouse_world_position());
+        space.split(proportion);
+        */
+
+        int i = 0;
+        for(EditorSpace s : space.get_spaces()){
+            EngineRenderer::Ref()->draw_rect(s, {0.0f,0.0f,0.0f,1.0f}, 0);
+            i++;
         }
 
         EventServer::Ref()->flush();
