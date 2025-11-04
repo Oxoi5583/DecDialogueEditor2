@@ -1,7 +1,10 @@
 #include "engine/input_hub.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "editor/layout.h"
+#include "engine/window.h"
 #include "ext/debug/messenger_ext.h"
 #include "engine/input_key.h"
+#include "glm/common.hpp"
 #include "graph/camera.h"
 
 #include "SDL3/SDL_events.h"
@@ -13,6 +16,7 @@
 #include <unordered_set>
 
 void EngineInputHub::polling_sdl_event(){
+    m_mouse_motion = vec2();
     m_mouse_wheel = vec2();
     m_mouse_left_button_just_clicked = false;
     m_mouse_right_button_just_clicked = false;
@@ -29,17 +33,45 @@ void EngineInputHub::polling_sdl_event(){
     while (SDL_PollEvent(&sdl_event)) {
         ImGui_ImplSDL3_ProcessEvent(&sdl_event);
         switch (sdl_event.type) {
+            case (SDL_EVENT_WINDOW_MAXIMIZED):{
+                EngineWindow::Ref()->stop_dragging();
+                EngineWindow::Ref()->focus();
+                break;
+            }
+            case (SDL_EVENT_WINDOW_MINIMIZED):{
+                EngineWindow::Ref()->stop_dragging();
+                EngineWindow::Ref()->focus();
+                break;
+            }
+            case (SDL_EVENT_WINDOW_RESTORED):{
+                //EngineWindow::Ref()->restore();
+                EngineWindow::Ref()->after_restore();
+                EngineWindow::Ref()->focus();
+                break;
+            }
             case (SDL_EVENT_QUIT):{
                 m_is_close_requested = true;
+                if(this->is_close_requested()){
+                    if(this->get_close_window_id() == EngineWindow::Ref()->get_window_id()){
+                        EngineWindow::Ref()->close();
+                    }
+                }
                 break;
             }
             case (SDL_EVENT_WINDOW_CLOSE_REQUESTED):{
                 m_close_window_id = sdl_event.window.windowID;
                 m_is_close_requested = true;
+                if(this->is_close_requested()){
+                    if(this->get_close_window_id() == EngineWindow::Ref()->get_window_id()){
+                        EngineWindow::Ref()->close();
+                    }
+                }
                 break;
             }
             case (SDL_EVENT_MOUSE_MOTION):{
+                m_mouse_last_position = m_mouse_position;
                 m_mouse_position = {sdl_event.motion.x, sdl_event.motion.y};
+                m_mouse_motion = glm::floor(m_mouse_position) - glm::floor(m_mouse_last_position);
                 break;
             }
             case (SDL_EVENT_MOUSE_BUTTON_DOWN):{
@@ -81,7 +113,6 @@ void EngineInputHub::polling_sdl_event(){
             }
         }
     }
-
 }
 
 void EngineInputHub::m_store_keyboard_down_buffer(SDL_Keycode p_key){
@@ -668,5 +699,7 @@ bool EngineInputHub::keyboard_is_down(EngineKeycode p_key){
     return m_keyboard_down_buffer.contains(p_key);
 }
 
-
+vec2 EngineInputHub::get_mouse_motion(){
+    return m_mouse_motion;
+}
 

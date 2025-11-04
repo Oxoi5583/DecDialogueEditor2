@@ -1,5 +1,8 @@
 #include "engine/window.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "editor/components/menu_bar.h"
+#include "editor/layout.h"
+#include "ext/debug/messenger_ext.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_mouse.h"
 #include "SDL3/SDL_video.h"
@@ -8,6 +11,7 @@
 #include "glm/ext/vector_int3.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "engine/input_hub.h"
 #include <vector>
 
 #define ENGINE_INIT_STEP __COUNTER__
@@ -22,7 +26,7 @@ void EngineWindow::init(){
             ENGINE_INIT_BIND(m_init_create_sdl_renderer),
             ENGINE_INIT_BIND(m_init_create_sdl_gl_context),
             ENGINE_INIT_BIND(m_init_imgui_Engine),
-            ENGINE_INIT_BIND(m_init_sdl_show_window)
+            ENGINE_INIT_BIND(m_init_sdl_show_window),
         };
 
         for(auto& step_func : all_init_steps){
@@ -133,7 +137,6 @@ void EngineWindow::m_init_sdl_show_window(){
     SDL_SetWindowPosition(m_sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     SDL_ShowWindow(m_sdl_window);
 
-    
     m_is_init_done = true;
 }
 bool EngineWindow::is_minimized(){
@@ -186,30 +189,63 @@ void EngineWindow::delay(uint32 p_delay){
     SDL_Delay(10);
 }
 
+void EngineWindow::m_job_update_screen_mouse_pos(){
+    float screen_x, screen_y;
+    SDL_GetGlobalMouseState(&screen_x, &screen_y);
+    m_screen_mouse_last_position = m_screen_mouse_position;
+    m_screen_mouse_position = {screen_x, screen_y};
+    if(!m_is_first_screen_mouse_position){
+        m_screen_mouse_motion = m_screen_mouse_position - m_screen_mouse_last_position;
+    }
+    m_is_first_screen_mouse_position = false;
 
+    int window_pos_x, window_pos_y;
+    SDL_GetWindowPosition(m_sdl_window, &window_pos_x, &window_pos_y);
+    m_window_position = {window_pos_x, window_pos_y};
+}
+void EngineWindow::m_job_update_window_dragging(){
+    if(m_is_window_dragged){
+        window_follow_mouse();
+    }
+}
 void EngineWindow::m_job_set_delay_if_minimized(){
     if(this->is_minimized()){
         this->delay(10);
     }
 }
-void EngineWindow::m_job_close_event_handle(){
-    if(EngineInputHub::Ref()->is_close_requested()){
-        if(EngineInputHub::Ref()->get_close_window_id() == SDL_GetWindowID(m_sdl_window)){
-            this->close();
+void EngineWindow::m_job_event_handle(){
+    while (!m_events.empty()) {
+        switch (m_events.front()) {
+            case Event::START_DRAG:{
+                m_is_window_dragged = true;
+                m_window_dragging_offset = m_screen_mouse_position - m_window_position;
+                break;
+            }
+            case Event::END_DRAG:{
+                m_is_window_dragged = false;
+                break;
+            }
+            case Event::CLOSE_WINDOW:{
+                m_is_running = false;
+                break;
+            }
         }
+        m_events.pop();
     }
 }
 
 void EngineWindow::close(){
-    m_is_running = false;
+    m_events.emplace(Event::CLOSE_WINDOW);
 }
 
 void EngineWindow::begin(){
-    m_job_close_event_handle();
+    m_job_update_screen_mouse_pos();
     m_job_update_delta();
     m_job_set_delay_if_minimized();
     m_job_gl_clear();
     m_job_imgui_new_frame();
+    m_job_event_handle();
+    m_job_update_window_dragging();
 }
 void EngineWindow::end(){
     EngineWindow::Ref()->m_job_imgui_render();
@@ -236,4 +272,111 @@ Uint64 EngineWindow::get_delta(){
 vec2 EngineWindow::get_window_size(){
     SDL_GetWindowSize(this->m_sdl_window, &m_width, &m_height);
     return vec2(m_width, m_height);
+}
+
+vec2 EngineWindow::get_window_position(){
+    int x, y;
+    SDL_GetWindowPosition(m_sdl_window, &x, &y);
+    return {x,y};
+}
+
+void EngineWindow::set_window_position(vec2 p_pos){
+    SDL_SetWindowPosition(m_sdl_window, p_pos.x, p_pos.y);
+}
+
+void EngineWindow::window_follow_mouse(){
+    int pos_x, pos_y;
+    SDL_GetWindowPosition(m_sdl_window, &pos_x, &pos_y);
+    vec2 old_pos = {pos_x, pos_y};
+    vec2 new_pos = m_screen_mouse_position - m_window_dragging_offset;
+
+    Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
+    if(new_pos != old_pos && is_maximized()){
+        int width, height;
+        SDL_GetWindowSize(m_sdl_window, &width, &height);
+
+        vec2 window_mouse_pos = EngineInputHub::Ref()->get_mouse_position();
+        proportion_x = window_mouse_pos.x / (double)width;
+
+        this->restore();
+    }
+
+    set_window_position(new_pos);
+}
+void EngineWindow::start_dragging(){
+    m_events.emplace(Event::START_DRAG);
+}
+void EngineWindow::stop_dragging(){
+    m_events.emplace(Event::END_DRAG);
+}
+unsigned int EngineWindow::get_window_id(){
+    return SDL_GetWindowID(m_sdl_window);
+}
+
+bool EngineWindow::is_maximized(){
+    Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
+    return (flags & SDL_WINDOW_MAXIMIZED);
+}
+void EngineWindow::maximize(){
+    if(is_maximized()){
+        return;
+    }
+
+    int x, y, w, h;
+    SDL_GetWindowPosition(m_sdl_window, &x, &y);
+    SDL_GetWindowSize(m_sdl_window, &w, &h);
+
+    m_pos_buffer = {x,y};
+    m_size_buffer = {w,h};
+
+    SDL_MaximizeWindow(m_sdl_window);
+
+    this->stop_dragging();
+}
+void EngineWindow::minimize(){
+    Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
+    if(flags & SDL_WINDOW_MINIMIZED){
+        return;
+    }
+
+    int x, y, w, h;
+    SDL_GetWindowPosition(m_sdl_window, &x, &y);
+    SDL_GetWindowSize(m_sdl_window, &w, &h);
+
+    m_pos_buffer = {x,y};
+    m_size_buffer = {w,h};
+
+    SDL_MinimizeWindow(m_sdl_window);
+
+    this->stop_dragging();
+}
+void EngineWindow::restore(){
+    SDL_SetWindowFullscreen(m_sdl_window, false);
+    SDL_SetWindowResizable(m_sdl_window, true);
+    SDL_HideWindow(m_sdl_window);
+
+    SDL_RestoreWindow(m_sdl_window);
+
+    SDL_ShowWindow(m_sdl_window);
+}
+
+void EngineWindow::after_restore(){    
+    int width, height;
+    SDL_GetWindowSize(m_sdl_window, &width, &height);
+    m_window_dragging_offset = {width * proportion_x, proportion_y * EditorLayout::Ref()->menu_bar_size};
+
+    SDL_SetWindowSize(m_sdl_window, m_size_buffer.x, m_size_buffer.y);
+    SDL_SetWindowPosition(m_sdl_window, m_pos_buffer.x, m_pos_buffer.y);
+}
+
+
+void EngineWindow::focus(){
+    SDL_RaiseWindow(m_sdl_window);
+    SDL_SetWindowMouseGrab(m_sdl_window, false);
+    SDL_SetWindowKeyboardGrab(m_sdl_window, false);
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddFocusEvent(true);
+    io.AddMousePosEvent(io.MousePos.x, io.MousePos.y);
+    io.MouseDown[0] = io.MouseDown[1] = io.MouseDown[2] = false;
+    io.AddFocusEvent(true);
 }

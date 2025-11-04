@@ -1,8 +1,10 @@
 #pragma once
 
 #include "glm/ext/vector_float2.hpp"
+#include "core/timer_server.h"
 #include "struct/shape/rect2.h"
 #include <array>
+#include <cstddef>
 #include <queue>
 #include <vector>
 
@@ -10,21 +12,37 @@ using namespace glm;
 
 class EditorSpace : public Rect2{
 public:
+    enum class From{
+        START,
+        END,
+    };
+
+    From from = From::START;
+
     struct SplitLimit{
         enum class Type{
             PROPORTION,
             VALUE,
-        };
-        enum class From{
-            START,
-            END,
         };
 
         double min;
         double max;
 
         Type type = Type::PROPORTION;
-        From from = From::START;
+        bool is_enabled = false;
+
+        void enable();
+        void disable();
+    };
+    struct SplitFixed{
+        enum class Type{
+            PROPORTION,
+            VALUE,
+        };
+
+        double value;
+
+        Type type = Type::PROPORTION;
         bool is_enabled = false;
 
         void enable();
@@ -32,6 +50,7 @@ public:
     };
 
     SplitLimit split_limit = {std::numeric_limits<double>::min(), std::numeric_limits<double>::max()};
+    SplitFixed split_fixed = {std::numeric_limits<double>::max()};
 
     struct Children{
         EditorSpace* first = nullptr;
@@ -44,6 +63,7 @@ public:
     };
 
     void unsplit();
+    void split();
     void split(double m_proportion);
 
     void refresh_children();
@@ -75,6 +95,8 @@ public:
     
 private:
     double m_split = 0.0f;
+    double m_get_fixed_split();
+    double m_get_limited_split(double p_value);
 
     SplitType m_type = SplitType::VERTICLE;
 
@@ -86,5 +108,4 @@ private:
 
     std::vector<EditorSpace> m_spaces;
 
-    double m_clamp_split(double p_value);
 };

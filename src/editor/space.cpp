@@ -61,17 +61,27 @@ EditorSpace& EditorSpace::operator=(EditorSpace&& other) noexcept {
 }
 
 void EditorSpace::unsplit(){
-    m_split = 0.0f;
-    m_spaces.clear();
+    switch (from) {
+        case From::START:{
+            m_split = 0.0f;
+            break;
+        }
+        case From::END:{
+            m_split = 1.0f;
+            break;
+        }
+    }
+    
+    refresh_children();
 }
 
-double EditorSpace::m_clamp_split(double p_value){
+double EditorSpace::m_get_limited_split(double p_value){
     switch (split_limit.type) {
         case SplitLimit::Type::PROPORTION:{
             double f_max;
             double f_min;
 
-            if(split_limit.from == SplitLimit::From::END){
+            if(from == From::END){
                 f_max = 1.0 - std::min(split_limit.max,split_limit.min);
                 f_min = 1.0 - std::max(split_limit.max,split_limit.min);
             }else{
@@ -90,7 +100,7 @@ double EditorSpace::m_clamp_split(double p_value){
             double f_max_prop;
             double f_min_prop;
 
-            if(split_limit.from == SplitLimit::From::END){
+            if(from == From::END){
                 f_max_prop = 1.0 - std::clamp(f_min/total_dist, 0.0, 1.0);
                 f_min_prop = 1.0 - std::clamp(f_max/total_dist, 0.0, 1.0);
             }else{
@@ -104,9 +114,51 @@ double EditorSpace::m_clamp_split(double p_value){
     }
 }
 
-void EditorSpace::split(double m_proportion){
+double EditorSpace::m_get_fixed_split(){
+    double ret;
+
+    switch (split_fixed.type) {
+        case SplitFixed::Type::PROPORTION:{
+            ret = split_fixed.value;
+            break;
+        }
+        case SplitFixed::Type::VALUE:{
+            vec2 left_top = this->get_left_top();
+            vec2 query_pos = left_top + vec2(split_fixed.value, split_fixed.value);
+            ret = get_proportion(query_pos);
+            break;
+        }
+    }
+
+    if(from == From::END){
+        ret = 1 - ret;
+    }
+
+    return ret;
+}
+
+void EditorSpace::split(){
+    if(split_fixed.is_enabled){
+        m_split = this->m_get_fixed_split();
+    }
     if(split_limit.is_enabled){
-        m_proportion = m_clamp_split(m_proportion);
+        m_split = this->m_get_limited_split(m_split);
+    }
+
+    if(m_spaces.size() == 0){
+        m_spaces.push_back(EditorSpace());
+        m_spaces.push_back(EditorSpace());
+    }
+
+    refresh_children();
+}
+
+void EditorSpace::split(double m_proportion){
+    if(split_fixed.is_enabled){
+        m_proportion = this->m_get_fixed_split();
+    }
+    if(split_limit.is_enabled){
+        m_proportion = this->m_get_limited_split(m_proportion);
     }
 
     m_split = m_proportion;

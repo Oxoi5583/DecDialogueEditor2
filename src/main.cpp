@@ -1,3 +1,4 @@
+#include "editor/layout.h"
 #include "editor/space.h"
 #include "engine/input_hub.h"
 #include "engine/renderer.h"
@@ -47,16 +48,10 @@ int main(int argc, char* argv[]) {
 
     GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
 
-    Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
+    Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 5}, false);
     test_timer->start();
-
-    Rect2 cam_rect = GraphCamera::Ref()->get_zoomed_rect();
-    EditorSpace space = {EditorSpace::SplitType::HORIZONTAL, cam_rect.get_position(), cam_rect.get_size()};
-    space.split_limit.is_enabled = true;
-    space.split_limit.type = EditorSpace::SplitLimit::Type::PROPORTION;
-    space.split_limit.from = EditorSpace::SplitLimit::From::END;
-    space.split_limit.min = 0.3;
-    space.split(0.5);
+    
+    EditorLayout::Ref()->ui_init();
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
@@ -72,6 +67,9 @@ int main(int argc, char* argv[]) {
         TimerServer::Ref()->update(delta);
         ObjectServer::Ref()->clear_garbage();
 
+        EditorLayout::Ref()->ui_update();
+        EditorLayout::Ref()->ui_draw();
+
         GraphGrid::Ref()->draw();
 
         ObjectServer::Ref()->ready();
@@ -80,26 +78,15 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->post_process();
         ObjectServer::Ref()->draw();
 
-        if(test_timer->timeout_and_reset_in_cycle(20)){
+        if(test_timer->timeout_and_reset()){
             EventSpawnNode event;
             event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
             EventServer::Ref()->emit(event);
+            EngineWindow::Ref()->stop_dragging();
+            test_timer->stop();
         }
 
-        Rect2 cam_rect = GraphCamera::Ref()->get_zoomed_rect();
-        space.set_size(cam_rect.get_size());
-        space.set_position(cam_rect.get_position());
-        space.refresh_children();
-        
-        double proportion = space.get_proportion(MouseServer::Ref()->get_mouse_world_position());
-        space.split(proportion);
-        
 
-        int i = 0;
-        for(EditorSpace s : space.get_spaces()){
-            EngineRenderer::Ref()->draw_rect(s, {0.0f,0.0f,0.0f,1.0f}, 0);
-            i++;
-        }
 
         EventServer::Ref()->flush();
 

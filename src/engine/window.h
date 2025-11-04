@@ -14,6 +14,7 @@
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
+#include <queue>
 #include <vector>
 
 #include <glm/glm.hpp>
@@ -22,7 +23,7 @@ using namespace glm;
 
 class EngineWindow : public Singleton<EngineWindow>{
 private:
-    SDL_WindowFlags m_sdl_window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+    SDL_WindowFlags m_sdl_window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY| SDL_WINDOW_BORDERLESS;
     SDL_Window* m_sdl_window = nullptr;
     SDL_Renderer* m_sdl_renderer = nullptr;
     SDL_GLContext m_sdl_gl_context;
@@ -49,11 +50,13 @@ private:
     void m_init_imgui_Engine();
     void m_init_sdl_show_window();
     
+    void m_job_update_screen_mouse_pos();
+    void m_job_update_window_dragging();
     void m_job_update_delta();
     void m_job_set_delay_if_minimized();
     void m_job_gl_clear();
     void m_job_imgui_new_frame();
-    void m_job_close_event_handle();
+    void m_job_event_handle();
 
     void m_job_imgui_render();
 
@@ -62,6 +65,28 @@ private:
 
     int m_width;
     int m_height;
+
+
+    double proportion_x;
+    double proportion_y = 0.5f;
+
+    bool m_is_window_dragged = false;
+    bool m_is_first_screen_mouse_position = true;
+    vec2 m_window_position;
+    vec2 m_window_dragging_offset;
+    vec2 m_screen_mouse_last_position;
+    vec2 m_screen_mouse_motion;
+    vec2 m_screen_mouse_position;
+
+    enum class Event{
+        START_DRAG,
+        END_DRAG,
+        CLOSE_WINDOW,
+    };
+    std::queue<Event> m_events;
+
+    vec2 m_pos_buffer;
+    vec2 m_size_buffer;
 public:
     EngineWindow()
     :m_main_window_title("DecDialogueEditor (DEV)"){}
@@ -85,6 +110,21 @@ public:
 
     void begin();
     void end();
-
     vec2 get_window_size();
+    vec2 get_window_position();
+    void set_window_position(vec2 p_pos);
+    void window_follow_mouse();
+
+    void start_dragging();
+    void stop_dragging();
+
+    bool is_maximized();
+    void maximize();
+    void minimize();
+    void restore();
+
+    void focus();
+
+    void after_restore();
+    unsigned int get_window_id();
 };

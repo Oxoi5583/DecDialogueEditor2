@@ -26,7 +26,7 @@ void GraphViewport::update(){
     };
     vec2 new_left_top = {
         std::clamp(buffer_left_top.x, 0.0f, new_right_down.x),
-        std::clamp(buffer_left_top.y, 0.0f, new_right_down.y),  
+        std::clamp(buffer_left_top.y, 0.0f, new_right_down.y),
     };
 
     m_viewport_rect.set_AABB(new_left_top, new_right_down);
@@ -67,6 +67,7 @@ vec2 GraphViewport::get_viewport_end(){
 }
 
 void GraphViewport::set_viewport(double p_start_x, double p_end_x, double p_start_y, double p_end_y){
+    // Zero mean the left / top of the window
     double start_x = std::min(p_start_x,p_end_x);
     double start_y = std::min(p_start_y,p_end_y);
     double end_x = std::max(p_start_x, p_end_x);

@@ -10,12 +10,20 @@
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
-class ObjectServer : public Singleton<ObjectServer> {
-private:
 
-    ordered_list<ObjectBase> m_process_list;
+class ObjectServer : public Singleton<ObjectServer> {
+public:
+    enum class Layer{
+        UI_LAYER,
+        GRAPH_LAYER,
+    };
+
+private:
+    ordered_list<ObjectBase> m_graph_process_list;
+    ordered_list<ObjectBase> m_ui_process_list;
 
     std::vector<std::unique_ptr<ObjectBase>> m_instances;
 
@@ -26,7 +34,7 @@ private:
     std::unordered_map<OID, std::vector<std::function<void()>>> m_post_process_functions;
     std::unordered_map<OID, std::vector<std::function<void()>>> m_draw_functions;
 
-    std::queue<ObjectBase*> m_obj_buffer;
+    std::queue<std::pair<ObjectBase*, Layer>> m_obj_buffer;
     void m_add_buffer_to_process_list();
 public:
 
@@ -85,12 +93,12 @@ public:
     void clear_garbage();
 
     template<typename T>
-    T* queue_create(){
+    T* queue_create(Layer p_layer = Layer::GRAPH_LAYER){
         static_assert( std::is_base_of<ObjectBase, T>::value, "Only object derived can be created." );
 
         m_instances.push_back(std::make_unique<T>());
         T* ptr = static_cast<T*>(m_instances.back().get());
-        m_obj_buffer.push(ptr);
+        m_obj_buffer.push(std::make_pair(ptr, p_layer));
         OID new_id = ptr->get_id();
 
         m_id_to_instances.emplace(new_id, ptr);

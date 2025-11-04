@@ -11,6 +11,8 @@ using namespace glm;
 
 class EngineInputHub : public Singleton<EngineInputHub>{
 private:
+    vec2 m_mouse_last_position;
+    vec2 m_mouse_motion;
     vec2 m_mouse_position;
     vec2 m_mouse_wheel;
     bool m_mouse_left_button_just_clicked = false;
@@ -31,6 +33,7 @@ private:
     void m_store_keyboard_down_buffer(SDL_Keycode p_key);
     void m_store_keyboard_up_buffer(SDL_Keycode p_key);
 public:
+    vec2 get_mouse_motion();
     vec2 get_mouse_position();
     vec2 get_mouse_world_position();
     vec2 get_mouse_wheel();
