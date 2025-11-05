@@ -3,6 +3,7 @@
 #include "engine/input_hub.h"
 #include "engine/renderer.h"
 #include "engine/texture_loader.h"
+#include "engine/window_resizer.h"
 #include "graph/camera.h"
 #include "graph/grid.h"
 #include "graph/viewport.h"
@@ -45,6 +46,7 @@ int main(int argc, char* argv[]) {
     GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();
     GraphViewport::Ref()->init();
+    EngineWindowResizer::Ref()->init();
 
     GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
 
@@ -62,12 +64,13 @@ int main(int argc, char* argv[]) {
         double delta = EngineWindow::Ref()->get_delta();
 
         GraphCamera::Ref()->update();
-        GraphViewport::Ref()->update();
         TimerServer::Ref()->update(delta);
         ObjectServer::Ref()->clear_garbage();
 
         EditorLayout::Ref()->ui_update();
         EditorLayout::Ref()->ui_draw();
+        GraphViewport::Ref()->update();
+        EngineWindowResizer::Ref()->update();
 
         GraphGrid::Ref()->draw();
 

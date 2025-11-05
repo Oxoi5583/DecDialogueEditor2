@@ -139,10 +139,6 @@ void EngineWindow::m_init_sdl_show_window(){
 
     m_is_init_done = true;
 }
-bool EngineWindow::is_minimized(){
-    return SDL_GetWindowFlags(m_sdl_window) & SDL_WINDOW_MINIMIZED;
-}
-
 void EngineWindow::destory_all(){
     SDL_DestroyRenderer(m_sdl_renderer);
     SDL_DestroyWindow(m_sdl_window);
@@ -227,6 +223,39 @@ void EngineWindow::m_job_event_handle(){
             }
             case Event::CLOSE_WINDOW:{
                 m_is_running = false;
+                break;
+            }
+            case Event::MAXIMIZE:{
+                if(is_maximized()){
+                    return;
+                }
+
+                m_store_buffer();
+
+                SDL_MaximizeWindow(m_sdl_window);
+
+                this->stop_dragging();
+                m_job_event_handle();
+                break;
+            }
+            case Event::MINIMIZE:{
+                if(is_minimized()){
+                    return;
+                }
+
+                //m_store_buffer();
+
+                SDL_MinimizeWindow(m_sdl_window);
+
+                this->stop_dragging();
+                m_job_event_handle();
+                
+                break;
+            }
+            case Event::RESTORE:{
+                SDL_HideWindow(m_sdl_window);
+                SDL_RestoreWindow(m_sdl_window);
+                SDL_ShowWindow(m_sdl_window);
                 break;
             }
         }
@@ -324,45 +353,26 @@ bool EngineWindow::is_maximized(){
     Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
     return (flags & SDL_WINDOW_MAXIMIZED);
 }
+bool EngineWindow::is_minimized(){
+    Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
+    return (flags & SDL_WINDOW_MINIMIZED);
+}
 void EngineWindow::maximize(){
     if(is_maximized()){
         return;
     }
 
-    int x, y, w, h;
-    SDL_GetWindowPosition(m_sdl_window, &x, &y);
-    SDL_GetWindowSize(m_sdl_window, &w, &h);
-
-    m_pos_buffer = {x,y};
-    m_size_buffer = {w,h};
-
-    SDL_MaximizeWindow(m_sdl_window);
-
-    this->stop_dragging();
+    m_events.emplace(Event::MAXIMIZE);
 }
 void EngineWindow::minimize(){
-    Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
-    if(flags & SDL_WINDOW_MINIMIZED){
+    if(is_minimized()){
         return;
     }
 
-    int x, y, w, h;
-    SDL_GetWindowPosition(m_sdl_window, &x, &y);
-    SDL_GetWindowSize(m_sdl_window, &w, &h);
-
-    m_pos_buffer = {x,y};
-    m_size_buffer = {w,h};
-
-    SDL_MinimizeWindow(m_sdl_window);
-
-    this->stop_dragging();
+    m_events.emplace(Event::MINIMIZE);
 }
 void EngineWindow::restore(){
-    SDL_HideWindow(m_sdl_window);
-
-    SDL_RestoreWindow(m_sdl_window);
-
-    SDL_ShowWindow(m_sdl_window);
+    m_events.emplace(Event::RESTORE);
 }
 
 void EngineWindow::after_restore(){    
@@ -370,8 +380,7 @@ void EngineWindow::after_restore(){
     SDL_GetWindowSize(m_sdl_window, &width, &height);
     m_window_dragging_offset = {width * proportion_x, proportion_y * EditorLayout::Ref()->menu_bar_size};
 
-    SDL_SetWindowSize(m_sdl_window, m_size_buffer.x, m_size_buffer.y);
-    SDL_SetWindowPosition(m_sdl_window, m_pos_buffer.x, m_pos_buffer.y);
+    m_apply_buffer();
 }
 
 
@@ -384,4 +393,16 @@ void EngineWindow::focus(){
     io.AddMousePosEvent(io.MousePos.x, io.MousePos.y);
     io.MouseDown[0] = io.MouseDown[1] = io.MouseDown[2] = false;
     io.AddFocusEvent(true);
+}
+void EngineWindow::m_store_buffer(){
+    int x, y, w, h;
+    SDL_GetWindowPosition(m_sdl_window, &x, &y);
+    SDL_GetWindowSize(m_sdl_window, &w, &h);
+
+    m_pos_buffer = {x,y};
+    m_size_buffer = {w,h};
+}
+void EngineWindow::m_apply_buffer(){
+    SDL_SetWindowSize(m_sdl_window, m_size_buffer.x, m_size_buffer.y);
+    SDL_SetWindowPosition(m_sdl_window, m_pos_buffer.x, m_pos_buffer.y);
 }

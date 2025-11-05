@@ -82,11 +82,16 @@ private:
         START_DRAG,
         END_DRAG,
         CLOSE_WINDOW,
+        MAXIMIZE,
+        MINIMIZE,
+        RESTORE,
     };
     std::queue<Event> m_events;
 
     vec2 m_pos_buffer;
     vec2 m_size_buffer;
+    void m_store_buffer();
+    void m_apply_buffer();
 public:
     EngineWindow()
     :m_main_window_title("DecDialogueEditor (DEV)"){}
@@ -102,7 +107,6 @@ public:
     Uint64 get_delta();
 
     vec2 get_display_size();
-    bool is_minimized();
 
     void delay(uint32 p_delay);
     bool is_running();
@@ -119,6 +123,7 @@ public:
     void stop_dragging();
 
     bool is_maximized();
+    bool is_minimized();
     void maximize();
     void minimize();
     void restore();

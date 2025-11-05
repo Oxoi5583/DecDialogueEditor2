@@ -22,6 +22,8 @@ private:
     bool m_mouse_left_button_clicked = false;
     bool m_mouse_right_button_clicked = false;
 
+    bool m_is_mouse_in_window = false;
+
     bool m_is_close_requested = false;
     SDL_WindowID m_close_window_id;
     
@@ -43,6 +45,8 @@ public:
     bool is_mouse_right_button_just_released();
     bool is_mouse_left_button_clicked();
     bool is_mouse_right_button_clicked();
+
+    bool is_mouse_in_window();
 
     bool is_close_requested();
     Uint32 get_close_window_id();

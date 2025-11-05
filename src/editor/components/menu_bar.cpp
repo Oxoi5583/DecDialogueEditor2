@@ -99,7 +99,7 @@ void EditorMenuBar::m_update_minimize_button(){
     if (ImGui::IsItemHovered()) {
         is_hover_any = true;
     }
-    if (ImGui::IsItemClicked()) {
+    if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)) {
         EngineWindow::Ref()->minimize();
     }
     ImGui::PopStyleVar();
@@ -124,7 +124,7 @@ void EditorMenuBar::m_update_maximize_button(){
     if (ImGui::IsItemHovered()) {
         is_hover_any = true;
     }
-    if (ImGui::IsItemClicked()) {
+    if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)) {
         if(EngineWindow::Ref()->is_maximized()){
             EngineWindow::Ref()->restore();
         }else{
@@ -153,7 +153,7 @@ void EditorMenuBar::m_update_close_button(){
     if (ImGui::IsItemHovered()) {
         is_hover_any = true;
     }
-    if (ImGui::IsItemClicked()) {
+    if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)) {
         EngineWindow::Ref()->close();
     }
     ImGui::PopStyleVar();
@@ -164,7 +164,6 @@ void EditorMenuBar::m_end_main_bar(){
 }
 void EditorMenuBar::m_handle_window(){
     if(!m_double_click_timer->is_timeout() && !is_hover_any && this->was_just_clicked()){
-        DEBUG_MSG("DOUBLE CLICKED");
         EngineWindow::Ref()->stop_dragging();
         if(EngineWindow::Ref()->is_maximized()){
             EngineWindow::Ref()->restore();

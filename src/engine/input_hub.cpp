@@ -10,6 +10,8 @@
 #include "SDL3/SDL_events.h"
 #include "glm/ext/vector_float2.hpp"
 #include "graph/viewport.h"
+#include "server/event_server.h"
+#include "server/events.h"
 #include "struct/shape/rect2.h"
 
 #include "imgui/backends/imgui_impl_sdl3.h"
@@ -33,20 +35,38 @@ void EngineInputHub::polling_sdl_event(){
     while (SDL_PollEvent(&sdl_event)) {
         ImGui_ImplSDL3_ProcessEvent(&sdl_event);
         switch (sdl_event.type) {
+            case (SDL_EVENT_WINDOW_RESIZED):{
+                EventWindowResized event;
+                event.new_size = EngineWindow::Ref()->get_window_size();
+                EventServer::Ref()->emit(event);
+                break;
+            }
             case (SDL_EVENT_WINDOW_MAXIMIZED):{
                 EngineWindow::Ref()->stop_dragging();
                 EngineWindow::Ref()->focus();
+
+                EventWindowResized event;
+                event.new_size = EngineWindow::Ref()->get_window_size();
+                EventServer::Ref()->emit(event);
                 break;
             }
             case (SDL_EVENT_WINDOW_MINIMIZED):{
                 EngineWindow::Ref()->stop_dragging();
                 EngineWindow::Ref()->focus();
+
+                EventWindowResized event;
+                event.new_size = EngineWindow::Ref()->get_window_size();
+                EventServer::Ref()->emit(event);
                 break;
             }
             case (SDL_EVENT_WINDOW_RESTORED):{
                 //EngineWindow::Ref()->restore();
                 EngineWindow::Ref()->after_restore();
                 EngineWindow::Ref()->focus();
+
+                EventWindowResized event;
+                event.new_size = EngineWindow::Ref()->get_window_size();
+                EventServer::Ref()->emit(event);
                 break;
             }
             case (SDL_EVENT_QUIT):{
@@ -106,6 +126,14 @@ void EngineInputHub::polling_sdl_event(){
             }
             case (SDL_EVENT_KEY_UP):{
                 m_redirect_keyboard_up_buffer(sdl_event.key.key);
+                break;
+            }
+            case (SDL_EVENT_WINDOW_MOUSE_ENTER):{
+                m_is_mouse_in_window = true;
+                break;
+            }
+            case (SDL_EVENT_WINDOW_MOUSE_LEAVE):{
+                m_is_mouse_in_window = false;
                 break;
             }
             default:{
@@ -703,3 +731,6 @@ vec2 EngineInputHub::get_mouse_motion(){
     return m_mouse_motion;
 }
 
+bool EngineInputHub::is_mouse_in_window(){
+    return m_is_mouse_in_window;
+}

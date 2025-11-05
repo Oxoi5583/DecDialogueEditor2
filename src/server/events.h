@@ -58,3 +58,22 @@ struct EventMousePlaceObj : public NonUniqueEvent{
     vec2 place_pos;
     OID obj_id;
 };
+
+struct EventWindowResized : public UniqueEvent{
+    vec2 new_size;
+};
+
+struct EventMouseOnResizer : public UniqueEvent{
+    enum class Direction{
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
+        UP_LEFT,
+        DOWN_LEFT,
+        UP_RIGHT,
+        DOWN_RIGHT,
+    };
+
+    Direction dir;
+};
