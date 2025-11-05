@@ -61,7 +61,6 @@ int main(int argc, char* argv[]) {
         
         double delta = EngineWindow::Ref()->get_delta();
 
-        MouseServer::Ref()->update();
         GraphCamera::Ref()->update();
         GraphViewport::Ref()->update();
         TimerServer::Ref()->update(delta);
@@ -86,7 +85,7 @@ int main(int argc, char* argv[]) {
             test_timer->stop();
         }
 
-
+        MouseServer::Ref()->update();
 
         EventServer::Ref()->flush();
 

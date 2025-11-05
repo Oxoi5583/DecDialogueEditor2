@@ -290,7 +290,6 @@ void EngineWindow::window_follow_mouse(){
     vec2 old_pos = {pos_x, pos_y};
     vec2 new_pos = m_screen_mouse_position - m_window_dragging_offset;
 
-    Uint32 flags = SDL_GetWindowFlags(m_sdl_window);
     if(new_pos != old_pos && is_maximized()){
         int width, height;
         SDL_GetWindowSize(m_sdl_window, &width, &height);
@@ -299,6 +298,14 @@ void EngineWindow::window_follow_mouse(){
         proportion_x = window_mouse_pos.x / (double)width;
 
         this->restore();
+    }
+
+    if(!is_maximized() && !is_minimized()){
+        if(m_screen_mouse_position.y == 0 && EngineInputHub::Ref()->is_mouse_left_button_just_released()){
+            this->stop_dragging();
+            this->maximize();
+            return;
+        }
     }
 
     set_window_position(new_pos);
@@ -351,8 +358,6 @@ void EngineWindow::minimize(){
     this->stop_dragging();
 }
 void EngineWindow::restore(){
-    SDL_SetWindowFullscreen(m_sdl_window, false);
-    SDL_SetWindowResizable(m_sdl_window, true);
     SDL_HideWindow(m_sdl_window);
 
     SDL_RestoreWindow(m_sdl_window);

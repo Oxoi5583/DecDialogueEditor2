@@ -48,3 +48,14 @@ bool ClickableObject::was_clicked(){
 bool ClickableObject::was_just_released(){
     return m_was_just_released;
 }
+
+
+bool ClickableObject::is_changing_cursor(){
+    return m_changed_cursor;
+}
+void ClickableObject::disable_cursor_change(){
+    m_changed_cursor = false;
+}
+void ClickableObject::enable_cursor_change(){
+    m_changed_cursor = true;
+}

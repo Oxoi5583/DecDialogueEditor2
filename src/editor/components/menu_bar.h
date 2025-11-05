@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/timer_server.h"
 #include "editor/components/base.h"
 #include "editor/space.h"
 #include "obj/abstract/clickable.h"
@@ -8,6 +9,7 @@
 class EditorMenuBar : public EditorComponentBase{
 private:
     EditorSpace* m_space = nullptr;
+    Timer* m_double_click_timer = nullptr;
 
     bool is_hover_any = false;
     void m_update_shape();

@@ -7,13 +7,15 @@
 
 EditorMenuBar::EditorMenuBar(){
     BIND_CLASS(EditorMenuBar);
+    m_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true);
+    m_double_click_timer->stop();
 }
 EditorMenuBar::~EditorMenuBar(){
 
 }
 
 void EditorMenuBar::ready(){
-
+    this->disable_cursor_change();
 }
 void EditorMenuBar::pre_process(){
     m_update_shape();
@@ -86,7 +88,7 @@ void EditorMenuBar::m_update_minimize_button(){
 
     float window_width = ImGui::GetWindowWidth();
 
-    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5 - 2;
+    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5;
 
     float x = window_width - total_button_width;
 
@@ -111,7 +113,7 @@ void EditorMenuBar::m_update_maximize_button(){
 
     float window_width = ImGui::GetWindowWidth();
 
-    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5 - 2;
+    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5;
 
     float x = window_width - total_button_width;
 
@@ -140,7 +142,7 @@ void EditorMenuBar::m_update_close_button(){
 
     float window_width = ImGui::GetWindowWidth();
 
-    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5 - 2;
+    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5;
 
     float x = window_width - total_button_width;
 
@@ -161,11 +163,30 @@ void EditorMenuBar::m_end_main_bar(){
     ImGui::PopStyleVar();
 }
 void EditorMenuBar::m_handle_window(){
+    if(!m_double_click_timer->is_timeout() && !is_hover_any && this->was_just_clicked()){
+        DEBUG_MSG("DOUBLE CLICKED");
+        EngineWindow::Ref()->stop_dragging();
+        if(EngineWindow::Ref()->is_maximized()){
+            EngineWindow::Ref()->restore();
+        }else{
+            EngineWindow::Ref()->maximize();
+        }
+
+        return;
+    }
+
     if(!is_hover_any && this->was_just_clicked()){
+        m_double_click_timer->reset();
+        m_double_click_timer->start();
         EngineWindow::Ref()->start_dragging();
     }
+
     if(this->was_just_released()){
         EngineWindow::Ref()->stop_dragging();
+    }
+
+    if(m_double_click_timer->is_timeout()){
+        m_double_click_timer->stop();
     }
 }
 

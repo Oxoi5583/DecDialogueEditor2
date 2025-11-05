@@ -15,6 +15,8 @@ private:
     const OID m_id;
     bool m_is_alive = true;
     bool m_is_ready = false;
+
+    virtual void _(){}
 protected:
 
 public:
