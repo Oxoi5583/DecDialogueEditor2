@@ -41,4 +41,14 @@ public:
 
     bool is_point_intersect(vec2 p_pos) override;
     bool is_rect_intersect(Rect2 p_rect);
+
+    
+    void move_left_top(vec2 p_pos);
+    void move_left_down(vec2 p_pos);
+    void move_right_top(vec2 p_pos);
+    void move_right_down(vec2 p_pos);
+    void move_left(double p_x);
+    void move_right(double p_x);
+    void move_top(double p_y);
+    void move_down(double p_y);
 };

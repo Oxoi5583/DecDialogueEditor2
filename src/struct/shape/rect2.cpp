@@ -164,3 +164,78 @@ bool Rect2::is_rect_intersect(Rect2 p_rect){
 
     return false;
 }
+
+
+void Rect2::move_left_top(vec2 p_pos){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = p_pos;
+    vec2 new_rd = old_rd;
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_left_down(vec2 p_pos){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = { p_pos.x, old_lt.y };
+    vec2 new_rd = { old_rd.x, p_pos.y };
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_right_top(vec2 p_pos){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = { old_lt.x, p_pos.y };
+    vec2 new_rd = { p_pos.x, old_lt.y };
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_right_down(vec2 p_pos){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = {old_lt.x,old_lt.y};
+    vec2 new_rd = {p_pos.x, p_pos.y};
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_left(double p_x){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = { p_x, old_lt.y };
+    vec2 new_rd = old_rd;
+
+    this->set_AABB(new_lt, new_rd);
+
+}
+void Rect2::move_right(double p_x){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = old_lt;
+    vec2 new_rd = { p_x, old_rd.y };
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_top(double p_y){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = { old_lt.x, p_y };
+    vec2 new_rd = old_rd;
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_down(double p_y){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    vec2 new_lt = old_lt;
+    vec2 new_rd = { old_rd.x, p_y };
+
+    this->set_AABB(new_lt, new_rd);
+}

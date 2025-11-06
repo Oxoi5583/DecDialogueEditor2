@@ -1,5 +1,6 @@
 #include "editor/layout.h"
 #include "editor/space.h"
+#include "engine/font_loader.h"
 #include "engine/input_hub.h"
 #include "engine/renderer.h"
 #include "engine/texture_loader.h"
@@ -42,6 +43,7 @@ int main(int argc, char* argv[]) {
     EngineWindow::Ref()->init();
     EngineRenderer::Ref()->init();
     EngineTextureLoader::Ref()->init();
+    EngineFontLoader::Ref()->init();
 
     GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();

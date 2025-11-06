@@ -63,48 +63,49 @@ void MouseServer::m_emit_event_if_left_released(){
 }
 
 void MouseServer::m_set_cursor(int p_index){
-    DEBUG_MSG("Set Cursor : " << p_index);
     SDL_SetCursor(cursors[p_index]);
 }
 
 void MouseServer::m_event_handle_reset(){
-    this->cursor_default();
+    m_resizer_event = EventServer::Ref()->poll<EventMouseOnResizer>();
+    m_obj_hover_event = EventServer::Ref()->poll<EventMouseHoverObj>();
+    if(m_resizer_event.empty() && m_obj_hover_event.empty()){
+        this->cursor_default();
+    }
 }
 
 void MouseServer::m_event_handle_resize_event(){
-    auto events = EventServer::Ref()->poll<EventMouseOnResizer>();
-    for(EventMouseOnResizer event : events){
+    for(EventMouseOnResizer event : m_resizer_event){
         switch (event.dir) {
-            case EventMouseOnResizer::Direction::UP:
+            case EventDirection::UP:
                 this->cursor_N_resize();
                 break;
-            case EventMouseOnResizer::Direction::DOWN:
+            case EventDirection::DOWN:
                 this->cursor_S_resize();
                 break;
-            case EventMouseOnResizer::Direction::LEFT:
+            case EventDirection::LEFT:
                 this->cursor_W_resize();
                 break;
-            case EventMouseOnResizer::Direction::RIGHT:
+            case EventDirection::RIGHT:
                 this->cursor_E_resize();
                 break;
-            case EventMouseOnResizer::Direction::UP_LEFT:
+            case EventDirection::UP_LEFT:
                 this->cursor_NW_resize();
                 break;
-            case EventMouseOnResizer::Direction::DOWN_LEFT:
+            case EventDirection::DOWN_LEFT:
                 this->cursor_SW_resize();
                 break;
-            case EventMouseOnResizer::Direction::UP_RIGHT:
+            case EventDirection::UP_RIGHT:
                 this->cursor_NE_resize();
                 break;
-            case EventMouseOnResizer::Direction::DOWN_RIGHT:
+            case EventDirection::DOWN_RIGHT:
                 this->cursor_SE_resize();
                 break;
         }
     }
 }
 void MouseServer::m_event_handle_hover_event(){
-    auto events = EventServer::Ref()->poll<EventMouseHoverObj>();
-    for(EventMouseHoverObj event : events){
+    for(EventMouseHoverObj event : m_obj_hover_event){
         if(ObjectServer::Ref()->is_id_valid(event.obj_id)){
             ObjectBase* ptr = ObjectServer::Ref()->get_instance<HoverableObject>(event.obj_id);
             ClickableObject* c_ptr = dynamic_cast<ClickableObject*>(ptr);
@@ -114,10 +115,11 @@ void MouseServer::m_event_handle_hover_event(){
             }
 
             if(!c_ptr->is_changing_cursor()){
-                continue;
+                this->cursor_default();
+            }else{
+                this->cursor_pointer();
             }
             
-            this->cursor_pointer();
         }
     }
 }

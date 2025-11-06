@@ -36,6 +36,11 @@ void EngineInputHub::polling_sdl_event(){
         ImGui_ImplSDL3_ProcessEvent(&sdl_event);
         switch (sdl_event.type) {
             case (SDL_EVENT_WINDOW_RESIZED):{
+                EngineWindow::Ref()->stop_dragging();
+                EngineWindow::Ref()->refresh();
+                GraphViewport::Ref()->update();
+                GraphCamera::Ref()->update();
+
                 EventWindowResized event;
                 event.new_size = EngineWindow::Ref()->get_window_size();
                 EventServer::Ref()->emit(event);

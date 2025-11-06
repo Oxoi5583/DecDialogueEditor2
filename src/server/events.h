@@ -63,17 +63,22 @@ struct EventWindowResized : public UniqueEvent{
     vec2 new_size;
 };
 
-struct EventMouseOnResizer : public UniqueEvent{
-    enum class Direction{
-        UP,
-        DOWN,
-        LEFT,
-        RIGHT,
-        UP_LEFT,
-        DOWN_LEFT,
-        UP_RIGHT,
-        DOWN_RIGHT,
-    };
+enum class EventDirection{
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+    UP_LEFT,
+    DOWN_LEFT,
+    UP_RIGHT,
+    DOWN_RIGHT,
+};
 
-    Direction dir;
+struct EventMouseOnResizer : public UniqueEvent{
+    EventDirection dir;
+};
+
+struct EventDragResizer : public NonUniqueEvent{
+    EventDirection dir;
+    vec2 global_mouse_pos;
 };

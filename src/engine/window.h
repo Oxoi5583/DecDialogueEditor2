@@ -57,6 +57,7 @@ private:
     void m_job_gl_clear();
     void m_job_imgui_new_frame();
     void m_job_event_handle();
+    void m_job_resizer_handle();
 
     void m_job_imgui_render();
 
@@ -117,6 +118,7 @@ public:
     vec2 get_window_size();
     vec2 get_window_position();
     void set_window_position(vec2 p_pos);
+    void set_window_AABB(vec2 p_left_top, vec2 p_right_down);
     void window_follow_mouse();
 
     void start_dragging();
@@ -132,4 +134,15 @@ public:
 
     void after_restore();
     unsigned int get_window_id();
+
+    void move_left_top(vec2 p_pos);
+    void move_left_down(vec2 p_pos);
+    void move_right_top(vec2 p_pos);
+    void move_right_down(vec2 p_pos);
+    void move_left(double p_x);
+    void move_right(double p_x);
+    void move_top(double p_y);
+    void move_down(double p_y);
+
+    void refresh();
 };

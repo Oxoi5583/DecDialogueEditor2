@@ -12,6 +12,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "engine/input_hub.h"
+#include "server/event_server.h"
+#include "server/events.h"
+#include "struct/shape/rect2.h"
 #include <vector>
 
 #define ENGINE_INIT_STEP __COUNTER__
@@ -268,6 +271,7 @@ void EngineWindow::close(){
 }
 
 void EngineWindow::begin(){
+    m_job_resizer_handle();
     m_job_update_screen_mouse_pos();
     m_job_update_delta();
     m_job_set_delay_if_minimized();
@@ -310,8 +314,18 @@ vec2 EngineWindow::get_window_position(){
 }
 
 void EngineWindow::set_window_position(vec2 p_pos){
-    SDL_SetWindowPosition(m_sdl_window, p_pos.x, p_pos.y);
+    SDL_SetWindowPosition(m_sdl_window, p_pos.x, std::max(0.0f, p_pos.y));
 }
+void EngineWindow::set_window_AABB(vec2 p_left_top, vec2 p_right_down){
+    vec2 clamp_left_top = glm::max(p_left_top, vec2(0.0f, 0.0f));
+    vec2 size = p_right_down - clamp_left_top;
+    set_window_position(clamp_left_top);
+    SDL_SetWindowSize(m_sdl_window, size.x, size.y);
+
+
+    DEBUG_MSG("set_window_AABB : " << clamp_left_top << " - " << p_right_down);
+}
+
 
 void EngineWindow::window_follow_mouse(){
     int pos_x, pos_y;
@@ -405,4 +419,164 @@ void EngineWindow::m_store_buffer(){
 void EngineWindow::m_apply_buffer(){
     SDL_SetWindowSize(m_sdl_window, m_size_buffer.x, m_size_buffer.y);
     SDL_SetWindowPosition(m_sdl_window, m_pos_buffer.x, m_pos_buffer.y);
+}
+
+
+void EngineWindow::move_left_top(vec2 p_pos){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_left_top(p_pos);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_left_down(vec2 p_pos){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_left_down(p_pos);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_right_top(vec2 p_pos){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_right_top(p_pos);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_right_down(vec2 p_pos){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_right_down(p_pos);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_left(double p_x){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_left(p_x);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_right(double p_x){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_right(p_x);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_top(double p_y){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_top(p_y);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+void EngineWindow::move_down(double p_y){
+    vec2 old_size = get_window_size();
+    vec2 old_pos = get_window_position();
+    Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
+
+    rect.move_down(p_y);
+
+    vec2 new_left_top = rect.get_left_top();
+    vec2 new_right_down = rect.get_right_down();
+
+    set_window_AABB(new_left_top, new_right_down);
+}
+
+void EngineWindow::m_job_resizer_handle(){
+    if(!EventServer::Ref()->has<EventDragResizer>()){
+        return;
+    }
+
+    EventDragResizer event = EventServer::Ref()->poll_first<EventDragResizer>();
+    DEBUG_MSG("event.global_mouse_pos : " << event.global_mouse_pos);
+    switch (event.dir) {
+        case EventDirection::UP:
+            this->move_top(event.global_mouse_pos.y);
+            break;
+        case EventDirection::DOWN:
+            this->move_down(event.global_mouse_pos.y);
+            break;
+        case EventDirection::LEFT:
+            this->move_left(event.global_mouse_pos.x);
+            break;
+        case EventDirection::RIGHT:
+            this->move_right(event.global_mouse_pos.x);
+            break;
+        case EventDirection::UP_LEFT:
+            this->move_left_top(event.global_mouse_pos);
+            break;
+        case EventDirection::DOWN_LEFT:
+            this->move_left_down(event.global_mouse_pos);
+            break;
+        case EventDirection::UP_RIGHT:
+            this->move_right_top(event.global_mouse_pos);
+            break;
+        case EventDirection::DOWN_RIGHT:
+            this->move_right_down(event.global_mouse_pos);
+            break;
+          break;
+    }
+    
+}
+
+void EngineWindow::refresh() {
+    if (!m_sdl_window || !m_sdl_gl_context) {
+        ERROR_MSG("EngineWindow::refresh failed: invalid window or GL context.");
+        return;
+    }
+
+    vec2 size = get_window_size();
+    glViewport(0, 0, (int)size.x, (int)size.y);
+
+    glClearColor(m_clear_color.x * m_clear_color.w,
+                 m_clear_color.y * m_clear_color.w,
+                 m_clear_color.z * m_clear_color.w,
+                 m_clear_color.w);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+    SDL_GL_SwapWindow(m_sdl_window);
 }

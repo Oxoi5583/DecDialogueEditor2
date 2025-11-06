@@ -1,5 +1,6 @@
 #include "engine/window_resizer.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "engine/input_hub.h"
 #include "engine/window.h"
 #include "ext/debug/messenger_ext.h"
 #include "engine/renderer.h"
@@ -16,6 +17,8 @@ void EngineWindowResizer::init(){
 void EngineWindowResizer::update(){
     m_refresh_resizer();
     m_refresh_collision();
+    m_refresh_is_dragging();
+    m_refresh_emit_dragging_event();
 }
 
 void EngineWindowResizer::m_refresh_resizer(){
@@ -35,7 +38,7 @@ void EngineWindowResizer::m_refresh_resizer(){
     vec2 right_top = rect.get_right_top();
     vec2 right_down = rect.get_right_down();
 
-    const double radius = 5;
+    const double radius = 10;
     m_left_top_angle.set_radius(radius);
     m_left_down_angle.set_radius(radius);
     m_right_top_angle.set_radius(radius);
@@ -46,7 +49,7 @@ void EngineWindowResizer::m_refresh_resizer(){
     m_right_top_angle.set_position(right_top);
     m_right_down_angle.set_position(right_down);
     
-    const double width = 5;
+    const double width = 10;
     vec2 up_edge_size = vec2(right_top.x,width);
     vec2 up_edge_pos = left_top + (up_edge_size / 2.0f);
     m_up_edge.set_size(up_edge_size);
@@ -82,11 +85,18 @@ void EngineWindowResizer::m_refresh_collision(){
         return;
     }
 
+    if(EngineWindow::Ref()->is_maximized()){
+        return;
+    }
+
+    if(EngineWindow::Ref()->is_minimized()){
+        return;
+    }
+
     vec2 mouse_pos = MouseServer::Ref()->get_mouse_screen_position();
     
     for(auto& [angle, dir] : m_angles){
         if(angle->is_point_intersect(mouse_pos)){
-            DEBUG_MSG("HIT ANGLE : " << mouse_pos);
 
             EventMouseHoverObj event;
             event.hovering_pos = mouse_pos;
@@ -101,7 +111,6 @@ void EngineWindowResizer::m_refresh_collision(){
 
     for(auto& [edge, dir] : m_edges){
         if(edge->is_point_intersect(mouse_pos)){
-            DEBUG_MSG("HIT EDGE : " << mouse_pos);
 
             EventMouseHoverObj event;
             event.hovering_pos = mouse_pos;
@@ -115,5 +124,36 @@ void EngineWindowResizer::m_refresh_collision(){
         }
     }
 
-    MouseServer::Ref()->cursor_default();
+}
+
+void EngineWindowResizer::m_refresh_is_dragging(){
+    if(!EventServer::Ref()->has<EventMouseOnResizer>()){
+        return;
+    }
+    if(MouseServer::Ref()->is_just_released()){
+        m_is_dragging = false;
+        return;
+    }
+    if(!MouseServer::Ref()->is_just_clicked()){
+        return;
+    }
+
+    if(!m_is_dragging){
+        m_is_dragging = true;
+        m_dragging_dir = EventServer::Ref()->poll_first<EventMouseOnResizer>().dir;
+    }
+}
+
+void EngineWindowResizer::m_refresh_emit_dragging_event(){
+    if(m_is_dragging){
+        DEBUG_MSG("m_is_dragging : " << m_is_dragging);
+        float screen_x, screen_y;
+        SDL_GetGlobalMouseState(&screen_x, &screen_y);
+
+        EventDragResizer event;
+        event.dir = m_dragging_dir;
+        event.global_mouse_pos = {screen_x, screen_y};
+
+        EventServer::Ref()->emit(event);
+    }
 }

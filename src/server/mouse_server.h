@@ -4,6 +4,7 @@
 #include "SDL3/SDL_mouse.h"
 #include "SDL3/SDL_oldnames.h"
 #include "glm/ext/vector_float2.hpp"
+#include "server/events.h"
 
 using namespace glm;
 
@@ -16,6 +17,9 @@ private:
     bool m_is_clicked;
     bool m_is_just_released;
     bool m_is_mouse_in_window = false;
+
+    std::vector<EventMouseOnResizer> m_resizer_event;
+    std::vector<EventMouseHoverObj> m_obj_hover_event;     
 
     SDL_Cursor* cursors[SDL_SYSTEM_CURSOR_COUNT] = {nullptr};
 
@@ -51,20 +55,8 @@ private:
     void m_event_handle_hover_event();
 
     void m_set_cursor(int p_index);
-public:
-    MouseServer();
-    ~MouseServer();
 
-    void update();
-
-    vec2 get_mouse_screen_position() const;
-    vec2 get_mouse_screen_position_center() const;
-    vec2 get_mouse_world_position() const;
-    bool is_just_clicked();
-    bool is_clicked();
-    bool is_just_released();
-    bool is_mouse_in_window();
-
+protected:
     void cursor_default();
     void cursor_text();
     void cursor_wait();
@@ -86,4 +78,18 @@ public:
     void cursor_S_resize();
     void cursor_SW_resize();
     void cursor_W_resize();
+public:
+    MouseServer();
+    ~MouseServer();
+
+    void update();
+
+    vec2 get_mouse_screen_position() const;
+    vec2 get_mouse_screen_position_center() const;
+    vec2 get_mouse_world_position() const;
+    bool is_just_clicked();
+    bool is_clicked();
+    bool is_just_released();
+    bool is_mouse_in_window();
+
 };

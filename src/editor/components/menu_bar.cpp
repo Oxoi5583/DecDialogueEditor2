@@ -1,4 +1,6 @@
 #include "menu_bar.h"
+#include "editor/layout.h"
+#include "engine/font_loader.h"
 #include "server/object_server.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "SDL3/SDL_video.h"
@@ -80,47 +82,65 @@ void EditorMenuBar::m_update_menu_edit(){
     }
 }
 void EditorMenuBar::m_update_minimize_button(){
-    const char* name = "-";
+    std::string name = "-";
 
-    float button_width = 30.0f;
-    int button_count = 3;
-    float spacing = ImGui::GetStyle().ItemSpacing.x;
+    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
+    float text_height = ImGui::CalcTextSize(name.c_str()).y;
+    float full_height = ImGui::GetContentRegionAvail().y;
+    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f,0.5f));
 
+    const int button_count = 3;
+
+    float button_width = 45.0f;
+    float spacing = 0;
+    float text_width = ImGui::CalcTextSize(name.c_str()).x;
     float window_width = ImGui::GetWindowWidth();
+    float total_button_width = (button_width * button_count) + spacing * (button_count - 1);
+    float start_x = window_width - total_button_width - 5.0f;
+    float padding_x = std::max(0.0f, (button_width - text_width) * 0.5f);
 
-    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5;
-
-    float x = window_width - total_button_width;
-
-    ImGui::SameLine(x);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(button_width / 2.0f, button_width / 2.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, padding_y));
+    ImGui::SameLine(start_x);
     
-    ImGui::Button(name);
+    ImGui::Button(name.c_str());
     if (ImGui::IsItemHovered()) {
         is_hover_any = true;
     }
     if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)) {
         EngineWindow::Ref()->minimize();
     }
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(2);
+    ImGui::PopFont();
 }
 void EditorMenuBar::m_update_maximize_button(){
-    const char* name = "+";
+    std::string name = "+";
 
-    float button_width = 30.0f;
-    int button_count = 2;
-    float spacing = ImGui::GetStyle().ItemSpacing.x;
+    if(EngineWindow::Ref()->is_maximized()){
+        name = "=";
+    }
 
+    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
+    float text_height = ImGui::CalcTextSize(name.c_str()).y;
+    float full_height = ImGui::GetContentRegionAvail().y;
+    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f,0.5f));
+
+
+    const int button_count = 2;
+
+    float button_width = 45.0f;
+    float spacing = 0;
+    float text_width = ImGui::CalcTextSize(name.c_str()).x;
     float window_width = ImGui::GetWindowWidth();
+    float total_button_width = (button_width * button_count) + spacing * (button_count - 1);
+    float start_x = window_width - total_button_width - 5.0f;
+    float padding_x = std::max(0.0f, (button_width - text_width) * 0.5f);
 
-    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5;
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, padding_y));
+    ImGui::SameLine(start_x);
 
-    float x = window_width - total_button_width;
-
-    ImGui::SameLine(x);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(button_width / 2.0f, button_width / 2.0f));
-    
-    ImGui::Button(name);
+    ImGui::Button(name.c_str());
     if (ImGui::IsItemHovered()) {
         is_hover_any = true;
     }
@@ -131,32 +151,40 @@ void EditorMenuBar::m_update_maximize_button(){
             EngineWindow::Ref()->maximize();
         }
     }
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(2);
+    ImGui::PopFont();
 }
 void EditorMenuBar::m_update_close_button(){
-    const char* name = "X";
+    std::string name = "x";
 
-    float button_width = 30.0f;
-    int button_count = 1;
-    float spacing = ImGui::GetStyle().ItemSpacing.x;
+    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
+    float text_height = ImGui::CalcTextSize(name.c_str()).y;
+    float full_height = ImGui::GetContentRegionAvail().y;
+    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f,0.5f));
 
+    const int button_count = 1;
+
+    float button_width = 45.0f;
+    float spacing = 0;
+    float text_width = ImGui::CalcTextSize(name.c_str()).x;
     float window_width = ImGui::GetWindowWidth();
+    float total_button_width = (button_width * button_count) + spacing * (button_count - 1);
+    float start_x = window_width - total_button_width - 5.0f;
+    float padding_x = std::max(0.0f, (button_width - text_width) * 0.5f);
 
-    float total_button_width = (button_width * button_count) + spacing * (button_count - 1) + button_width * 0.5;
-
-    float x = window_width - total_button_width;
-
-    ImGui::SameLine(x);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(button_width / 2.0f, button_width / 2.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, padding_y));
+    ImGui::SameLine(start_x);
     
-    ImGui::Button(name);
+    ImGui::Button(name.c_str());
     if (ImGui::IsItemHovered()) {
         is_hover_any = true;
     }
     if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)) {
         EngineWindow::Ref()->close();
     }
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(2);
+    ImGui::PopFont();
 }
 void EditorMenuBar::m_end_main_bar(){
     ImGui::EndMainMenuBar();
