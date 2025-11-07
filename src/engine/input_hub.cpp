@@ -1,5 +1,6 @@
 #include "engine/input_hub.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "SDL3/SDL_oldnames.h"
 #include "editor/layout.h"
 #include "engine/window.h"
 #include "ext/debug/messenger_ext.h"
@@ -17,13 +18,20 @@
 #include "imgui/backends/imgui_impl_sdl3.h"
 #include <unordered_set>
 
+void EngineInputHub::init(){
+    SDL_CaptureMouse(true);
+}
+
 void EngineInputHub::polling_sdl_event(){
+    SDL_CaptureMouse(true);
     m_mouse_motion = vec2();
     m_mouse_wheel = vec2();
     m_mouse_left_button_just_clicked = false;
     m_mouse_right_button_just_clicked = false;
     m_mouse_left_button_just_released = false;
     m_mouse_right_button_just_released = false;
+    m_mouse_middle_button_just_clicked = false;
+    m_mouse_middle_button_just_released = false;
 
     m_is_close_requested = false;
 
@@ -36,8 +44,8 @@ void EngineInputHub::polling_sdl_event(){
         ImGui_ImplSDL3_ProcessEvent(&sdl_event);
         switch (sdl_event.type) {
             case (SDL_EVENT_WINDOW_RESIZED):{
-                EngineWindow::Ref()->stop_dragging();
                 EngineWindow::Ref()->refresh();
+                EditorLayout::Ref()->ui_update();
                 GraphViewport::Ref()->update();
                 GraphCamera::Ref()->update();
 
@@ -108,6 +116,10 @@ void EngineInputHub::polling_sdl_event(){
                     m_mouse_right_button_clicked = true;
                     m_mouse_right_button_just_clicked = true;
                 }
+                if (sdl_event.button.button == SDL_BUTTON_MIDDLE) {
+                    m_mouse_middle_button_clicked = true;
+                    m_mouse_middle_button_just_clicked = true;
+                }
                 break;
             }
             case (SDL_EVENT_MOUSE_BUTTON_UP):{
@@ -118,6 +130,10 @@ void EngineInputHub::polling_sdl_event(){
                 else if (sdl_event.button.button == SDL_BUTTON_RIGHT){
                     m_mouse_right_button_clicked = false;
                     m_mouse_right_button_just_released = true;
+                }
+                if (sdl_event.button.button == SDL_BUTTON_MIDDLE) {
+                    m_mouse_middle_button_clicked = false;
+                    m_mouse_middle_button_just_released = true;
                 }
                 break;
             }
@@ -713,7 +729,17 @@ bool EngineInputHub::is_mouse_left_button_clicked(){
 bool EngineInputHub::is_mouse_right_button_clicked(){
     return m_mouse_right_button_clicked;
 }
+bool EngineInputHub::is_mouse_middle_button_just_clicked() {
+    return m_mouse_middle_button_just_clicked;
+}
 
+bool EngineInputHub::is_mouse_middle_button_just_released() {
+    return m_mouse_middle_button_just_released;
+}
+
+bool EngineInputHub::is_mouse_middle_button_clicked() {
+    return m_mouse_middle_button_clicked;
+}
 
 bool EngineInputHub::is_close_requested(){
     return m_is_close_requested;

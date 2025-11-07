@@ -2,6 +2,7 @@
 
 #include "editor/layout.h"
 #include "glm/ext/vector_float2.hpp"
+#include "server/mouse_server.h"
 #include "server/object_base.h"
 
 using namespace glm;
@@ -20,14 +21,17 @@ struct NonUniqueEvent : public EventBase{
 
 struct EventMouseJustClicked : public UniqueEvent{
     vec2 click_pos;
+    int button;
 };
 
 struct EventMouseClicked : public UniqueEvent{
     vec2 click_pos;
+    int button;
 };
 
 struct EventMouseReleased : public UniqueEvent{
     vec2 click_pos;
+    int button;
 };
 
 struct EventSpawnNode : public NonUniqueEvent{
@@ -81,4 +85,9 @@ struct EventMouseOnResizer : public UniqueEvent{
 struct EventDragResizer : public NonUniqueEvent{
     EventDirection dir;
     vec2 global_mouse_pos;
+};
+
+struct EventMouseJustClickedOnWorld : public NonUniqueEvent{
+    vec2 pos;
+    int button;
 };

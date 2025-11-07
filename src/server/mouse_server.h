@@ -1,62 +1,79 @@
 #pragma once
 
 #include "DecToolsBox/abstract/singleton.h"
+#include "glm/glm.hpp"
+#include "engine/input_hub.h"
 #include "SDL3/SDL_mouse.h"
-#include "SDL3/SDL_oldnames.h"
-#include "glm/ext/vector_float2.hpp"
-#include "server/events.h"
+#include <vector>
 
 using namespace glm;
+
+enum class MouseButton {
+    LEFT,
+    RIGHT,
+    MIDDLE
+};
 
 class MouseServer : public Singleton<MouseServer> {
 private:
     vec2 m_world_mouse_pos;
     vec2 m_screen_mouse_pos;
     vec2 m_screen_mouse_pos_center;
-    bool m_is_just_clicked;
-    bool m_is_clicked;
-    bool m_is_just_released;
+
     bool m_is_mouse_in_window = false;
 
-    std::vector<EventMouseOnResizer> m_resizer_event;
-    std::vector<EventMouseHoverObj> m_obj_hover_event;     
+    bool m_is_left_just_clicked = false;
+    bool m_is_left_clicked = false;
+    bool m_is_left_just_released = false;
 
-    SDL_Cursor* cursors[SDL_SYSTEM_CURSOR_COUNT] = {nullptr};
+    bool m_is_right_just_clicked = false;
+    bool m_is_right_clicked = false;
+    bool m_is_right_just_released = false;
 
-    void load_cursor() {
-        cursors[SDL_SYSTEM_CURSOR_DEFAULT]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_DEFAULT);
-        cursors[SDL_SYSTEM_CURSOR_TEXT]         = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_TEXT);
-        cursors[SDL_SYSTEM_CURSOR_WAIT]         = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-        cursors[SDL_SYSTEM_CURSOR_CROSSHAIR]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
-        cursors[SDL_SYSTEM_CURSOR_PROGRESS]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_PROGRESS);
-        cursors[SDL_SYSTEM_CURSOR_NWSE_RESIZE]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_NESW_RESIZE]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NESW_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_EW_RESIZE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_EW_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_NS_RESIZE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NS_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_MOVE]         = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_MOVE);
-        cursors[SDL_SYSTEM_CURSOR_NOT_ALLOWED]  = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED);
-        cursors[SDL_SYSTEM_CURSOR_POINTER]      = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_POINTER);
-        cursors[SDL_SYSTEM_CURSOR_NW_RESIZE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NW_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_N_RESIZE]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_N_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_NE_RESIZE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NE_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_E_RESIZE]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_E_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_SE_RESIZE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SE_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_S_RESIZE]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_S_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_SW_RESIZE]    = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SW_RESIZE);
-        cursors[SDL_SYSTEM_CURSOR_W_RESIZE]     = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_W_RESIZE);
-    }
+    bool m_is_middle_just_clicked = false;
+    bool m_is_middle_clicked = false;
+    bool m_is_middle_just_released = false;
+
+    std::vector<SDL_Cursor*> cursors;
+
+    // event cache
+    std::vector<class EventMouseOnResizer> m_resizer_event;
+    std::vector<class EventMouseHoverObj> m_obj_hover_event;
 
     void m_emit_event_if_left_just_clicked();
     void m_emit_event_if_left_clicked();
     void m_emit_event_if_left_released();
 
+    void m_emit_event_if_right_just_clicked();
+    void m_emit_event_if_right_clicked();
+    void m_emit_event_if_right_released();
+
+    void m_emit_event_if_middle_just_clicked();
+    void m_emit_event_if_middle_clicked();
+    void m_emit_event_if_middle_released();
+
+    void m_set_cursor(int p_index);
     void m_event_handle_reset();
     void m_event_handle_resize_event();
     void m_event_handle_hover_event();
 
-    void m_set_cursor(int p_index);
+public:
+    MouseServer();
+    ~MouseServer();
 
-protected:
+    void update();
+    void load_cursor();
+
+    vec2 get_mouse_screen_position() const;
+    vec2 get_mouse_screen_position_center() const;
+    vec2 get_mouse_world_position() const;
+
+    bool is_just_clicked(MouseButton p_button = MouseButton::LEFT);
+    bool is_clicked(MouseButton p_button = MouseButton::LEFT);
+    bool is_just_released(MouseButton p_button = MouseButton::LEFT);
+    bool is_mouse_in_window();
+
+    // Cursor control
     void cursor_default();
     void cursor_text();
     void cursor_wait();
@@ -65,7 +82,6 @@ protected:
     void cursor_pointer();
     void cursor_move();
     void cursor_not_allowed();
-
     void cursor_NS_resize();
     void cursor_EW_resize();
     void cursor_NWSE_resize();
@@ -78,18 +94,4 @@ protected:
     void cursor_S_resize();
     void cursor_SW_resize();
     void cursor_W_resize();
-public:
-    MouseServer();
-    ~MouseServer();
-
-    void update();
-
-    vec2 get_mouse_screen_position() const;
-    vec2 get_mouse_screen_position_center() const;
-    vec2 get_mouse_world_position() const;
-    bool is_just_clicked();
-    bool is_clicked();
-    bool is_just_released();
-    bool is_mouse_in_window();
-
 };

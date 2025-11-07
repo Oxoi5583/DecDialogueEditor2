@@ -127,26 +127,23 @@ void EngineWindowResizer::m_refresh_collision(){
 }
 
 void EngineWindowResizer::m_refresh_is_dragging(){
-    if(!EventServer::Ref()->has<EventMouseOnResizer>()){
-        return;
-    }
-    if(MouseServer::Ref()->is_just_released()){
+    if(MouseServer::Ref()->is_just_released()){ 
         m_is_dragging = false;
         return;
     }
-    if(!MouseServer::Ref()->is_just_clicked()){
+    if(!EventServer::Ref()->has<EventMouseOnResizer>()){
         return;
     }
-
-    if(!m_is_dragging){
-        m_is_dragging = true;
-        m_dragging_dir = EventServer::Ref()->poll_first<EventMouseOnResizer>().dir;
+    if(MouseServer::Ref()->is_just_clicked()){
+        if(!m_is_dragging){
+            m_is_dragging = true;
+            m_dragging_dir = EventServer::Ref()->poll_first<EventMouseOnResizer>().dir;
+        }
     }
 }
 
 void EngineWindowResizer::m_refresh_emit_dragging_event(){
     if(m_is_dragging){
-        DEBUG_MSG("m_is_dragging : " << m_is_dragging);
         float screen_x, screen_y;
         SDL_GetGlobalMouseState(&screen_x, &screen_y);
 

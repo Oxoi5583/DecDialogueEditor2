@@ -321,9 +321,6 @@ void EngineWindow::set_window_AABB(vec2 p_left_top, vec2 p_right_down){
     vec2 size = p_right_down - clamp_left_top;
     set_window_position(clamp_left_top);
     SDL_SetWindowSize(m_sdl_window, size.x, size.y);
-
-
-    DEBUG_MSG("set_window_AABB : " << clamp_left_top << " - " << p_right_down);
 }
 
 
@@ -525,7 +522,6 @@ void EngineWindow::m_job_resizer_handle(){
     }
 
     EventDragResizer event = EventServer::Ref()->poll_first<EventDragResizer>();
-    DEBUG_MSG("event.global_mouse_pos : " << event.global_mouse_pos);
     switch (event.dir) {
         case EventDirection::UP:
             this->move_top(event.global_mouse_pos.y);

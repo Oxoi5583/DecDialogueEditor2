@@ -12,6 +12,9 @@
 #include "glm/ext/vector_float2.hpp"
 #include "graph/viewport.h"
 #include "imgui/imgui.h"
+#include "server/event_server.h"
+#include "server/events.h"
+#include "server/mouse_server.h"
 #include "struct/shape/rect2.h"
 #include <cstddef>
 
@@ -37,25 +40,33 @@ void GraphCamera::m_job_update_projection(){
         -1.0f, 1.0f
     );
 }
+void GraphCamera::m_job_update_is_dragging(){
+    if(m_is_dragging){
+        if(MouseServer::Ref()->is_just_released(MouseButton::MIDDLE)){
+            m_is_dragging = false;
+        }
+        return;
+    }
+
+    if(EventServer::Ref()->has<EventMouseJustClickedOnWorld>()){
+        auto event = EventServer::Ref()->poll_first<EventMouseJustClickedOnWorld>();
+        if(event.button != (int)MouseButton::MIDDLE){
+            return;     
+        }
+
+        m_dragging_start_pos = event.pos;
+        m_dragging_start_target = this->get_target();
+        m_is_dragging = true;
+    }
+}
 void GraphCamera::m_job_update_control(){
-    vec2 motion = vec2(0.0f,0.0f);
-
-    const double speed = 5;
-    if(EngineInputHub::Ref()->keyboard_is_down(K_UP)){
-        motion.y -= speed;
-    }
-    if(EngineInputHub::Ref()->keyboard_is_down(K_DOWN)){
-        motion.y += speed;
-    }
-    if(EngineInputHub::Ref()->keyboard_is_down(K_LEFT)){
-        motion.x -= speed;
-    }
-    if(EngineInputHub::Ref()->keyboard_is_down(K_RIGHT)){
-        motion.x += speed;
+    if(!m_is_dragging){
+        return;
     }
 
-    vec2 old_target = this->get_target();
-    vec2 new_target = old_target + motion;
+    vec2 current_mouse_pos = MouseServer::Ref()->get_mouse_screen_position();
+    vec2 motion = current_mouse_pos - m_dragging_start_pos;
+    vec2 new_target = m_dragging_start_target - motion;
 
     this->set_target(new_target);
 }
@@ -67,6 +78,7 @@ void GraphCamera::m_job_draw_border(){
     EngineRenderer::Ref()->draw_line(points[3], points[0], vec4(0.0f,0.0f,0.0f,1.0f), 3);
 }
 void GraphCamera::update(){
+    m_job_update_is_dragging();
     m_job_update_control();
     m_job_update_window_size_buffer();
     m_job_update_view();

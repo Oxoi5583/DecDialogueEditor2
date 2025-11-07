@@ -1,14 +1,17 @@
 #pragma once
 
 #include "DecToolsBox/abstract/singleton.h"
+#include "DecToolsBox/debug/messenger.h"
 
 #include <any>
+#include <set>
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
 
 class EventServer : public Singleton<EventServer> {
     typedef std::unordered_map<std::type_index, std::vector<std::any>> DataContainer;
+
 public:
     template<typename EventType>
     std::vector<EventType> poll(){
@@ -49,8 +52,23 @@ public:
         return true;
     }
     template<typename EventType>
+    void block(){
+        DataContainer& data = (EventType::is_event_unique) ? m_events : m_events_buffer;
+
+        if(data.contains(typeid(EventType))){
+            data.erase(typeid(EventType));
+        }else{
+            m_block_types.emplace(typeid(EventType));
+        }
+        return;
+    }
+    template<typename EventType>
     void emit(EventType p_event){
         if(EventType::is_event_unique && this->has<EventType>()){
+            return;
+        }
+
+        if(m_block_types.contains(typeid(EventType))){
             return;
         }
 
@@ -63,4 +81,5 @@ public:
 private:
     DataContainer m_events;
     DataContainer m_events_buffer;
+    std::set<std::type_index> m_block_types;
 };

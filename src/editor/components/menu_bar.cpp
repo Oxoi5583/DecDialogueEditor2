@@ -1,6 +1,8 @@
 #include "menu_bar.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
+#include "server/event_server.h"
+#include "server/events.h"
 #include "server/object_server.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "SDL3/SDL_video.h"
@@ -30,6 +32,7 @@ void EditorMenuBar::pre_process(){
     m_update_close_button();
     m_end_main_bar();
     m_handle_window();
+    m_block_resizer();
 }
 void EditorMenuBar::process(){
 }
@@ -217,3 +220,8 @@ void EditorMenuBar::m_handle_window(){
     }
 }
 
+void EditorMenuBar::m_block_resizer(){
+    if(is_hover_any){
+        EventServer::Ref()->block<EventMouseOnResizer>();
+    }
+}

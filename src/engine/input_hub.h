@@ -21,6 +21,9 @@ private:
     bool m_mouse_right_button_just_released = false;
     bool m_mouse_left_button_clicked = false;
     bool m_mouse_right_button_clicked = false;
+    bool m_mouse_middle_button_just_clicked = false;
+    bool m_mouse_middle_button_just_released = false;
+    bool m_mouse_middle_button_clicked = false;
 
     bool m_is_mouse_in_window = false;
 
@@ -35,6 +38,8 @@ private:
     void m_store_keyboard_down_buffer(SDL_Keycode p_key);
     void m_store_keyboard_up_buffer(SDL_Keycode p_key);
 public:
+    void init();
+
     vec2 get_mouse_motion();
     vec2 get_mouse_position();
     vec2 get_mouse_world_position();
@@ -45,6 +50,9 @@ public:
     bool is_mouse_right_button_just_released();
     bool is_mouse_left_button_clicked();
     bool is_mouse_right_button_clicked();
+    bool is_mouse_middle_button_just_clicked();
+    bool is_mouse_middle_button_just_released();
+    bool is_mouse_middle_button_clicked();
 
     bool is_mouse_in_window();
 

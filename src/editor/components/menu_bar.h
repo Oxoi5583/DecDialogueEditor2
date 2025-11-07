@@ -22,6 +22,7 @@ private:
     void m_update_close_button();
     void m_end_main_bar();
     void m_handle_window();
+    void m_block_resizer();
 public:
     EditorMenuBar();
     ~EditorMenuBar();

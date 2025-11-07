@@ -19,9 +19,14 @@ private:
     mat4 m_origin_view;
     mat4 m_projection;
 
+    bool m_is_dragging = false;
+    vec2 m_dragging_start_pos;
+    vec2 m_dragging_start_target;
+
     void m_job_update_window_size_buffer();
     void m_job_update_view();
     void m_job_update_projection();
+    void m_job_update_is_dragging();
     void m_job_update_control();
     void m_job_draw_border();
 public:

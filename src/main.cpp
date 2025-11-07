@@ -5,6 +5,7 @@
 #include "engine/renderer.h"
 #include "engine/texture_loader.h"
 #include "engine/window_resizer.h"
+#include "graph/background.h"
 #include "graph/camera.h"
 #include "graph/grid.h"
 #include "graph/viewport.h"
@@ -44,6 +45,7 @@ int main(int argc, char* argv[]) {
     EngineRenderer::Ref()->init();
     EngineTextureLoader::Ref()->init();
     EngineFontLoader::Ref()->init();
+    EngineInputHub::Ref()->init();
 
     GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();
@@ -56,6 +58,8 @@ int main(int argc, char* argv[]) {
     test_timer->start();
     
     EditorLayout::Ref()->ui_init();
+
+    DEBUG_MSG("End Init.");
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
@@ -70,7 +74,6 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->clear_garbage();
 
         EditorLayout::Ref()->ui_update();
-        EditorLayout::Ref()->ui_draw();
         GraphViewport::Ref()->update();
         EngineWindowResizer::Ref()->update();
 
@@ -81,6 +84,7 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->process();
         ObjectServer::Ref()->post_process();
         ObjectServer::Ref()->draw();
+        GraphBackground::Ref()->update();
 
         if(test_timer->timeout_and_reset()){
             EventSpawnNode event;
@@ -91,6 +95,7 @@ int main(int argc, char* argv[]) {
         }
 
         MouseServer::Ref()->update();
+        EditorLayout::Ref()->ui_draw();
 
         EventServer::Ref()->flush();
 
