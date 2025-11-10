@@ -2,6 +2,7 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "SDL3/SDL_oldnames.h"
 #include "editor/layout.h"
+#include "engine/renderer.h"
 #include "engine/window.h"
 #include "ext/debug/messenger_ext.h"
 #include "engine/input_key.h"
@@ -46,9 +47,12 @@ void EngineInputHub::polling_sdl_event(){
             case (SDL_EVENT_WINDOW_RESIZED):{
                 EngineWindow::Ref()->refresh();
                 EditorLayout::Ref()->ui_update();
-                GraphViewport::Ref()->update();
                 GraphCamera::Ref()->update();
-
+                GraphCamera::Ref()->go_to_left_top_buffer();
+                GraphCamera::Ref()->refresh_left_top_buffer();
+                GraphViewport::Ref()->update();
+                EngineRenderer::Ref()->refresh_buffer();
+                
                 EventWindowResized event;
                 event.new_size = EngineWindow::Ref()->get_window_size();
                 EventServer::Ref()->emit(event);

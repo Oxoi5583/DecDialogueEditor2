@@ -3,6 +3,7 @@
 #include "DecToolsBox/abstract./singleton.h"
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/rect2.h"
+#include "ext/debug/messenger_ext.h"
 
 using namespace glm;
 

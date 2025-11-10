@@ -22,6 +22,12 @@ private:
     void m_main_space_update();
     void m_main_space_draw();
 
+    EditorSpace* m_menu_bar_space;
+    EditorSpace* m_menu_bar_other_space;
+    
+    EditorSpace* m_left_panel_space;
+    EditorSpace* m_left_panel_other_space;
+
     void m_init_objs();
 
     EditorMenuBar* m_menu_bar;
@@ -36,4 +42,6 @@ public:
     void ui_draw();
     
     const double menu_bar_size = 30;
+
+    EditorSpace* get_world_space();
 };

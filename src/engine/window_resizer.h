@@ -45,4 +45,5 @@ private:
 public:
     void init();
     void update();
+    void post_update();
 };

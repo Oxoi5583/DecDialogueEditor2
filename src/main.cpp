@@ -61,6 +61,8 @@ int main(int argc, char* argv[]) {
 
     DEBUG_MSG("End Init.");
 
+    bool is_first_frame = true;
+
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
 
@@ -73,8 +75,8 @@ int main(int argc, char* argv[]) {
         TimerServer::Ref()->update(delta);
         ObjectServer::Ref()->clear_garbage();
 
-        EditorLayout::Ref()->ui_update();
         GraphViewport::Ref()->update();
+        EditorLayout::Ref()->ui_update();
         EngineWindowResizer::Ref()->update();
 
         GraphGrid::Ref()->draw();
@@ -94,8 +96,15 @@ int main(int argc, char* argv[]) {
             test_timer->stop();
         }
 
+
+        EngineWindowResizer::Ref()->post_update();
         MouseServer::Ref()->update();
         EditorLayout::Ref()->ui_draw();
+
+        if(is_first_frame){
+            GraphCamera::Ref()->refresh_left_top_buffer();
+            is_first_frame = false;
+        }
 
         EventServer::Ref()->flush();
 

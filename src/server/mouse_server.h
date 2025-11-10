@@ -53,10 +53,34 @@ private:
     void m_emit_event_if_middle_released();
 
     void m_set_cursor(int p_index);
+    void m_set_cursor(SDL_Cursor* p_ptr);
     void m_event_handle_reset();
     void m_event_handle_resize_event();
     void m_event_handle_hover_event();
+    void m_event_handle_set_to_cursor();
 
+    SDL_Cursor* m_get_cursor_default();
+    SDL_Cursor* m_get_cursor_text();
+    SDL_Cursor* m_get_cursor_wait();
+    SDL_Cursor* m_get_cursor_crosshair();
+    SDL_Cursor* m_get_cursor_progress();
+    SDL_Cursor* m_get_cursor_pointer();
+    SDL_Cursor* m_get_cursor_move();
+    SDL_Cursor* m_get_cursor_not_allowed();
+    SDL_Cursor* m_get_cursor_NS_resize();
+    SDL_Cursor* m_get_cursor_EW_resize();
+    SDL_Cursor* m_get_cursor_NWSE_resize();
+    SDL_Cursor* m_get_cursor_NESW_resize();
+    SDL_Cursor* m_get_cursor_NW_resize();
+    SDL_Cursor* m_get_cursor_N_resize();
+    SDL_Cursor* m_get_cursor_NE_resize();
+    SDL_Cursor* m_get_cursor_E_resize();
+    SDL_Cursor* m_get_cursor_SE_resize();
+    SDL_Cursor* m_get_cursor_S_resize();
+    SDL_Cursor* m_get_cursor_SW_resize();
+    SDL_Cursor* m_get_cursor_W_resize();
+
+    SDL_Cursor* m_final_cursor = nullptr;
 public:
     MouseServer();
     ~MouseServer();
@@ -94,4 +118,5 @@ public:
     void cursor_S_resize();
     void cursor_SW_resize();
     void cursor_W_resize();
+    
 };

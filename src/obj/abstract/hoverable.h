@@ -9,6 +9,8 @@ class HoverableObject : public MovableObject {
 private:
     bool m_was_hovered = false;
     bool m_check_hovering();
+
+    bool m_changed_cursor = true;
 public:
     HoverableObject();
     ~HoverableObject();
@@ -21,4 +23,8 @@ public:
     void draw();
 
     bool was_hovered();
+    
+    bool is_changing_cursor();
+    void disable_cursor_change();
+    void enable_cursor_change();
 };

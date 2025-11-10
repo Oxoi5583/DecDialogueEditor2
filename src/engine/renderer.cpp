@@ -434,9 +434,13 @@ void EngineRenderer::m_render_line(){
     glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, static_cast<GLsizei>(m_line_data.fm_points.size()));
 }
 
-void EngineRenderer::render(){
+void EngineRenderer::refresh_buffer(){
     m_view_buffer = GraphCamera::Ref()->get_view();
     m_projection_buffer = GraphCamera::Ref()->get_projection();
+}
+
+void EngineRenderer::render(){
+    refresh_buffer();
 
     m_render_line();
     m_render_rect();

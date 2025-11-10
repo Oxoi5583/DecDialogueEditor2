@@ -41,6 +41,8 @@ struct EventSpawnNode : public NonUniqueEvent{
 struct EventMouseHoverObj : public UniqueEvent{
     vec2 hovering_pos;
     OID obj_id;
+
+    bool is_pointer_cursor = false;
 };
 
 struct EventMouseJustClickObj : public UniqueEvent{
@@ -91,3 +93,6 @@ struct EventMouseJustClickedOnWorld : public NonUniqueEvent{
     vec2 pos;
     int button;
 };
+
+struct EventEditorSpaceResizerHover : public UniqueEvent{};
+struct EventEditorSpaceResizerDragging : public UniqueEvent{};

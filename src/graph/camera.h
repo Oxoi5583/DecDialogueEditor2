@@ -23,6 +23,8 @@ private:
     vec2 m_dragging_start_pos;
     vec2 m_dragging_start_target;
 
+    vec2 m_left_top_buffer;
+
     void m_job_update_window_size_buffer();
     void m_job_update_view();
     void m_job_update_projection();
@@ -39,6 +41,10 @@ public:
     
     void set_target(const vec2& p_target);
     void set_zoom(const float& p_zoom);
+    
+    void refresh_left_top_buffer();
+    vec2 get_left_top_buffer() const;
+    void go_to_left_top_buffer();
 
     vec2 get_origin() const;
     vec2 get_target() const;

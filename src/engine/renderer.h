@@ -178,4 +178,6 @@ public:
     void draw_rect(Rect2 p_rect, vec4 p_color, TextureId p_id);
     void draw_circle(vec2 p_pos, float p_radius, vec4 p_color, TextureId p_id);
     void draw_line(vec2 p_fm, vec2 p_to, vec4 p_color, float p_width);
+
+    void refresh_buffer();
 };

@@ -30,6 +30,7 @@ bool HoverableObject::m_check_hovering(){
     EventMouseHoverObj new_event;
     new_event.hovering_pos = mouse_pos;
     new_event.obj_id = get_id();
+    new_event.is_pointer_cursor = m_changed_cursor;
     EventServer::Ref()->emit(new_event);
     return true;
 }
@@ -52,4 +53,14 @@ void HoverableObject::post_process(){
 }
 void HoverableObject::draw(){
 
+}
+
+bool HoverableObject::is_changing_cursor(){
+    return m_changed_cursor;
+}
+void HoverableObject::disable_cursor_change(){
+    m_changed_cursor = false;
+}
+void HoverableObject::enable_cursor_change(){
+    m_changed_cursor = true;
 }

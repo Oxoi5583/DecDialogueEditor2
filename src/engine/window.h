@@ -40,6 +40,8 @@ private:
     Uint64 m_last_total_time = 0;
     Uint64 m_delta = 0;
 
+    const vec2 m_min_window_size = {600, 300};
+
     void m_init_check_step(const int& p_step);
 
     void m_init_sdl_Engine();

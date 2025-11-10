@@ -2,6 +2,7 @@
 
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/base.h"
+#include <limits>
 #include <vector>
 
 using namespace glm;
@@ -14,6 +15,9 @@ private:
     bool m_cross_product(vec2 p_pos);
     bool m_compare_xy(vec2 p_pos);
 public:
+    static constexpr vec2 max_vec2 =  {std::numeric_limits<float>().max(),std::numeric_limits<float>().max()};
+    static constexpr vec2 min_vec2 =  {std::numeric_limits<float>().min(),std::numeric_limits<float>().min()};
+
     Rect2();
     Rect2(const vec2& p_position, const vec2& p_size);
     ~Rect2();
@@ -43,12 +47,15 @@ public:
     bool is_rect_intersect(Rect2 p_rect);
 
     
-    void move_left_top(vec2 p_pos);
-    void move_left_down(vec2 p_pos);
-    void move_right_top(vec2 p_pos);
-    void move_right_down(vec2 p_pos);
-    void move_left(double p_x);
-    void move_right(double p_x);
-    void move_top(double p_y);
-    void move_down(double p_y);
+    void move_left_top(vec2 p_pos, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_left_down(vec2 p_pos, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_right_top(vec2 p_pos, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_right_down(vec2 p_pos, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_left(double p_x, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_right(double p_x, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_top(double p_y, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+    void move_down(double p_y, vec2 p_min = min_vec2, vec2 p_max = max_vec2);
+
+    Rect2 to_world();
+    Rect2 to_screen();
 };

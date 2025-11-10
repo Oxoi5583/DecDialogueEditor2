@@ -75,65 +75,61 @@ void MouseServer::update() {
     m_emit_event_if_middle_released();
 
     m_event_handle_reset();
-    m_event_handle_resize_event();
     m_event_handle_hover_event();
+    m_event_handle_resize_event();
+    m_event_handle_set_to_cursor();
 }
-void MouseServer::m_event_handle_reset(){ 
+void MouseServer::m_event_handle_reset(){
+    m_final_cursor = nullptr;
+
     m_resizer_event = EventServer::Ref()->poll<EventMouseOnResizer>(); 
     m_obj_hover_event = EventServer::Ref()->poll<EventMouseHoverObj>(); 
     if(m_resizer_event.empty() && m_obj_hover_event.empty()){ 
         this->cursor_default(); 
-    } 
+    }
 }
 void MouseServer::m_event_handle_resize_event(){
     for(EventMouseOnResizer event : m_resizer_event){
         switch (event.dir) {
             case EventDirection::UP:
-                this->cursor_N_resize();
+                m_final_cursor = this->m_get_cursor_N_resize();
                 break;
             case EventDirection::DOWN:
-                this->cursor_S_resize();
+                m_final_cursor = this->m_get_cursor_S_resize();
                 break;
             case EventDirection::LEFT:
-                this->cursor_W_resize();
+                m_final_cursor = this->m_get_cursor_W_resize();
                 break;
             case EventDirection::RIGHT:
-                this->cursor_E_resize();
+                m_final_cursor = this->m_get_cursor_E_resize();
                 break;
             case EventDirection::UP_LEFT:
-                this->cursor_NW_resize();
+                m_final_cursor = this->m_get_cursor_NW_resize();
                 break;
             case EventDirection::DOWN_LEFT:
-                this->cursor_SW_resize();
+                m_final_cursor = this->m_get_cursor_SW_resize();
                 break;
             case EventDirection::UP_RIGHT:
-                this->cursor_NE_resize();
+                m_final_cursor = this->m_get_cursor_NE_resize();
                 break;
             case EventDirection::DOWN_RIGHT:
-                this->cursor_SE_resize();
+                m_final_cursor = this->m_get_cursor_SE_resize();
                 break;
         }
     }
 }
 void MouseServer::m_event_handle_hover_event(){
     for(EventMouseHoverObj event : m_obj_hover_event){
-        if(ObjectServer::Ref()->is_id_valid(event.obj_id)){
-            ObjectBase* ptr = ObjectServer::Ref()->get_instance<HoverableObject>(event.obj_id);
-            ClickableObject* c_ptr = dynamic_cast<ClickableObject*>(ptr);
-
-            if(!c_ptr){
-                continue;
-            }
-
-            if(!c_ptr->is_changing_cursor()){
-                this->cursor_default();
-            }else{
-                this->cursor_pointer();
-            }
-            
+        if(event.is_pointer_cursor){
+            m_final_cursor = this->m_get_cursor_pointer();
         }
     }
 }
+void MouseServer::m_event_handle_set_to_cursor(){
+    this->m_set_cursor(m_final_cursor);
+}
+
+
 void MouseServer::m_emit_event_if_left_just_clicked() {
     if (m_is_left_just_clicked) {
         EventMouseJustClicked event;
@@ -245,6 +241,13 @@ void MouseServer::m_set_cursor(int p_index) {
         SDL_SetCursor(cursors[p_index]);
 }
 
+void MouseServer::m_set_cursor(SDL_Cursor* p_ptr) {
+    if(p_ptr == nullptr){
+        cursor_default();
+        return;
+    }
+    SDL_SetCursor(p_ptr);
+}
 void MouseServer::cursor_default()      { m_set_cursor(SDL_SYSTEM_CURSOR_DEFAULT); }
 void MouseServer::cursor_text()         { m_set_cursor(SDL_SYSTEM_CURSOR_TEXT); }
 void MouseServer::cursor_wait()         { m_set_cursor(SDL_SYSTEM_CURSOR_WAIT); }
@@ -265,3 +268,25 @@ void MouseServer::cursor_SE_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_SE_RESI
 void MouseServer::cursor_S_resize()     { m_set_cursor(SDL_SYSTEM_CURSOR_S_RESIZE); }
 void MouseServer::cursor_SW_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_SW_RESIZE); }
 void MouseServer::cursor_W_resize()     { m_set_cursor(SDL_SYSTEM_CURSOR_W_RESIZE); }
+
+
+SDL_Cursor* MouseServer::m_get_cursor_default()      { return cursors[SDL_SYSTEM_CURSOR_DEFAULT]; }
+SDL_Cursor* MouseServer::m_get_cursor_text()         { return cursors[SDL_SYSTEM_CURSOR_TEXT]; }
+SDL_Cursor* MouseServer::m_get_cursor_wait()         { return cursors[SDL_SYSTEM_CURSOR_WAIT]; }
+SDL_Cursor* MouseServer::m_get_cursor_crosshair()    { return cursors[SDL_SYSTEM_CURSOR_CROSSHAIR]; }
+SDL_Cursor* MouseServer::m_get_cursor_progress()     { return cursors[SDL_SYSTEM_CURSOR_PROGRESS]; }
+SDL_Cursor* MouseServer::m_get_cursor_pointer()      { return cursors[SDL_SYSTEM_CURSOR_POINTER]; }
+SDL_Cursor* MouseServer::m_get_cursor_move()         { return cursors[SDL_SYSTEM_CURSOR_MOVE]; }
+SDL_Cursor* MouseServer::m_get_cursor_not_allowed()  { return cursors[SDL_SYSTEM_CURSOR_NOT_ALLOWED]; }
+SDL_Cursor* MouseServer::m_get_cursor_NS_resize()    { return cursors[SDL_SYSTEM_CURSOR_NS_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_EW_resize()    { return cursors[SDL_SYSTEM_CURSOR_EW_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_NWSE_resize()  { return cursors[SDL_SYSTEM_CURSOR_NWSE_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_NESW_resize()  { return cursors[SDL_SYSTEM_CURSOR_NESW_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_NW_resize()    { return cursors[SDL_SYSTEM_CURSOR_NW_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_N_resize()     { return cursors[SDL_SYSTEM_CURSOR_N_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_NE_resize()    { return cursors[SDL_SYSTEM_CURSOR_NE_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_E_resize()     { return cursors[SDL_SYSTEM_CURSOR_E_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_SE_resize()    { return cursors[SDL_SYSTEM_CURSOR_SE_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_S_resize()     { return cursors[SDL_SYSTEM_CURSOR_S_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_SW_resize()    { return cursors[SDL_SYSTEM_CURSOR_SW_RESIZE]; }
+SDL_Cursor* MouseServer::m_get_cursor_W_resize()     { return cursors[SDL_SYSTEM_CURSOR_W_RESIZE]; }

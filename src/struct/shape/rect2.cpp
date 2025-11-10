@@ -5,6 +5,8 @@
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
 #include "glm/geometric.hpp"
+#include "graph/camera.h"
+#include <algorithm>
 #include <vector>
 
 Rect2::Rect2() = default;
@@ -166,76 +168,187 @@ bool Rect2::is_rect_intersect(Rect2 p_rect){
 }
 
 
-void Rect2::move_left_top(vec2 p_pos){
+void Rect2::move_left_top(vec2 p_pos, vec2 p_min, vec2 p_max){
+    if(p_min.x < 0) p_min.x = 0.0f;
+    if(p_min.y < 0) p_min.y = 0.0f;
+
     vec2 old_lt = this->get_left_top();
     vec2 old_rd = this->get_right_down();
 
-    vec2 new_lt = p_pos;
-    vec2 new_rd = old_rd;
+    double up_edge = p_pos.y;
+    double down_edge = old_rd.y;
+    double left_edge = p_pos.x;
+    double right_edge = old_rd.x;
+
+    double min_up_edge = down_edge - p_max.y;
+    double max_up_edge = down_edge - p_min.y;
+    double min_left_edge = right_edge - p_max.x;
+    double max_left_edge = right_edge - p_min.x;
+
+    up_edge = std::clamp(up_edge, min_up_edge, max_up_edge);
+    left_edge = std::clamp(left_edge, min_left_edge, max_left_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
 
     this->set_AABB(new_lt, new_rd);
 }
-void Rect2::move_left_down(vec2 p_pos){
+void Rect2::move_left_down(vec2 p_pos, vec2 p_min, vec2 p_max){
+    if(p_min.x < 0) p_min.x = 0.0f;
+    if(p_min.y < 0) p_min.y = 0.0f;
+
     vec2 old_lt = this->get_left_top();
     vec2 old_rd = this->get_right_down();
 
-    vec2 new_lt = { p_pos.x, old_lt.y };
-    vec2 new_rd = { old_rd.x, p_pos.y };
+    double up_edge = old_lt.y;
+    double down_edge = p_pos.y;
+    double left_edge = p_pos.x;
+    double right_edge = old_rd.x;
+
+    double min_down_edge = up_edge + p_min.y;
+    double max_down_edge = up_edge + p_max.y;
+    double min_left_edge = right_edge - p_max.x;
+    double max_left_edge = right_edge - p_min.x;
+
+    down_edge = std::clamp(down_edge, min_down_edge, max_down_edge);
+    left_edge = std::clamp(left_edge, min_left_edge, max_left_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
 
     this->set_AABB(new_lt, new_rd);
 }
-void Rect2::move_right_top(vec2 p_pos){
+void Rect2::move_right_top(vec2 p_pos, vec2 p_min, vec2 p_max){
+    if(p_min.x < 0) p_min.x = 0.0f;
+    if(p_min.y < 0) p_min.y = 0.0f;
+
     vec2 old_lt = this->get_left_top();
     vec2 old_rd = this->get_right_down();
 
-    vec2 new_lt = { old_lt.x, p_pos.y };
-    vec2 new_rd = { p_pos.x, old_lt.y };
+    double up_edge = p_pos.y;
+    double down_edge = old_rd.y;
+    double left_edge = old_lt.x;
+    double right_edge = p_pos.x;
+
+    double min_up_edge = down_edge - p_max.y;
+    double max_up_edge = down_edge - p_min.y;
+    double min_right_edge = left_edge + p_min.x;
+    double max_right_edge = left_edge + p_max.x;
+
+    up_edge = std::clamp(up_edge, min_up_edge, max_up_edge);
+    right_edge = std::clamp(right_edge, min_right_edge, max_right_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
 
     this->set_AABB(new_lt, new_rd);
 }
-void Rect2::move_right_down(vec2 p_pos){
+void Rect2::move_right_down(vec2 p_pos, vec2 p_min, vec2 p_max){
     vec2 old_lt = this->get_left_top();
     vec2 old_rd = this->get_right_down();
 
-    vec2 new_lt = {old_lt.x,old_lt.y};
-    vec2 new_rd = {p_pos.x, p_pos.y};
+    double up_edge = old_lt.y;
+    double down_edge = p_pos.y;
+    double left_edge = old_lt.x;
+    double right_edge = p_pos.x;
+
+    double min_down_edge = up_edge + p_min.y;
+    double max_down_edge = up_edge + p_max.y;
+    double min_right_edge = left_edge + p_min.x;
+    double max_right_edge = left_edge + p_max.x;
+
+    down_edge = std::clamp(down_edge, min_down_edge, max_down_edge);
+    right_edge = std::clamp(right_edge, min_right_edge, max_right_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
 
     this->set_AABB(new_lt, new_rd);
 }
-void Rect2::move_left(double p_x){
+void Rect2::move_left(double p_x, vec2 p_min, vec2 p_max){
     vec2 old_lt = this->get_left_top();
     vec2 old_rd = this->get_right_down();
 
-    vec2 new_lt = { p_x, old_lt.y };
-    vec2 new_rd = old_rd;
+    double up_edge = old_lt.y;
+    double down_edge = old_rd.y;
+    double left_edge = p_x;
+    double right_edge = old_rd.x;
 
-    this->set_AABB(new_lt, new_rd);
+    double min_left_edge = right_edge - p_max.x;
+    double max_left_edge = right_edge - p_min.x;
 
-}
-void Rect2::move_right(double p_x){
-    vec2 old_lt = this->get_left_top();
-    vec2 old_rd = this->get_right_down();
+    left_edge = std::clamp(left_edge, min_left_edge, max_left_edge);
 
-    vec2 new_lt = old_lt;
-    vec2 new_rd = { p_x, old_rd.y };
-
-    this->set_AABB(new_lt, new_rd);
-}
-void Rect2::move_top(double p_y){
-    vec2 old_lt = this->get_left_top();
-    vec2 old_rd = this->get_right_down();
-
-    vec2 new_lt = { old_lt.x, p_y };
-    vec2 new_rd = old_rd;
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
 
     this->set_AABB(new_lt, new_rd);
 }
-void Rect2::move_down(double p_y){
+void Rect2::move_right(double p_x, vec2 p_min, vec2 p_max){
     vec2 old_lt = this->get_left_top();
     vec2 old_rd = this->get_right_down();
 
-    vec2 new_lt = old_lt;
-    vec2 new_rd = { old_rd.x, p_y };
+    double up_edge = old_lt.y;
+    double down_edge = old_rd.y;
+    double left_edge = old_lt.x;
+    double right_edge = p_x;
+
+    double min_right_edge = left_edge + p_min.x;
+    double max_right_edge = left_edge + p_max.x;
+
+    right_edge = std::clamp(right_edge, min_right_edge, max_right_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
 
     this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_top(double p_y, vec2 p_min, vec2 p_max){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    double up_edge = p_y;
+    double down_edge = old_rd.y;
+    double left_edge = old_lt.x;
+    double right_edge = old_rd.x;
+
+    double min_up_edge = down_edge - p_max.y;
+    double max_up_edge = down_edge - p_min.y;
+
+    up_edge = std::clamp(up_edge, min_up_edge, max_up_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
+
+    this->set_AABB(new_lt, new_rd);
+}
+void Rect2::move_down(double p_y, vec2 p_min, vec2 p_max){
+    vec2 old_lt = this->get_left_top();
+    vec2 old_rd = this->get_right_down();
+
+    double up_edge = old_lt.y;
+    double down_edge = p_y;
+    double left_edge = old_lt.x;
+    double right_edge = old_rd.x;
+
+    double min_down_edge = up_edge + p_min.y;
+    double max_down_edge = up_edge + p_max.y;
+
+    down_edge = std::clamp(down_edge, min_down_edge, max_down_edge);
+
+    vec2 new_lt = { left_edge, up_edge };
+    vec2 new_rd = { right_edge, down_edge };
+
+    this->set_AABB(new_lt, new_rd);
+}
+
+Rect2 Rect2::to_world(){
+    Rect2 ret = *(Rect2*)this;
+    ret.set_position(this->get_position() + GraphCamera::Ref()->get_target());
+    return ret;
+}
+Rect2 Rect2::to_screen(){
+    Rect2 ret = *(Rect2*)this;
+    ret.set_position(this->get_position() - GraphCamera::Ref()->get_target());
+    return ret;
 }

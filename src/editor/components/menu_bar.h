@@ -9,6 +9,7 @@
 class EditorMenuBar : public EditorComponentBase{
 private:
     EditorSpace* m_space = nullptr;
+    Rect2 m_shape;
     Timer* m_double_click_timer = nullptr;
 
     bool is_hover_any = false;

@@ -150,15 +150,11 @@ void EngineWindow::destory_all(){
 
 
 void EngineWindow::m_job_gl_clear(){
-    glViewport(0, 0, (int)this->get_window_size().x, (int)this->get_window_size().y);
+    vec2 window_size = this->get_window_size();
+
+    glViewport(0, 0, (int)window_size.x, (int)window_size.y);
     glClearColor(m_clear_color.x * m_clear_color.w, m_clear_color.y * m_clear_color.w, m_clear_color.z * m_clear_color.w, m_clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
-
-
-    glm::vec2 cameraPos(0.0f, 0.0f);
-    float cameraZoom = 1.0f;
-    float cameraRotation = 0.0f;
-    glm::mat4 projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
 }
 void EngineWindow::m_job_imgui_new_frame(){
     ImGui_ImplOpenGL3_NewFrame();
@@ -424,7 +420,7 @@ void EngineWindow::move_left_top(vec2 p_pos){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_left_top(p_pos);
+    rect.move_left_top(p_pos, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -436,7 +432,7 @@ void EngineWindow::move_left_down(vec2 p_pos){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_left_down(p_pos);
+    rect.move_left_down(p_pos, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -448,7 +444,7 @@ void EngineWindow::move_right_top(vec2 p_pos){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_right_top(p_pos);
+    rect.move_right_top(p_pos, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -460,7 +456,7 @@ void EngineWindow::move_right_down(vec2 p_pos){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_right_down(p_pos);
+    rect.move_right_down(p_pos, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -472,7 +468,7 @@ void EngineWindow::move_left(double p_x){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_left(p_x);
+    rect.move_left(p_x, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -484,7 +480,7 @@ void EngineWindow::move_right(double p_x){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_right(p_x);
+    rect.move_right(p_x, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -496,7 +492,7 @@ void EngineWindow::move_top(double p_y){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_top(p_y);
+    rect.move_top(p_y, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -508,7 +504,7 @@ void EngineWindow::move_down(double p_y){
     vec2 old_pos = get_window_position();
     Rect2 rect = Rect2(old_pos + (old_size / 2.0f),old_size);
 
-    rect.move_down(p_y);
+    rect.move_down(p_y, m_min_window_size);
 
     vec2 new_left_top = rect.get_left_top();
     vec2 new_right_down = rect.get_right_down();
@@ -521,31 +517,35 @@ void EngineWindow::m_job_resizer_handle(){
         return;
     }
 
+    float x,y;
+    SDL_GetGlobalMouseState(&x, &y);
+    vec2 global_mouse_pos = {x,y};
+
     EventDragResizer event = EventServer::Ref()->poll_first<EventDragResizer>();
     switch (event.dir) {
         case EventDirection::UP:
-            this->move_top(event.global_mouse_pos.y);
+            this->move_top(global_mouse_pos.y);
             break;
         case EventDirection::DOWN:
-            this->move_down(event.global_mouse_pos.y);
+            this->move_down(global_mouse_pos.y);
             break;
         case EventDirection::LEFT:
-            this->move_left(event.global_mouse_pos.x);
+            this->move_left(global_mouse_pos.x);
             break;
         case EventDirection::RIGHT:
-            this->move_right(event.global_mouse_pos.x);
+            this->move_right(global_mouse_pos.x);
             break;
         case EventDirection::UP_LEFT:
-            this->move_left_top(event.global_mouse_pos);
+            this->move_left_top(global_mouse_pos);
             break;
         case EventDirection::DOWN_LEFT:
-            this->move_left_down(event.global_mouse_pos);
+            this->move_left_down(global_mouse_pos);
             break;
         case EventDirection::UP_RIGHT:
-            this->move_right_top(event.global_mouse_pos);
+            this->move_right_top(global_mouse_pos);
             break;
         case EventDirection::DOWN_RIGHT:
-            this->move_right_down(event.global_mouse_pos);
+            this->move_right_down(global_mouse_pos);
             break;
           break;
     }

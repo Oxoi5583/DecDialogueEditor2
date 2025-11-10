@@ -20,6 +20,7 @@
 
 void GraphCamera::init(){
     m_rect = Rect2(vec2(0.0f,0.0f), vec2(0.0f,0.0f));
+    refresh_left_top_buffer();
 }
 void GraphCamera::m_job_update_window_size_buffer(){
     m_viewport_size_buffer = GraphViewport::Ref()->get_viewport_size();
@@ -87,9 +88,11 @@ void GraphCamera::update(){
 }
 void GraphCamera::set_target(const vec2& p_target){
     m_rect.set_center(p_target);
+    refresh_left_top_buffer();
 }
 void GraphCamera::set_zoom(const float& p_zoom){
     m_zoom = p_zoom;
+    refresh_left_top_buffer();
 }
 
 vec2 GraphCamera::get_origin() const{
@@ -151,4 +154,16 @@ vec2 GraphCamera::viewport_to_world(vec2 p_pos){
     transform = glm::translate(transform, vec3(get_zoomed_rect().get_left_top(),0.0f));
     vec2 world_pos = transform * vec4(converted_pos, 0.0f, 1.0f);
     return world_pos;
+}
+
+
+vec2 GraphCamera::get_left_top_buffer() const{
+    return m_left_top_buffer;
+}
+void GraphCamera::refresh_left_top_buffer(){
+    m_left_top_buffer = this->get_zoomed_rect().get_left_top();
+}
+void GraphCamera::go_to_left_top_buffer(){
+    vec2 new_target = m_left_top_buffer + (this->get_zoomed_rect().get_size() / 2.0f);
+    this->set_target(new_target);
 }

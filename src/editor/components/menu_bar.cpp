@@ -49,7 +49,8 @@ void EditorMenuBar::ui_init(EditorSpace* p_space){
 }
 
 void EditorMenuBar::m_update_shape(){
-    this->set_shape(*m_space);
+    m_shape = m_space->to_world();
+    this->set_shape(m_shape);
 }
 void EditorMenuBar::m_reset_vars(){
     is_hover_any = false;

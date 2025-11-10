@@ -17,6 +17,8 @@ void EngineWindowResizer::init(){
 void EngineWindowResizer::update(){
     m_refresh_resizer();
     m_refresh_collision();
+}
+void EngineWindowResizer::post_update(){
     m_refresh_is_dragging();
     m_refresh_emit_dragging_event();
 }
