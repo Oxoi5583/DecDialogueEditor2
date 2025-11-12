@@ -15,11 +15,25 @@ void GraphBackground::m_emit_event_if_hit_background(){
         return;
     }
 
+    EventMouseHoverOnWorld event;
+    event.pos = MouseServer::Ref()->get_mouse_world_position();
+    event.screen_pos = MouseServer::Ref()->get_mouse_screen_position();
+    EventServer::Ref()->emit(event);
+    
     if(MouseServer::Ref()->is_just_clicked(MouseButton::MIDDLE)){
-        EventMouseJustClickedOnWorld event;
-        event.pos = MouseServer::Ref()->get_mouse_screen_position();
-        event.button = (int)MouseButton::MIDDLE;
-        EventServer::Ref()->emit(event);
+        EventMouseJustClickedOnWorld event2;
+        event2.pos = MouseServer::Ref()->get_mouse_world_position();
+        event2.screen_pos = MouseServer::Ref()->get_mouse_screen_position();
+        event2.button = (int)MouseButton::MIDDLE;
+        EventServer::Ref()->emit(event2);
+    }
+
+    if(MouseServer::Ref()->is_just_clicked(MouseButton::LEFT)){
+        EventMouseJustClickedOnWorld event3;
+        event3.pos = MouseServer::Ref()->get_mouse_world_position();
+        event3.screen_pos = MouseServer::Ref()->get_mouse_screen_position();
+        event3.button = (int)MouseButton::LEFT;
+        EventServer::Ref()->emit(event3);
     }
 }
 void GraphBackground::init(){

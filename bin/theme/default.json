@@ -1,5 +1,5 @@
 {
-    "Name" : "Default",
+    "Name": "Default",
     "BrandColour": "263238",
     "SecondaryColour1": "232E33",
     "SecondaryColour2": "20292E",
@@ -9,5 +9,8 @@
     "TextColour": "A7B6B8",
     "HighlightTextColour": "D53134",
     "CloseButtonColour": "D53134",
-    "GridColour": "161F23"
+    "GridColour": "161F23",
+    "SelectAreaColour": "63839380",
+    "SelectAreaBorderColour": "8FA7B3",
+    "SelectableHighlightColour": "74FEDB"
 }

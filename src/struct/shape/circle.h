@@ -25,6 +25,7 @@ public:
     void set_radius(double p_radius);
     
     vec2 get_position() const override;
+    vec2 get_size() const override;
     double get_radius() const;
 
     bool is_point_intersect(vec2 p_pos) override;

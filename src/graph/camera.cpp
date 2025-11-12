@@ -55,7 +55,7 @@ void GraphCamera::m_job_update_is_dragging(){
             return;     
         }
 
-        m_dragging_start_pos = event.pos;
+        m_dragging_start_pos = event.screen_pos;
         m_dragging_start_target = this->get_target();
         m_is_dragging = true;
     }
@@ -166,4 +166,9 @@ void GraphCamera::refresh_left_top_buffer(){
 void GraphCamera::go_to_left_top_buffer(){
     vec2 new_target = m_left_top_buffer + (this->get_zoomed_rect().get_size() / 2.0f);
     this->set_target(new_target);
+}
+
+bool GraphCamera::is_rect_on_camera(Rect2 p_rect){
+    Rect2 camera_rect = this->get_zoomed_rect();
+    return camera_rect.is_rect_intersect(p_rect);
 }

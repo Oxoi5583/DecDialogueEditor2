@@ -162,3 +162,8 @@ std::vector<std::string> ThemeLoader::get_themes(){
     }
     return ret;
 }
+
+ImVec4 ThemeLoader::get_imgui_color(const std::string& key){
+    vec4 c = ThemeLoader::Ref()->get_color(key);
+    return ImVec4(c.x, c.y, c.z, c.w);
+};

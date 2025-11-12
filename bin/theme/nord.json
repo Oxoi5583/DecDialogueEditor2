@@ -9,5 +9,8 @@
     "TextColour": "E5E9F0",
     "HighlightTextColour": "8FBCBB",
     "CloseButtonColour": "BF616A",
-    "GridColour": "454C5C"
+    "GridColour": "454C5C",
+    "SelectAreaColour": "6F7C9780",
+    "SelectAreaBorderColour": "9BA5B7",
+    "SelectableHighlightColour": "8BFEF5"
 }

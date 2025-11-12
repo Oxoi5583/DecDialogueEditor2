@@ -2,6 +2,7 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "core/timer_server.h"
 #include "server/object_server.h"
+#include "theme/theme_loader.h"
 
 
 Rect2& GraphNode::m_init_shape(){
@@ -44,9 +45,30 @@ void GraphNode::pre_process(){}
 void GraphNode::process(){}
 void GraphNode::post_process(){}
 void GraphNode::draw(){
+    if(!is_on_camera()){
+        return;
+    }
+
     if(this->was_clicked()){
         EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 1);
     }else{
         EngineRenderer::Ref()->draw_rect(m_rect, vec4(0.0f,0.0f,0.0f,1.0f), 0);
+    }
+
+    if(this->is_selected()){
+        const double width = 3;
+
+        vec2 lt = m_rect.get_left_top();
+        vec2 rt = m_rect.get_right_top();
+        vec2 rd = m_rect.get_right_down();
+        vec2 ld = m_rect.get_left_down();
+
+        vec4 border_color = ThemeLoader::Ref()->get_color("SelectableHighlightColour");
+
+
+        EngineRenderer::Ref()->draw_line(lt - vec2(width / 2.0f, 0.0f), rt + vec2(width / 2.0f, 0.0f), border_color, width);
+        EngineRenderer::Ref()->draw_line(rt - vec2( 0.0f, width / 2.0f), rd + vec2( 0.0f, width / 2.0f), border_color, width);
+        EngineRenderer::Ref()->draw_line(rd + vec2(width / 2.0f, 0.0f), ld - vec2(width / 2.0f, 0.0f), border_color, width);
+        EngineRenderer::Ref()->draw_line(ld + vec2( 0.0f, width / 2.0f), lt - vec2( 0.0f, width / 2.0f), border_color, width);
     }
 }

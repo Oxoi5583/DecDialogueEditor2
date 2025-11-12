@@ -9,6 +9,7 @@ class DragableObject : public ClickableObject {
 private:
     enum class State{
         IDLE,
+        READY,
         DRAG,
         PLEACE,
     };
@@ -18,6 +19,7 @@ private:
     void m_update_state();
     void m_handle_action();
 
+    vec2 m_ready_mouse_pos;
     vec2 m_dragging_position_offset;
 public:
     DragableObject();
@@ -29,4 +31,5 @@ public:
     void post_process();
     void draw();
     
+    bool is_dragging();
 };

@@ -32,6 +32,9 @@ private:
         "TextColour",
         "CloseButtonColour",
         "GridColour",
+        "SelectAreaColour",
+        "SelectAreaBorderColour",
+        "SelectableHighlightColour",
     };
 
     std::set<char> m_acceptable_char = {
@@ -62,6 +65,7 @@ public:
 
     std::string get_color_string(std::string p_key);
     vec4 get_color(std::string p_key);
+    ImVec4 get_imgui_color(const std::string& key);
 
     std::vector<std::string> get_themes();
 };

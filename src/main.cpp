@@ -8,6 +8,7 @@
 #include "graph/background.h"
 #include "graph/camera.h"
 #include "graph/grid.h"
+#include "graph/selection.h"
 #include "graph/viewport.h"
 #include "obj/graph/manager.h"
 #include "server/event_server.h"
@@ -50,6 +51,8 @@ int main(int argc, char* argv[]) {
     GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();
     GraphViewport::Ref()->init();
+    GraphBackground::Ref()->init();
+    GraphSelection::Ref()->init();
     EngineWindowResizer::Ref()->init();
 
     GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
@@ -76,6 +79,7 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->clear_garbage();
 
         GraphViewport::Ref()->update();
+        GraphSelection::Ref()->pre_update();
         EditorLayout::Ref()->ui_update();
         EngineWindowResizer::Ref()->update();
 
@@ -86,14 +90,18 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->process();
         ObjectServer::Ref()->post_process();
         ObjectServer::Ref()->draw();
+        
         GraphBackground::Ref()->update();
+        GraphSelection::Ref()->post_update();
+        GraphSelection::Ref()->draw();
 
-        if(test_timer->timeout_and_reset()){
+        if(test_timer->timeout_and_reset_in_cycle(5)){
+            DEBUG_MSG("TIMEOUT");
             EventSpawnNode event;
             event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
+            event.type = NodeType::NODE;
             EventServer::Ref()->emit(event);
             EngineWindow::Ref()->stop_dragging();
-            test_timer->stop();
         }
 
 

@@ -6,12 +6,13 @@
 #include "obj/abstract/clickable.h"
 #include "obj/abstract/dragable.h"
 #include "obj/abstract/hoverable.h"
+#include "obj/abstract/selectable.h"
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
 
 using namespace glm;
 
-class GraphNode : public DragableObject{
+class GraphNode : public SelectableObject{
 private:
     Timer* m_test_timer;
 

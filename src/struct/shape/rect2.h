@@ -33,7 +33,7 @@ public:
     void set_center(vec2 p_center);
     void set_AABB(vec2 p_left_top, vec2 p_right_down);
     
-    vec2 get_size() const;
+    vec2 get_size() const override;
     vec2 get_position() const override;
     vec2 get_left_top() const;
     vec2 get_left_down() const;

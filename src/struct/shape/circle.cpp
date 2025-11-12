@@ -47,6 +47,10 @@ void Circle::set_radius(double p_radius) {
 vec2 Circle::get_position() const {
     return m_position;
 }
+vec2 Circle::get_size() const {
+    return vec2(m_radius * 2.0f, m_radius * 2.0f);
+}
+
 
 double Circle::get_radius() const {
     return m_radius;
@@ -57,3 +61,4 @@ bool Circle::is_point_intersect(vec2 p_pos) {
     double dist_sq = pow(diff.x, 2) + pow(diff.y, 2);
     return dist_sq <= pow(m_radius, 2);
 }
+

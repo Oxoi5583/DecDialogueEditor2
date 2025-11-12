@@ -14,25 +14,43 @@ DragableObject::~DragableObject(){
 
 void DragableObject::m_update_state(){
     switch (m_current_state) {
-        case State::IDLE:
+        case State::IDLE:{
             if(this->was_just_clicked()){
                 m_current_state = State::DRAG;
-                m_dragging_position_offset = MouseServer::Ref()->get_mouse_world_position() - this->get_position();
+                m_ready_mouse_pos = MouseServer::Ref()->get_mouse_world_position();
             }
             break;
-        case State::DRAG:
+        }
+        case State::READY:{
+            vec2 new_mouse_pos = MouseServer::Ref()->get_mouse_world_position();
+            if(m_ready_mouse_pos != new_mouse_pos){
+                m_dragging_position_offset = MouseServer::Ref()->get_mouse_world_position() - this->get_position();
+                m_current_state = State::DRAG;
+                break;
+            }
+            if(this->was_just_released()){
+                m_current_state = State::IDLE;
+            }
+            break;
+        }
+        case State::DRAG:{
             if(this->was_just_released()){
                 m_current_state = State::PLEACE;
             }
             break;
-        case State::PLEACE:
+        }
+        case State::PLEACE:{
             m_current_state = State::IDLE;
             break;
+        }
     }
 }
 void DragableObject::m_handle_action(){
     switch (m_current_state) {
         case State::IDLE:{
+            break;
+        }
+        case State::READY:{
             break;
         }
         case State::DRAG:{
@@ -72,4 +90,8 @@ void DragableObject::post_process(){
 }
 void DragableObject::draw(){
 
+}
+
+bool DragableObject::is_dragging(){
+    return m_current_state == State::DRAG;
 }

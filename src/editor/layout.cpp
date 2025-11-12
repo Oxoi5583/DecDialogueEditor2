@@ -155,20 +155,15 @@ Rect2 EditorLayout::covnert_to_window(Rect2& p_rect){
 void EditorLayout::refresh_theme(){
     auto& style = ImGui::GetStyle();
     ImVec4* colors = style.Colors;
-
-    auto getColor = [&](const std::string& key) -> ImVec4 {
-        vec4 c = ThemeLoader::Ref()->get_color(key);
-        return ImVec4(c.x, c.y, c.z, c.w);
-    };
-
-    ImVec4 brand       = getColor("BrandColour");
-    ImVec4 secondary1  = getColor("SecondaryColour1");
-    ImVec4 secondary2  = getColor("SecondaryColour2");
-    ImVec4 secondary3  = getColor("SecondaryColour3");
-    ImVec4 accent1     = getColor("AccentColour1");
-    ImVec4 accent2     = getColor("AccentColour2");
-    ImVec4 textColor   = getColor("TextColour");
-    ImVec4 gridColor   = getColor("GridColour");
+    
+    ImVec4 brand       = ThemeLoader::Ref()->get_imgui_color("BrandColour");
+    ImVec4 secondary1  = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
+    ImVec4 secondary2  = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
+    ImVec4 secondary3  = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+    ImVec4 accent1     = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
+    ImVec4 accent2     = ThemeLoader::Ref()->get_imgui_color("AccentColour2");
+    ImVec4 textColor   = ThemeLoader::Ref()->get_imgui_color("TextColour");
+    ImVec4 gridColor   = ThemeLoader::Ref()->get_imgui_color("GridColour");
 
     colors[ImGuiCol_WindowBg]          = secondary1;
     colors[ImGuiCol_ChildBg]           = secondary1;

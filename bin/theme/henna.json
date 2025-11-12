@@ -9,5 +9,8 @@
     "TextColour": "D4D4D4",
     "HighlightTextColour": "EDEC35",
     "CloseButtonColour": "E51400",
-    "GridColour": "2D2D30"
+    "GridColour": "2D2D30",
+    "SelectAreaColour": "6A6A6A80",
+    "SelectAreaBorderColour": "909090",
+    "SelectableHighlightColour": "FE5769"
 }

@@ -86,7 +86,13 @@ struct EventDragResizer : public NonUniqueEvent{
     vec2 global_mouse_pos;
 };
 
+struct EventMouseHoverOnWorld : public NonUniqueEvent{
+    vec2 screen_pos;
+    vec2 pos;
+};
+
 struct EventMouseJustClickedOnWorld : public NonUniqueEvent{
+    vec2 screen_pos;
     vec2 pos;
     int button;
 };
@@ -106,4 +112,9 @@ enum NodeType{
 struct EventSpawnNode : public NonUniqueEvent{
     vec2 spawn_pos;
     NodeType type;
+};
+
+struct EventMouseJustClickSelectdObj : public NonUniqueEvent{
+    vec2 click_pos;
+    OID obj_id;
 };

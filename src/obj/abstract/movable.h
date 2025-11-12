@@ -8,7 +8,7 @@
 class MovableObject : public ObjectBase {
 private:
     std::unique_ptr<ShapeBase> m_shape = std::make_unique<ShapeBase>();
-
+    bool m_is_on_camera = false;
 public:
     MovableObject();
     ~MovableObject();
@@ -35,5 +35,5 @@ public:
     void post_process();
     void draw();
 
-    
+    bool is_on_camera();
 };

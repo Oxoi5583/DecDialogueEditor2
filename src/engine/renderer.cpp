@@ -2,6 +2,7 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "SDL3/SDL_timer.h"
 #include "engine/texture_loader.h"
+#include "ext/debug/messenger_ext.h"
 #include "engine/window.h"
 #include "glm/ext/matrix_float4x4.hpp"
 #include "glm/ext/matrix_transform.hpp"
