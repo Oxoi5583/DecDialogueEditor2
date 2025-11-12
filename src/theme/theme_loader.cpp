@@ -154,3 +154,11 @@ vec4 ThemeLoader::get_color(std::string p_key){
     }
     return ret;
 }
+
+std::vector<std::string> ThemeLoader::get_themes(){
+    std::vector<std::string> ret;
+    for(auto it : m_themes_json_objs){
+        ret.push_back(it.first);
+    }
+    return ret;
+}

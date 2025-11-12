@@ -3,7 +3,9 @@
 #include "DecToolsBox/abstract./singleton.h"
 #include "DecToolsBox/container/ordered_list.h"
 #include "editor/components/base.h"
+#include "editor/components/left_panel.h"
 #include "editor/components/menu_bar.h"
+#include "editor/components/tools_bar.h"
 #include "editor/space.h"
 #include "glm/ext/scalar_int_sized.hpp"
 #include "glm/ext/scalar_uint_sized.hpp"
@@ -25,12 +27,17 @@ private:
     EditorSpace* m_menu_bar_space;
     EditorSpace* m_menu_bar_other_space;
     
+    EditorSpace* m_tools_bar_space;
+    EditorSpace* m_tools_bar_other_space;
+
     EditorSpace* m_left_panel_space;
     EditorSpace* m_left_panel_other_space;
 
     void m_init_objs();
 
     EditorMenuBar* m_menu_bar;
+    EditorToolsBar* m_tools_bar;
+    EditorLeftPanel* m_left_panel;
 public:
     EditorLayout(){}
     ~EditorLayout(){}
@@ -42,6 +49,12 @@ public:
     void ui_draw();
     
     const double menu_bar_size = 30;
+    const double tools_bar_size = 90;
 
     EditorSpace* get_world_space();
+    void restore_layout();
+
+    Rect2 covnert_to_window(Rect2& p_rect);
+
+    void refresh_theme();
 };

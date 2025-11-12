@@ -34,9 +34,6 @@ struct EventMouseReleased : public UniqueEvent{
     int button;
 };
 
-struct EventSpawnNode : public NonUniqueEvent{
-    vec2 spawn_pos;
-};
 
 struct EventMouseHoverObj : public UniqueEvent{
     vec2 hovering_pos;
@@ -96,3 +93,17 @@ struct EventMouseJustClickedOnWorld : public NonUniqueEvent{
 
 struct EventEditorSpaceResizerHover : public UniqueEvent{};
 struct EventEditorSpaceResizerDragging : public UniqueEvent{};
+
+
+
+enum NodeType{
+    ENTRY,
+    NODE,
+    OPTION,
+};
+
+
+struct EventSpawnNode : public NonUniqueEvent{
+    vec2 spawn_pos;
+    NodeType type;
+};

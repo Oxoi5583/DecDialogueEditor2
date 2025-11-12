@@ -3,9 +3,11 @@
 #include "glm/ext/vector_float2.hpp"
 #include "core/timer_server.h"
 #include "struct/shape/rect2.h"
+#include "DecToolsBox/struct/range.h"
 #include <array>
 #include <cstddef>
 #include <queue>
+#include <utility>
 #include <vector>
 
 using namespace glm;
@@ -19,6 +21,20 @@ public:
 
     From from = From::START;
 
+
+    struct SplitMagnet {
+        enum class Type {
+            PROPORTION,
+            VALUE,
+        };
+
+        double magnet;
+        std::pair<double, double> range;
+        Type type;
+        
+    };
+    void apply_magnet(SplitMagnet& p_magnet, double& p_split);
+
     struct SplitLimit {
         enum class Type {
             PROPORTION,
@@ -27,7 +43,9 @@ public:
 
         double min = std::numeric_limits<double>::min();
         double max = std::numeric_limits<double>::max();
-        Type type = Type::PROPORTION;
+        Type min_type = Type::PROPORTION;
+        Type max_type = Type::PROPORTION;
+
 
         void enable();
         void disable();
@@ -75,7 +93,7 @@ public:
             DRAGGING,
         };
 
-        double resizer_size = 10.0f;
+        double resizer_size = 25.0f;
 
         void enable();
         void disable();
@@ -108,6 +126,7 @@ public:
     SplitLimit split_limit;
     SplitFixed split_fixed;
     SplitResizer split_resizer;
+    std::vector<SplitMagnet> split_magnets;
 
     void update_resizer();
     bool is_resizing();
@@ -139,6 +158,7 @@ public:
     void set_parent(EditorSpace* p_space);
     void set_type(SplitType p_type);
     Children get_children();
+    bool has_children();
 
     EditorSpace();
     ~EditorSpace();
@@ -152,6 +172,7 @@ public:
     EditorSpace(EditorSpace&& other) noexcept;
     EditorSpace& operator=(EditorSpace&& other) noexcept;
 
+    void restore_buffer_value();
 private:
     double m_split = 0.0f;
     double m_get_fixed_split();
@@ -167,4 +188,11 @@ private:
     std::vector<EditorSpace> m_spaces;
     EditorSpace* m_parent = nullptr;
     void m_try_create_children();
+
+    double m_get_total_dist();
+    double m_proportion_to_value(double p_proportion);
+    double m_value_to_proportion(double p_value);
+
+    double m_split_value_buffer;
+    void m_refresh_split_value_buffer();
 };

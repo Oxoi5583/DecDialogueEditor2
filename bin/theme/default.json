@@ -1,9 +1,13 @@
 {
     "Name" : "Default",
-    "BrandColour" : "FBF9F1",
-    "SecondaryColour1" : "E5E1DA",
-    "SecondaryColour2" : "AAD7D9",
-    "SecondaryColour3" : "92C7CF",
-    "AccentColour1" : "ECB159",
-    "AccentColour2" : "B67352"
+    "BrandColour": "263238",
+    "SecondaryColour1": "232E33",
+    "SecondaryColour2": "20292E",
+    "SecondaryColour3": "161F23",
+    "AccentColour1": "89B6B8",
+    "AccentColour2": "DC8533",
+    "TextColour": "A7B6B8",
+    "HighlightTextColour": "D53134",
+    "CloseButtonColour": "D53134",
+    "GridColour": "161F23"
 }

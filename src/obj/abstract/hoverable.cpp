@@ -22,7 +22,16 @@ bool HoverableObject::m_check_hovering(){
         return false;
     }
 
-    vec2 mouse_pos = MouseServer::Ref()->get_mouse_world_position();
+    vec2 mouse_pos;
+    switch (m_type) {
+        case Type::SCREEN:
+            mouse_pos = MouseServer::Ref()->get_mouse_screen_position_center();
+            break;
+        case Type::WORLD:
+            mouse_pos = MouseServer::Ref()->get_mouse_world_position();
+            break;
+    }
+    
     if(!this->is_point_intersect(mouse_pos)){
         return false;
     }
@@ -63,4 +72,12 @@ void HoverableObject::disable_cursor_change(){
 }
 void HoverableObject::enable_cursor_change(){
     m_changed_cursor = true;
+}
+
+
+HoverableObject::Type HoverableObject::get_hovering_type(){
+    return m_type;
+}
+void HoverableObject::set_hovering_type(HoverableObject::Type p_type){
+    m_type = p_type;
 }

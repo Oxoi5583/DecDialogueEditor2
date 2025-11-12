@@ -46,6 +46,7 @@ void EngineInputHub::polling_sdl_event(){
         switch (sdl_event.type) {
             case (SDL_EVENT_WINDOW_RESIZED):{
                 EngineWindow::Ref()->refresh();
+                EditorLayout::Ref()->restore_layout();
                 EditorLayout::Ref()->ui_update();
                 GraphCamera::Ref()->update();
                 GraphCamera::Ref()->go_to_left_top_buffer();

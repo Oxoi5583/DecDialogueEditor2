@@ -1,6 +1,9 @@
 #include "editor/space.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "engine/renderer.h"
+#include "engine/window.h"
 #include "graph/camera.h"
+#include "graph/viewport.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -12,12 +15,38 @@
 #include <queue>
 #include <utility>
 
+void EditorSpace::apply_magnet(SplitMagnet& p_magnet, double& p_split){
+    double start;
+    double end;
+    double value;
+
+    switch (p_magnet.type) {
+        case SplitMagnet::Type::PROPORTION:{
+            start = p_magnet.magnet - p_magnet.range.first;
+            end = p_magnet.magnet + p_magnet.range.second;
+            value = p_magnet.magnet;
+            break;
+        }
+        case SplitMagnet::Type::VALUE:{
+            start = m_value_to_proportion(p_magnet.magnet - p_magnet.range.first);
+            end = m_value_to_proportion(p_magnet.magnet + p_magnet.range.second);
+            value = m_value_to_proportion(p_magnet.magnet);
+            break;
+        }
+    }
+
+    Range r = {start, end};
+    if(r.is_in_range(p_split)){
+        p_split = value;
+    }
+}
 
 // ===================== SplitLimit =====================
 EditorSpace::SplitLimit::SplitLimit(const SplitLimit& other)
     : min(other.min),
       max(other.max),
-      type(other.type),
+      min_type(other.min_type),
+      max_type(other.max_type),
       m_is_enabled(other.m_is_enabled) {}
 
 EditorSpace::SplitLimit& EditorSpace::SplitLimit::operator=(const SplitLimit& other) {
@@ -25,7 +54,8 @@ EditorSpace::SplitLimit& EditorSpace::SplitLimit::operator=(const SplitLimit& ot
         return *this;
     min = other.min;
     max = other.max;
-    type = other.type;
+    min_type = other.min_type;
+    max_type = other.max_type;
     m_is_enabled = other.m_is_enabled;
     return *this;
 }
@@ -33,7 +63,8 @@ EditorSpace::SplitLimit& EditorSpace::SplitLimit::operator=(const SplitLimit& ot
 EditorSpace::SplitLimit::SplitLimit(SplitLimit&& other) noexcept
     : min(other.min),
       max(other.max),
-      type(other.type),
+      min_type(other.min_type),
+      max_type(other.max_type),
       m_is_enabled(other.m_is_enabled) {
     // no special cleanup required
 }
@@ -43,7 +74,8 @@ EditorSpace::SplitLimit& EditorSpace::SplitLimit::operator=(SplitLimit&& other) 
         return *this;
     min = other.min;
     max = other.max;
-    type = other.type;
+    min_type = other.min_type;
+    max_type = other.max_type;
     m_is_enabled = other.m_is_enabled;
     return *this;
 }
@@ -107,7 +139,6 @@ EditorSpace::SplitResizer& EditorSpace::SplitResizer::operator=(SplitResizer&& o
 }
 
 
-
 // --- Copy Constructor ---
 EditorSpace::EditorSpace(const EditorSpace& other)
     : Rect2(other),
@@ -115,10 +146,12 @@ EditorSpace::EditorSpace(const EditorSpace& other)
       split_limit(other.split_limit),
       split_fixed(other.split_fixed),
       split_resizer(other.split_resizer),
+      split_magnets(other.split_magnets),
       m_split(other.m_split),
       m_type(other.m_type),
       m_spaces(other.m_spaces),
-      m_parent(other.m_parent) {}
+      m_parent(other.m_parent),
+      m_split_value_buffer(other.m_split_value_buffer) {}
 
 // --- Copy Assignment ---
 EditorSpace& EditorSpace::operator=(const EditorSpace& other) {
@@ -130,28 +163,28 @@ EditorSpace& EditorSpace::operator=(const EditorSpace& other) {
     split_limit = other.split_limit;
     split_fixed = other.split_fixed;
     split_resizer = other.split_resizer;
+    split_magnets = other.split_magnets;
     m_split = other.m_split;
     m_type = other.m_type;
     m_spaces = other.m_spaces;
     m_parent = other.m_parent;
-
+    m_split_value_buffer = other.m_split_value_buffer;
     return *this;
 }
 
 // --- Move Constructor ---
 EditorSpace::EditorSpace(EditorSpace&& other) noexcept
     : Rect2(std::move(other)),
-      from(std::move(other.from)),
+      from(std::exchange(other.from, From::START)),
       split_limit(std::move(other.split_limit)),
       split_fixed(std::move(other.split_fixed)),
       split_resizer(std::move(other.split_resizer)),
-      m_split(other.m_split),
-      m_type(other.m_type),
+      split_magnets(std::move(other.split_magnets)),
+      m_split(std::exchange(other.m_split, 0.0)),
+      m_type(std::exchange(other.m_type, SplitType::VERTICLE)),
       m_spaces(std::move(other.m_spaces)),
-      m_parent(other.m_parent) {
-    other.m_parent = nullptr;
-    other.m_split = 0.0;
-}
+      m_parent(std::exchange(other.m_parent, nullptr)),
+      m_split_value_buffer(std::exchange(other.m_split_value_buffer, 0.0)) {}
 
 // --- Move Assignment ---
 EditorSpace& EditorSpace::operator=(EditorSpace&& other) noexcept {
@@ -159,20 +192,19 @@ EditorSpace& EditorSpace::operator=(EditorSpace&& other) noexcept {
         return *this;
 
     Rect2::operator=(std::move(other));
-    from = std::move(other.from);
+    from = std::exchange(other.from, From::START);
     split_limit = std::move(other.split_limit);
     split_fixed = std::move(other.split_fixed);
     split_resizer = std::move(other.split_resizer);
-    m_split = other.m_split;
-    m_type = other.m_type;
+    split_magnets = std::move(other.split_magnets);
+    m_split = std::exchange(other.m_split, 0.0);
+    m_type = std::exchange(other.m_type, SplitType::VERTICLE);
     m_spaces = std::move(other.m_spaces);
-    m_parent = other.m_parent;
-
-    other.m_parent = nullptr;
-    other.m_split = 0.0;
-
+    m_parent = std::exchange(other.m_parent, nullptr);
+    m_split_value_buffer = std::exchange(other.m_split_value_buffer, 0.0);
     return *this;
 }
+
 
 void EditorSpace::SplitLimit::enable(){
     m_is_enabled = true;
@@ -381,44 +413,63 @@ void EditorSpace::unsplit(){
     
     refresh_children();
 }
+double EditorSpace::m_get_total_dist(){
+    double ret = (m_type == SplitType::HORIZONTAL) ? get_right_top().x - get_left_top().x : get_left_down().y - get_left_top().y;
+    return ret;
+}
+double EditorSpace::m_proportion_to_value(double p_proportion){
+    double total_dist = m_get_total_dist();
+    return std::clamp(total_dist * p_proportion, 0.0, total_dist);
+}
+double EditorSpace::m_value_to_proportion(double p_value){
+    return std::clamp(p_value/m_get_total_dist(), 0.0, 1.0);
+}
+void EditorSpace::m_refresh_split_value_buffer(){
+    m_split_value_buffer = m_proportion_to_value(m_split);
+}
 
 double EditorSpace::m_get_limited_split(double p_value){
-    switch (split_limit.type) {
+    double f_min;
+    double f_max;
+    double total_dist = m_get_total_dist();
+
+    /*   ---MIN---   */
+    switch (split_limit.min_type) {
         case SplitLimit::Type::PROPORTION:{
-            double f_max;
-            double f_min;
-
-            if(from == From::END){
-                f_max = 1.0 - std::min(split_limit.max,split_limit.min);
-                f_min = 1.0 - std::max(split_limit.max,split_limit.min);
-            }else{
-                f_max = std::max(split_limit.max,split_limit.min);
-                f_min = std::min(split_limit.max,split_limit.min);
-            }
-
-            return std::clamp(p_value, f_min, f_max);
+            f_min = split_limit.min;
+            break;
         }
         case SplitLimit::Type::VALUE:{
-            double f_max = std::max(split_limit.max,split_limit.min);
-            double f_min = std::min(split_limit.max,split_limit.min);
-
-            double total_dist = (m_type == SplitType::HORIZONTAL) ? get_right_top().x - get_left_top().x : get_left_down().y - get_left_top().y;
-
-            double f_max_prop;
             double f_min_prop;
-
-            if(from == From::END){
-                f_max_prop = 1.0 - std::clamp(f_min/total_dist, 0.0, 1.0);
-                f_min_prop = 1.0 - std::clamp(f_max/total_dist, 0.0, 1.0);
-            }else{
-                f_max_prop = std::clamp(f_max/total_dist, 0.0, 1.0);
-                f_min_prop = std::clamp(f_min/total_dist, 0.0, 1.0);
-            }
-
-            
-            return std::clamp(p_value, f_min_prop, f_max_prop);
+            f_min_prop = m_value_to_proportion(split_limit.min);
+            f_min = f_min_prop;
+            break;
         }
     }
+
+    /*   ---MAX---   */
+    switch (split_limit.max_type) {
+        case SplitLimit::Type::PROPORTION:{
+            f_max = split_limit.max;
+            break;
+        }
+        case SplitLimit::Type::VALUE:{
+            double f_max_prop;
+            f_max_prop = m_value_to_proportion(split_limit.max);
+            f_max = f_max_prop;
+            break;
+        }
+    }
+
+    if(from == From::END){
+        double f_min_buf = f_min;
+        double f_max_buf = f_max;
+
+        f_min = std::clamp(1.0 - f_max_buf, 0.0, 1.0);
+        f_max = std::clamp(1.0 - f_min_buf, 0.0, 1.0);
+    }
+
+    return std::clamp(p_value, f_min, f_max);
 }
 
 double EditorSpace::m_get_fixed_split(){
@@ -455,6 +506,9 @@ void EditorSpace::m_try_create_children(){
 }
 
 void EditorSpace::split(){
+    for(SplitMagnet& m : split_magnets){
+        apply_magnet(m,m_split);
+    }
     if(split_fixed.is_enabled()){
         m_split = this->m_get_fixed_split();
     }
@@ -463,9 +517,13 @@ void EditorSpace::split(){
     }
     m_try_create_children();
     refresh_children();
+    //m_refresh_split_value_buffer();
 }
 
 void EditorSpace::split(double m_proportion){
+    for(SplitMagnet& m : split_magnets){
+        apply_magnet(m,m_proportion);
+    }
     if(split_fixed.is_enabled()){
         m_proportion = this->m_get_fixed_split();
     }
@@ -477,11 +535,13 @@ void EditorSpace::split(double m_proportion){
 
     m_try_create_children();
     refresh_children();
+    m_refresh_split_value_buffer();
 }
 
 void EditorSpace::set_type(SplitType p_type){
     m_type = p_type;
     refresh_children();
+    m_refresh_split_value_buffer();
 }
 
 EditorSpace::Children EditorSpace::get_children(){
@@ -493,6 +553,9 @@ EditorSpace::Children EditorSpace::get_children(){
     }
 
     return  ret;
+}
+bool EditorSpace::has_children(){
+    return !m_spaces.empty();
 }
 
 std::vector<EditorSpace> EditorSpace::get_spaces() const{
@@ -516,7 +579,6 @@ std::vector<EditorSpace> EditorSpace::get_spaces() const{
             ret.push_back(s2);
         }
     }
-
 
     return ret;
 }
@@ -636,4 +698,8 @@ void EditorSpace::refresh_children(){
     m_spaces[0].set_size(rects[0].get_size());
     m_spaces[1].set_center(rects[1].get_center());
     m_spaces[1].set_size(rects[1].get_size());
+}
+
+void EditorSpace::restore_buffer_value(){
+    split(m_value_to_proportion(m_split_value_buffer));
 }

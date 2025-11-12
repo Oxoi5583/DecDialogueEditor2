@@ -37,7 +37,7 @@ void GraphGrid::init(){
     m_create_grid();
 }
 void GraphGrid::draw(){
-    m_color = ThemeLoader::Ref()->get_color("SecondaryColour1");
+    m_color = ThemeLoader::Ref()->get_color("GridColour");
 
     Rect2 window_rect = GraphCamera::Ref()->get_zoomed_rect();
     vec2 left_top = window_rect.get_left_top();

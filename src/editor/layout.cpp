@@ -6,10 +6,12 @@
 #include "engine/window.h"
 #include "graph/camera.h"
 #include "graph/viewport.h"
+#include "imgui/imgui.h"
 #include "server/mouse_server.h"
 #include "server/object_server.h"
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
+#include "theme/theme_loader.h"
 #include <SDL3/SDL.h>
 
 
@@ -30,18 +32,32 @@ void EditorLayout::m_main_space_init(){
     m_menu_bar_space = m_main_space.get_children().first;
     m_menu_bar_other_space = m_main_space.get_children().second;
 
-    m_menu_bar_other_space->set_type(EditorSpace::SplitType::HORIZONTAL);
+    m_menu_bar_other_space->set_type(EditorSpace::SplitType::VERTICLE);
     m_menu_bar_other_space->from = EditorSpace::From::START;
-    m_menu_bar_other_space->split_limit.type = EditorSpace::SplitLimit::Type::PROPORTION;
-    m_menu_bar_other_space->split_limit.min = 0.05f;
-    m_menu_bar_other_space->split_limit.max = 0.3f;
-    m_menu_bar_other_space->split_limit.enable();
-    m_menu_bar_other_space->split_resizer.enable();
+    m_menu_bar_other_space->split_fixed.type = EditorSpace::SplitFixed::Type::VALUE;
+    m_menu_bar_other_space->split_fixed.value = tools_bar_size;
+    m_menu_bar_other_space->split_fixed.enable();
+
+    m_menu_bar_other_space->split();
     
-    m_menu_bar_other_space->split(0.2f);
+    m_tools_bar_space = m_menu_bar_other_space->get_children().first;
+    m_tools_bar_other_space = m_menu_bar_other_space->get_children().second;
+
+    m_tools_bar_other_space->set_type(EditorSpace::SplitType::HORIZONTAL);
+    m_tools_bar_other_space->from = EditorSpace::From::START;
+    m_tools_bar_other_space->split_limit.min_type = EditorSpace::SplitLimit::Type::PROPORTION;
+    m_tools_bar_other_space->split_limit.max_type = EditorSpace::SplitLimit::Type::PROPORTION;
+    m_tools_bar_other_space->split_limit.min = 0.0f;
+    m_tools_bar_other_space->split_limit.max = 0.7f;
+    m_tools_bar_other_space->split_limit.enable();
+    m_tools_bar_other_space->split_resizer.enable();
+    m_tools_bar_other_space->split_magnets.push_back({0.0f,{0.0f,50.0f}, EditorSpace::SplitMagnet::Type::VALUE});
+    m_tools_bar_other_space->split_magnets.push_back({100.0f,{50.0f,0.0f}, EditorSpace::SplitMagnet::Type::VALUE});
     
-    m_left_panel_space = m_menu_bar_other_space->get_children().first;
-    m_left_panel_other_space = m_menu_bar_other_space->get_children().second;
+    m_tools_bar_other_space->split(0.2f);
+
+    m_left_panel_space = m_tools_bar_other_space->get_children().first;
+    m_left_panel_other_space = m_tools_bar_other_space->get_children().second;
 }
 
 void EditorLayout::m_main_space_update(){
@@ -60,8 +76,6 @@ void EditorLayout::m_main_space_update(){
             screen_viewport_rect_lt.y, screen_viewport_rect_rd.y
         );
 
-    m_main_space.split();
-    m_menu_bar_other_space->split();
 }
 
 void EditorLayout::m_main_space_draw(){
@@ -79,18 +93,24 @@ void EditorLayout::m_main_space_draw(){
             EngineRenderer::Ref()->draw_rect(s->get_resizer_area().to_world(), vec4(0.0f, 1.0f, 0.0f, 0.5f), -1);
         }
         i++;
-    }*/
+    }
+    */
 }
 
 void EditorLayout::m_init_objs(){
     m_menu_bar = ObjectServer::Ref()->queue_create<EditorMenuBar>(ObjectServer::Layer::UI_LAYER);
+    m_tools_bar = ObjectServer::Ref()->queue_create<EditorToolsBar>(ObjectServer::Layer::UI_LAYER);
+    m_left_panel = ObjectServer::Ref()->queue_create<EditorLeftPanel>(ObjectServer::Layer::UI_LAYER);
 }
 
 void EditorLayout::ui_init(){
+    refresh_theme();
     m_init_objs();
-
     m_main_space_init();
+
     m_menu_bar->ui_init(m_menu_bar_space);
+    m_tools_bar->ui_init(m_tools_bar_space);
+    m_left_panel->ui_init(m_left_panel_space);
 }
 
 void EditorLayout::ui_update(){
@@ -98,7 +118,10 @@ void EditorLayout::ui_update(){
 
     int i = 0;
     for(EditorSpace* s : m_main_space.get_spaces_ptr()){
-        s->update_resizer();
+        if(s->has_children()){
+            s->split();
+            s->update_resizer();
+        }
         i++;
     }
 }
@@ -113,4 +136,78 @@ vec2 EditorLayout::get_menu_bar_size(){
 
 EditorSpace* EditorLayout::get_world_space(){
     return m_left_panel_other_space;
+}
+void EditorLayout::restore_layout(){
+    for(EditorSpace* s : m_main_space.get_spaces_ptr()){
+        if(s->has_children()){
+            s->restore_buffer_value();
+        }
+    }
+}
+
+Rect2 EditorLayout::covnert_to_window(Rect2& p_rect){
+    Rect2 ret = p_rect;
+    vec2 new_pos = ret.get_position() + EngineWindow::Ref()->get_window_size() / 2.0f;
+    ret.set_position(new_pos);
+    return ret;
+}
+
+void EditorLayout::refresh_theme(){
+    auto& style = ImGui::GetStyle();
+    ImVec4* colors = style.Colors;
+
+    auto getColor = [&](const std::string& key) -> ImVec4 {
+        vec4 c = ThemeLoader::Ref()->get_color(key);
+        return ImVec4(c.x, c.y, c.z, c.w);
+    };
+
+    ImVec4 brand       = getColor("BrandColour");
+    ImVec4 secondary1  = getColor("SecondaryColour1");
+    ImVec4 secondary2  = getColor("SecondaryColour2");
+    ImVec4 secondary3  = getColor("SecondaryColour3");
+    ImVec4 accent1     = getColor("AccentColour1");
+    ImVec4 accent2     = getColor("AccentColour2");
+    ImVec4 textColor   = getColor("TextColour");
+    ImVec4 gridColor   = getColor("GridColour");
+
+    colors[ImGuiCol_WindowBg]          = secondary1;
+    colors[ImGuiCol_ChildBg]           = secondary1;
+    colors[ImGuiCol_PopupBg]           = secondary3;
+    colors[ImGuiCol_Border]            = accent1;
+    colors[ImGuiCol_BorderShadow]      = ImVec4(0, 0, 0, 0);
+
+    colors[ImGuiCol_TitleBg]           = secondary2;
+    colors[ImGuiCol_TitleBgActive]     = secondary3;
+    colors[ImGuiCol_TitleBgCollapsed]  = secondary1;
+    colors[ImGuiCol_MenuBarBg]         = secondary3;
+
+    colors[ImGuiCol_FrameBg]           = secondary1;
+    colors[ImGuiCol_FrameBgHovered]    = secondary2;
+    colors[ImGuiCol_FrameBgActive]     = secondary3;
+
+    colors[ImGuiCol_Button]            = secondary3;
+    colors[ImGuiCol_ButtonHovered]     = secondary2;
+    colors[ImGuiCol_ButtonActive]      = ImVec4(secondary2.x * 2.0f, secondary2.y * 2.0f, secondary2.z * 2.0f, 1.0f);
+
+    colors[ImGuiCol_Header]            = secondary2;
+    colors[ImGuiCol_HeaderHovered]     = accent1;
+    colors[ImGuiCol_HeaderActive]      = accent2;
+
+    colors[ImGuiCol_Tab]               = secondary1;
+    colors[ImGuiCol_TabHovered]        = accent1;
+    colors[ImGuiCol_TabActive]         = accent2;
+
+    colors[ImGuiCol_Text]              = textColor;
+    colors[ImGuiCol_TextDisabled]      = ImVec4(textColor.x * 0.5f, textColor.y * 0.5f, textColor.z * 0.5f, 1.0f);
+    colors[ImGuiCol_TextSelectedBg]    = ImVec4(accent1.x, accent1.y, accent1.z, 0.35f);
+
+    colors[ImGuiCol_SliderGrab]        = accent1;
+    colors[ImGuiCol_SliderGrabActive]  = accent2;
+    colors[ImGuiCol_Separator]         = secondary2;
+    colors[ImGuiCol_SeparatorHovered]  = accent1;
+    colors[ImGuiCol_SeparatorActive]   = accent2;
+
+    colors[ImGuiCol_Border] = gridColor;
+
+    EngineWindow::Ref()->set_clear_color({brand.x,brand.y,brand.z,brand.w});
 }

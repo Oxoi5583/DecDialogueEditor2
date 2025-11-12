@@ -1,4 +1,5 @@
 #include "menu_bar.h"
+#include "config/config_loader.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "server/event_server.h"
@@ -8,6 +9,8 @@
 #include "SDL3/SDL_video.h"
 #include "engine/window.h"
 #include "imgui/imgui.h"
+#include "struct/shape/rect2.h"
+#include "theme/theme_loader.h"
 
 EditorMenuBar::EditorMenuBar(){
     BIND_CLASS(EditorMenuBar);
@@ -20,6 +23,7 @@ EditorMenuBar::~EditorMenuBar(){
 
 void EditorMenuBar::ready(){
     this->disable_cursor_change();
+    this->set_hovering_type(Type::SCREEN);
 }
 void EditorMenuBar::pre_process(){
     m_update_shape();
@@ -27,6 +31,7 @@ void EditorMenuBar::pre_process(){
     m_begin_main_bar();
     m_update_menu_file();
     m_update_menu_edit();
+    m_update_menu_themes();
     m_update_maximize_button();
     m_update_minimize_button();
     m_update_close_button();
@@ -49,7 +54,7 @@ void EditorMenuBar::ui_init(EditorSpace* p_space){
 }
 
 void EditorMenuBar::m_update_shape(){
-    m_shape = m_space->to_world();
+    m_shape = *(Rect2*)m_space;
     this->set_shape(m_shape);
 }
 void EditorMenuBar::m_reset_vars(){
@@ -79,6 +84,41 @@ void EditorMenuBar::m_update_menu_edit(){
     if (ImGui::BeginMenu("Edit")){
         ImGui::MenuItem("Cut");
         ImGui::MenuItem("Copy");
+        ImGui::EndMenu();
+    }
+    if (ImGui::IsItemHovered()) {
+        is_hover_any = true;
+    }
+}
+void EditorMenuBar::m_update_menu_themes(){
+    std::string current_theme;
+    ConfigLoader::Ref()->get_config("UsingTheme", current_theme);
+
+    if (ImGui::BeginMenu("Themes")){
+        auto themes = ThemeLoader::Ref()->get_themes();
+        for(auto theme : themes){
+            if(current_theme == theme){
+                vec4 text_colour = ThemeLoader::Ref()->get_color("HighlightTextColour");
+                ImVec4 text_colour_imgui = ImVec4(text_colour.x, text_colour.y, text_colour.z, text_colour.w);
+                vec4 item_colour = ThemeLoader::Ref()->get_color("AccentColour2");
+                ImVec4 item_colour_imgui = ImVec4(item_colour.x, item_colour.y, item_colour.z, item_colour.w);
+
+                ImGui::PushStyleColor(ImGuiCol_Text, text_colour_imgui);
+                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, item_colour_imgui);
+                ImGui::PushStyleColor(ImGuiCol_HeaderActive, item_colour_imgui);
+            }
+            ImGui::MenuItem(theme.c_str());
+            if(current_theme == theme){
+                ImGui::PopStyleColor(3);
+            }
+
+
+            if(ImGui::IsItemClicked()){
+                ConfigLoader::Ref()->set_config("UsingTheme", theme);
+                EditorLayout::Ref()->refresh_theme();
+                ConfigLoader::Ref()->save();
+            }
+        }
         ImGui::EndMenu();
     }
     if (ImGui::IsItemHovered()) {
@@ -177,6 +217,11 @@ void EditorMenuBar::m_update_close_button(){
     float start_x = window_width - total_button_width - 5.0f;
     float padding_x = std::max(0.0f, (button_width - text_width) * 0.5f);
 
+
+    vec4 close_button_colour = ThemeLoader::Ref()->get_color("CloseButtonColour");
+    ImVec4 clouse_button_colour_imgui = ImVec4(close_button_colour.x, close_button_colour.y, close_button_colour.z, close_button_colour.w);
+
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, clouse_button_colour_imgui);
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(padding_x, padding_y));
     ImGui::SameLine(start_x);
     
@@ -189,6 +234,7 @@ void EditorMenuBar::m_update_close_button(){
     }
     ImGui::PopStyleVar(2);
     ImGui::PopFont();
+    ImGui::PopStyleColor();
 }
 void EditorMenuBar::m_end_main_bar(){
     ImGui::EndMainMenuBar();

@@ -27,7 +27,11 @@ private:
         "SecondaryColour2" ,
         "SecondaryColour3",
         "AccentColour1",
-        "AccentColour2"
+        "AccentColour2",
+        "HighlightTextColour",
+        "TextColour",
+        "CloseButtonColour",
+        "GridColour",
     };
 
     std::set<char> m_acceptable_char = {
@@ -58,4 +62,6 @@ public:
 
     std::string get_color_string(std::string p_key);
     vec4 get_color(std::string p_key);
+
+    std::vector<std::string> get_themes();
 };
