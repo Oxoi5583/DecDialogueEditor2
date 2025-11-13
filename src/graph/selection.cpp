@@ -2,11 +2,15 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "engine/renderer.h"
 #include "imgui/imgui.h"
+#include "obj/abstract/selectable.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
+#include "server/object_server.h"
 #include "struct/shape/rect2.h"
 #include "theme/theme_loader.h"
+#include <algorithm>
+#include <vector>
 
 
 void GraphSelection::m_update_state(){
@@ -55,10 +59,18 @@ void GraphSelection::m_update_state_TO_DRAGGING(){
 void GraphSelection::init(){
 
 }
-void GraphSelection::pre_update(){
+
+void GraphSelection::m_block_hover_if_selecting(){
     if(m_state == State::DRAGGING){
-        EventServer::Ref()->emit(EventMouseHoverObj());
+        EventServer::Ref()->block<EventMouseHoverObj>();
     }
+}
+
+void GraphSelection::pre_update(){
+    m_store_selection();
+    m_execute_external_events();
+    m_execute_internal_events();
+    m_block_hover_if_selecting();
 }
 
 void GraphSelection::post_update(){
@@ -97,4 +109,93 @@ bool GraphSelection::is_in_area(Rect2& p_rect){
     }
 
     return m_selection_area.is_rect_intersect(p_rect);
+}
+
+void GraphSelection::m_store_selection(){
+    std::vector<OID>().swap(m_selected);
+    auto selecteds = EventServer::Ref()->poll<EventMouseSelectedObj>();
+    for(auto& s : selecteds){
+        m_selected.push_back(s.obj_id);
+    }
+    DEBUG_MSG("m_selected.size() : " << m_selected.size());
+}
+
+void GraphSelection::m_drag_all_selection(){
+    for(OID& id : m_selected_group_dragging_buffer){
+        SelectableObject* obj = ObjectServer::Ref()->get_instance<SelectableObject>(id);
+        obj->select();
+        obj->drag();
+    }
+}
+void GraphSelection::m_place_all_selection(){
+    for(OID& id : m_selected_group_dragging_buffer){
+        SelectableObject* obj = ObjectServer::Ref()->get_instance<SelectableObject>(id);
+        obj->select();
+        obj->place();
+    }
+}
+
+void GraphSelection::m_execute_internal_events(){
+    while(!m_events.empty()){
+        Event e = m_events.front();
+        switch (e) {
+            case DRAG_ALL_SELECTION:{
+                m_drag_all_selection();
+                break;
+            }
+            case PLACE_ALL_SELECTION:{
+                m_place_all_selection();
+                break;
+            }
+            case STORE_BUFFER:{
+                m_store_selection_buffer();
+                break;
+            }
+        }
+        m_events.pop();
+    }
+}
+
+void GraphSelection::m_execute_external_events(){
+    if(EventServer::Ref()->has<EventSelectedObjDragging>()){
+        drag_all_selection();
+    }
+    if(EventServer::Ref()->has<EventSelectedObjPlaced>()){
+        place_all_selection();
+    }
+}
+void GraphSelection::drag_all_selection(){
+    EventSelectedObjGroupDragging event;
+    EventServer::Ref()->emit(event);
+    m_is_group_dragging = true;
+    m_events.emplace(Event::DRAG_ALL_SELECTION);
+}
+void GraphSelection::place_all_selection(){
+    EventSelectedObjGroupPlaced event;
+    EventServer::Ref()->emit(event);
+    m_is_group_dragging = false;
+    m_events.emplace(Event::PLACE_ALL_SELECTION);
+}
+
+bool GraphSelection::is_group_dragging(){
+    return EventServer::Ref()->has<EventSelectedObjGroupDragging>();
+}
+
+
+void GraphSelection::m_store_selection_buffer(){
+    DEBUG_MSG("m_store_selection_buffer");
+    m_selected_group_dragging_buffer.resize(m_selected.size());
+    std::copy(m_selected.begin(), m_selected.end(), m_selected_group_dragging_buffer.begin());
+}
+void GraphSelection::m_release_selection_buffer(){
+    DEBUG_MSG("m_release_selection_buffer");
+    std::vector<OID>().swap(m_selected_group_dragging_buffer);
+}
+
+void GraphSelection::store_selection_buffer(){
+    DEBUG_MSG("store_selection_buffer");
+    m_events.emplace(Event::STORE_BUFFER);
+}
+void GraphSelection::release_selection_buffer(){
+    m_release_selection_buffer();
 }

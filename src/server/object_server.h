@@ -24,6 +24,7 @@ public:
 private:
     ordered_list<ObjectBase> m_graph_process_list;
     ordered_list<ObjectBase> m_ui_process_list;
+    ordered_list<ObjectBase>& m_layer_to_list(Layer p_layer);
 
     std::vector<std::unique_ptr<ObjectBase>> m_instances;
 
@@ -33,9 +34,21 @@ private:
     std::unordered_map<OID, std::vector<std::function<void()>>> m_process_functions;
     std::unordered_map<OID, std::vector<std::function<void()>>> m_post_process_functions;
     std::unordered_map<OID, std::vector<std::function<void()>>> m_draw_functions;
+    std::unordered_map<OID, Layer> m_layers;
 
     std::queue<std::pair<ObjectBase*, Layer>> m_obj_buffer;
     void m_add_buffer_to_process_list();
+
+    enum Direction{
+        FRONT,
+        BACK,
+    };
+    struct ReorderCommand{
+        Direction dir;
+        OID id;
+    };
+
+    std::queue<ReorderCommand> m_commands;
 public:
 
     bool is_id_valid(OID p_id);
@@ -107,6 +120,7 @@ public:
         m_process_functions.emplace(new_id, std::vector<std::function<void()>>());
         m_post_process_functions.emplace(new_id, std::vector<std::function<void()>>());
         m_draw_functions.emplace(new_id, std::vector<std::function<void()>>());
+        m_layers.emplace(new_id, p_layer);
 
         return ptr;
     }
@@ -121,6 +135,11 @@ public:
         T* ret = dynamic_cast<T*>(m_id_to_instances[p_id]);
         return ret;
     }
+
+    void move_to_front(OID p_id);
+    void move_to_back(OID p_id);
+    
+    void reorder();
 };
 
 

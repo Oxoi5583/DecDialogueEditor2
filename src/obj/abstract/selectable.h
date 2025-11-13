@@ -8,12 +8,12 @@ class SelectableObject : public DragableObject {
 private:
     enum State{
         IDLE,
+        READY,
         SELECTED,
+        RESTORE,
     };
     State m_state = State::IDLE;
 
-    void m_select();
-    void m_unselect();
 
     void m_select_if_clicked();
     void m_select_if_in_select_area();
@@ -36,5 +36,7 @@ public:
     void post_process();
     void draw();
 
+    void select();
+    void unselect();
     bool is_selected();
 };

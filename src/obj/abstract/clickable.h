@@ -9,6 +9,7 @@ private:
     bool m_was_clicked = false;
     bool m_was_just_released = false;
 
+    void m_emit_event();
 public:
     ClickableObject();
     ~ClickableObject();

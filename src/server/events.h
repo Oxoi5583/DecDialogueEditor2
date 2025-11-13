@@ -42,12 +42,12 @@ struct EventMouseHoverObj : public UniqueEvent{
     bool is_pointer_cursor = false;
 };
 
-struct EventMouseJustClickObj : public UniqueEvent{
+struct EventMouseJustClickObj : public NonUniqueEvent{
     vec2 click_pos;
     OID obj_id;
 };
 
-struct EventMouseClickObj : public UniqueEvent{
+struct EventMouseClickObj : public NonUniqueEvent{
     vec2 click_pos;
     OID obj_id;
 };
@@ -114,7 +114,22 @@ struct EventSpawnNode : public NonUniqueEvent{
     NodeType type;
 };
 
-struct EventMouseJustClickSelectdObj : public NonUniqueEvent{
+struct EventMouseJustClickSelectedObj : public NonUniqueEvent{
     vec2 click_pos;
     OID obj_id;
 };
+
+struct EventMouseSelectedObj : public NonUniqueEvent{
+    OID obj_id;
+};
+
+struct EventSelectedObjDragging : public NonUniqueEvent{
+    OID obj_id;
+};
+
+struct EventSelectedObjPlaced : public NonUniqueEvent{
+    OID obj_id;
+};
+
+struct EventSelectedObjGroupDragging : public UniqueEvent{};
+struct EventSelectedObjGroupPlaced : public UniqueEvent{};

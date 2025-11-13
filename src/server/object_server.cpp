@@ -163,6 +163,7 @@ void ObjectServer::clear_garbage(){
             m_process_functions.erase(id);
             m_post_process_functions.erase(id);
             m_draw_functions.erase(id);
+            m_layers.erase(id);
         }
     }
     m_instances.erase(
@@ -187,4 +188,49 @@ bool ObjectServer::is_id_valid(OID p_id){
     }
 
     return true;
+}
+
+
+void ObjectServer::move_to_front(OID p_id){
+    ReorderCommand c = {Direction::FRONT, p_id};
+    m_commands.emplace(c);
+}
+void ObjectServer::move_to_back(OID p_id){
+    ReorderCommand c = {Direction::BACK, p_id};
+    m_commands.emplace(c);
+}
+
+ordered_list<ObjectBase>& ObjectServer::m_layer_to_list(Layer p_layer){
+    switch (p_layer) {
+        case Layer::UI_LAYER:
+            return m_ui_process_list;
+            break;
+        case Layer::GRAPH_LAYER:
+            return m_graph_process_list;
+            break;
+    }
+}
+void ObjectServer::reorder(){
+    while (!m_commands.empty()) {
+        auto& c = m_commands.front();
+
+        if(!is_id_valid(c.id)){
+            m_commands.pop();
+            continue;
+        }
+
+        Layer layer = m_layers[c.id];
+        ObjectBase* ptr = this->get_instance<ObjectBase>(c.id);
+        auto& list = m_layer_to_list(layer);
+
+        switch (c.dir) {
+            case FRONT:
+                list.move_to_front(ptr);
+                break;
+            case BACK:
+                list.move_to_back(ptr);
+                break;
+        }
+        m_commands.pop();
+    }
 }

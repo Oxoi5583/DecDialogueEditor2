@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
     GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
 
-    Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 5}, false);
+    Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
     test_timer->start();
     
     EditorLayout::Ref()->ui_init();
@@ -85,6 +85,7 @@ int main(int argc, char* argv[]) {
 
         GraphGrid::Ref()->draw();
 
+        ObjectServer::Ref()->reorder();
         ObjectServer::Ref()->ready();
         ObjectServer::Ref()->pre_process();
         ObjectServer::Ref()->process();

@@ -10,14 +10,17 @@ private:
     enum class State{
         IDLE,
         READY,
+        RESTORE_IDLE,
         DRAG,
-        PLEACE,
+        PLACE,
     };
 
     State m_current_state = State::IDLE;
 
     void m_update_state();
     void m_handle_action();
+
+    void m_emit_event();
 
     vec2 m_ready_mouse_pos;
     vec2 m_dragging_position_offset;
@@ -32,4 +35,11 @@ public:
     void draw();
     
     bool is_dragging();
+    bool is_drag_ready();
+    bool is_restore_to_idle();
+    bool is_placed();
+
+    void drag_ready();
+    void drag();
+    void place();
 };
