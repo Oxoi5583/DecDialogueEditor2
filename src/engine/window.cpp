@@ -35,6 +35,8 @@ void EngineWindow::init(){
         for(auto& step_func : all_init_steps){
             step_func();
         }
+
+        m_store_buffer();
     }
 }
 
@@ -235,6 +237,7 @@ void EngineWindow::m_job_event_handle(){
 
                 this->stop_dragging();
                 m_job_event_handle();
+
                 break;
             }
             case Event::MINIMIZE:{
@@ -311,12 +314,14 @@ vec2 EngineWindow::get_window_position(){
 
 void EngineWindow::set_window_position(vec2 p_pos){
     SDL_SetWindowPosition(m_sdl_window, p_pos.x, std::max(0.0f, p_pos.y));
+    m_store_buffer();
 }
 void EngineWindow::set_window_AABB(vec2 p_left_top, vec2 p_right_down){
     vec2 clamp_left_top = glm::max(p_left_top, vec2(0.0f, 0.0f));
     vec2 size = p_right_down - clamp_left_top;
     set_window_position(clamp_left_top);
     SDL_SetWindowSize(m_sdl_window, size.x, size.y);
+    m_store_buffer();
 }
 
 

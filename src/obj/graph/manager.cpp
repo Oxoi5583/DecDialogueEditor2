@@ -16,7 +16,6 @@ GraphManager::~GraphManager(){
 }
 
 void GraphManager::m_spawn_entry(vec2 p_pos){
-    DEBUG_MSG("Spawn ENTRY");
     GraphNode* new_node = ObjectServer::Ref()->queue_create<GraphNode>();
     OID id = new_node->get_id();
     m_all_node_ids.push_back(id);
@@ -24,7 +23,6 @@ void GraphManager::m_spawn_entry(vec2 p_pos){
     new_node->set_position(p_pos);
 }
 void GraphManager::m_spawn_node(vec2 p_pos){
-    DEBUG_MSG("Spawn NODE");
     GraphNode* new_node = ObjectServer::Ref()->queue_create<GraphNode>();
     OID id = new_node->get_id();
     m_all_node_ids.push_back(id);
@@ -32,7 +30,6 @@ void GraphManager::m_spawn_node(vec2 p_pos){
     new_node->set_position(p_pos);
 }
 void GraphManager::m_spawn_option(vec2 p_pos){
-    DEBUG_MSG("Spawn OPTION");
     GraphNode* new_node = ObjectServer::Ref()->queue_create<GraphNode>();
     OID id = new_node->get_id();
     m_all_node_ids.push_back(id);

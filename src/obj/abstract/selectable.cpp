@@ -100,7 +100,6 @@ void SelectableObject::m_select_if_in_select_area(){
 void SelectableObject::m_unselect_if_lshift_clicked(){
     if(EngineInputHub::Ref()->keyboard_is_down(K_LSHIFT)
         && this->was_just_clicked()){
-        DEBUG_MSG("m_unselect_if_lshift_clicked");
         unselect();
     }
 }
@@ -133,7 +132,6 @@ void SelectableObject::m_unselect_if_world_clicked(){
     }
 
     if(EventServer::Ref()->has<EventMouseJustClickedOnWorld>()){
-        DEBUG_MSG("m_unselect_if_world_clicked");
         unselect();
     }
 }
@@ -155,7 +153,6 @@ void SelectableObject::m_unselect_if_not_in_select_area(){
         return;
     }
 
-    DEBUG_MSG("m_unselect_if_not_in_select_area");
     unselect();
 }
 

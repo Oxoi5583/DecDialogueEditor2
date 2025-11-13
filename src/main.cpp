@@ -97,14 +97,11 @@ int main(int argc, char* argv[]) {
         GraphSelection::Ref()->draw();
 
         if(test_timer->timeout_and_reset_in_cycle(5)){
-            DEBUG_MSG("TIMEOUT");
             EventSpawnNode event;
             event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
             event.type = NodeType::NODE;
             EventServer::Ref()->emit(event);
-            EngineWindow::Ref()->stop_dragging();
         }
-
 
         EngineWindowResizer::Ref()->post_update();
         MouseServer::Ref()->update();

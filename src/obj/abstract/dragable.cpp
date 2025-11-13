@@ -1,9 +1,11 @@
 #include "obj/abstract/dragable.h"
+#include "graph/grid.h"
 #include "graph/selection.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_server.h"
+#include <cmath>
 
 
 DragableObject::DragableObject(){
@@ -129,7 +131,18 @@ void DragableObject::drag(){
 void DragableObject::place(){
     if(!is_placed()){
         m_current_state = State::PLACE;
+        m_align_grid();
     }
+}
+
+void DragableObject::m_align_grid(){
+    vec2 pos = this->get_position();
+    double x = pos.x;
+    double y = pos.y;
+    x = roundf(x / GraphGrid::Ref()->grid_interval) * GraphGrid::Ref()->grid_interval;
+    y = roundf(y / GraphGrid::Ref()->grid_interval) * GraphGrid::Ref()->grid_interval;
+
+    this->set_position({x,y});
 }
 
 void DragableObject::m_emit_event(){

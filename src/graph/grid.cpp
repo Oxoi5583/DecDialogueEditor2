@@ -11,23 +11,23 @@
 
 GraphGrid::GraphGrid(){}
 void GraphGrid::m_create_grid(){
-    double size_x = m_grid_columns * m_grid_interval;
-    double size_y = m_grid_rows * m_grid_interval;
+    double size_x = grid_columns * grid_interval;
+    double size_y = grid_rows * grid_interval;
     double start_x = - (size_x / 2);
     double start_y = - (size_y / 2);
 
-    for(size_t y = 0; y < m_grid_columns; y++){
+    for(size_t y = 0; y < grid_columns; y++){
         float fm_line_x = start_x;
-        float fm_line_y = start_y + (y * m_grid_interval);
+        float fm_line_y = start_y + (y * grid_interval);
         float to_line_x = start_x + size_x;
-        float to_line_y = start_y+ (y * m_grid_interval);
+        float to_line_y = start_y+ (y * grid_interval);
         GraphGridLine line = {{fm_line_x,fm_line_y},{to_line_x,to_line_y}};
         m_horizontal_lines.emplace(fm_line_y,line);
     }
-    for(size_t x = 0; x < m_grid_columns; x++){
-        float fm_line_x = start_x + (x * m_grid_interval);
+    for(size_t x = 0; x < grid_columns; x++){
+        float fm_line_x = start_x + (x * grid_interval);
         float fm_line_y = start_y;
-        float to_line_x = start_x + (x * m_grid_interval);
+        float to_line_x = start_x + (x * grid_interval);
         float to_line_y = start_y + size_y;
         GraphGridLine line = {{fm_line_x,fm_line_y},{to_line_x,to_line_y}};
         m_vertical_lines.emplace(fm_line_x,line);

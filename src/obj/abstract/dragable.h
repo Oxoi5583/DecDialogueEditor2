@@ -24,6 +24,8 @@ private:
 
     vec2 m_ready_mouse_pos;
     vec2 m_dragging_position_offset;
+
+    void m_align_grid();
 public:
     DragableObject();
     ~DragableObject();

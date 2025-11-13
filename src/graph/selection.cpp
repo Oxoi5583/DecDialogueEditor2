@@ -96,7 +96,6 @@ void GraphSelection::draw(){
     EngineRenderer::Ref()->draw_line(points[1], points[2], border_color, width);
     EngineRenderer::Ref()->draw_line(points[2], points[3], border_color, width);
     EngineRenderer::Ref()->draw_line(points[3], points[0], border_color, width);
-
 }
 
 bool GraphSelection::is_selecting(){
@@ -117,7 +116,6 @@ void GraphSelection::m_store_selection(){
     for(auto& s : selecteds){
         m_selected.push_back(s.obj_id);
     }
-    DEBUG_MSG("m_selected.size() : " << m_selected.size());
 }
 
 void GraphSelection::m_drag_all_selection(){
@@ -181,19 +179,15 @@ bool GraphSelection::is_group_dragging(){
     return EventServer::Ref()->has<EventSelectedObjGroupDragging>();
 }
 
-
 void GraphSelection::m_store_selection_buffer(){
-    DEBUG_MSG("m_store_selection_buffer");
     m_selected_group_dragging_buffer.resize(m_selected.size());
     std::copy(m_selected.begin(), m_selected.end(), m_selected_group_dragging_buffer.begin());
 }
 void GraphSelection::m_release_selection_buffer(){
-    DEBUG_MSG("m_release_selection_buffer");
     std::vector<OID>().swap(m_selected_group_dragging_buffer);
 }
 
 void GraphSelection::store_selection_buffer(){
-    DEBUG_MSG("store_selection_buffer");
     m_events.emplace(Event::STORE_BUFFER);
 }
 void GraphSelection::release_selection_buffer(){
