@@ -155,7 +155,7 @@ Rect2 EditorLayout::covnert_to_window(Rect2& p_rect){
 void EditorLayout::refresh_theme(){
     auto& style = ImGui::GetStyle();
     ImVec4* colors = style.Colors;
-    
+
     ImVec4 brand       = ThemeLoader::Ref()->get_imgui_color("BrandColour");
     ImVec4 secondary1  = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
     ImVec4 secondary2  = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
@@ -185,11 +185,11 @@ void EditorLayout::refresh_theme(){
     colors[ImGuiCol_ButtonActive]      = ImVec4(secondary2.x * 2.0f, secondary2.y * 2.0f, secondary2.z * 2.0f, 1.0f);
 
     colors[ImGuiCol_Header]            = secondary2;
-    colors[ImGuiCol_HeaderHovered]     = accent1;
-    colors[ImGuiCol_HeaderActive]      = accent2;
+    colors[ImGuiCol_HeaderHovered]     = accent2;
+    colors[ImGuiCol_HeaderActive]      = ImVec4(accent2.x * 2.0f, accent2.y * 2.0f, accent2.z * 2.0f, 1.0f);
 
     colors[ImGuiCol_Tab]               = secondary1;
-    colors[ImGuiCol_TabHovered]        = accent1;
+    colors[ImGuiCol_TabHovered]        = accent2;
     colors[ImGuiCol_TabActive]         = accent2;
 
     colors[ImGuiCol_Text]              = textColor;
@@ -198,9 +198,9 @@ void EditorLayout::refresh_theme(){
 
     colors[ImGuiCol_SliderGrab]        = accent1;
     colors[ImGuiCol_SliderGrabActive]  = accent2;
-    colors[ImGuiCol_Separator]         = secondary2;
-    colors[ImGuiCol_SeparatorHovered]  = accent1;
-    colors[ImGuiCol_SeparatorActive]   = accent2;
+    colors[ImGuiCol_Separator]         = secondary3;
+    colors[ImGuiCol_SeparatorHovered]  = accent2;
+    colors[ImGuiCol_SeparatorActive]   = ImVec4(accent2.x * 0.5f, accent2.y * 0.5f, accent2.z * 0.5f, 1.0f);;
 
     colors[ImGuiCol_Border] = gridColor;
 

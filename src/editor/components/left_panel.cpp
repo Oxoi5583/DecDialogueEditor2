@@ -10,6 +10,7 @@
 #include "engine/window.h"
 #include "imgui/imgui.h"
 #include "struct/shape/rect2.h"
+#include <cfloat>
 
 EditorLeftPanel::EditorLeftPanel(){
     BIND_CLASS(EditorLeftPanel);
@@ -34,7 +35,71 @@ void EditorLeftPanel::pre_process(){
         ImGui::SetNextWindowSize({window_rect.get_size().x, window_rect.get_size().y});
         ImGui::SetNextWindowPos({window_rect.get_left_top().x, window_rect.get_left_top().y});
 
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.TabRounding = 0.1f;
+
+
+        std::vector<std::string> items = {
+            "Item 1", "Item 2", "Item 3", "Item 4", "Item 5",
+            "Item 6", "Item 7", "Item 8", "Item 9", "Item 10",
+            "Item 11", "Item 12", "Item 13", "Item 14", "Item 15",
+            "Item 16", "Item 17", "Item 18", "Item 19", "Item 20"
+        };
+
         ImGui::Begin("EditorLeftPanel", &is_display, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+
+        if (ImGui::BeginTabBar("TabBar")){
+            if (ImGui::BeginTabItem("Inspector")){
+
+                if (ImGui::BeginListBox("##MyListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
+                    for (int i = 0; i < items.size(); ++i){
+                        const bool is_selected = (m_current_item == i);
+
+                        if (ImGui::Selectable(items[i].c_str(), is_selected)){
+                            if(m_current_item == i){
+                                m_current_item = -1;
+                            }else{
+                                m_current_item = i;
+                            }
+                        }
+
+                        if (is_selected){
+                            double item_height = ImGui::GetTextLineHeightWithSpacing();
+                            ImGui::PushStyleColor(ImGuiCol_FrameBg, ThemeLoader::Ref()->get_imgui_color("SecondaryColour3"));
+                            if (ImGui::BeginListBox("##MyListBox1", ImVec2(-FLT_MIN, item_height * items.size() + 5))){
+                                for (int i = 0; i < items.size(); ++i){
+                                    if (ImGui::Selectable(("  "+items[i]).c_str(), false)){
+                                        
+                                    }
+                                }
+                                ImGui::EndListBox();
+                            }
+                            ImGui::PopStyleColor();
+                        }
+                    }
+
+                    double item_height = ImGui::GetTextLineHeightWithSpacing();
+                    ImGui::PushStyleColor(ImGuiCol_FrameBg, ThemeLoader::Ref()->get_imgui_color("SecondaryColour2"));
+                    if (ImGui::BeginListBox("##MyListBox2", ImVec2(-FLT_MIN, item_height * items.size() + 5))){
+                        for (int i = 0; i < items.size(); ++i){
+                            if (ImGui::Selectable(("*"+items[i]).c_str(), false)){
+                                
+                            }
+                        }
+                        ImGui::EndListBox();
+                    }
+                    ImGui::PopStyleColor();
+
+                    ImGui::EndListBox();
+                }
+
+
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
+
         ImGui::End();
     }
 }
