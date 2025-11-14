@@ -67,18 +67,20 @@ GraphManager::NodeInfo GraphManager::m_create_info(GraphBase* m_ptr){
     return info;
 }
 
-std::vector<OID> GraphManager::m_get_all_children(OID p_parent_id){
+std::vector<OID> GraphManager::m_get_all_children(OID p_parent_id, bool p_is_first_recur){
     std::vector<OID> ret;
 
     if(!m_infos.contains(p_parent_id)){
         return ret;
     }
-
-    ret.push_back(p_parent_id);
+    
+    if(!p_is_first_recur){
+        ret.push_back(p_parent_id);
+    }
 
     NodeInfo info = m_infos[p_parent_id];
     for(OID& id : info.direct_children){
-        auto sub_list = m_get_all_children(id);
+        auto sub_list = m_get_all_children(id, false);
         for(OID& s_id : sub_list){
             ret.push_back(s_id);
         }

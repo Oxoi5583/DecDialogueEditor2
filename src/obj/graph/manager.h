@@ -54,7 +54,7 @@ private:
     void m_data_refresh();
 
     NodeInfo m_create_info(GraphBase* m_ptr);
-    std::vector<OID> m_get_all_children(OID p_parent_id);
+    std::vector<OID> m_get_all_children(OID p_parent_id, bool p_is_first_recur = true);
 
     void m_spawn_entry(vec2 p_pos);
     void m_spawn_node(vec2 p_pos);
