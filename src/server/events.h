@@ -2,6 +2,7 @@
 
 #include "editor/layout.h"
 #include "glm/ext/vector_float2.hpp"
+#include "obj/graph/manager.h"
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 
@@ -101,17 +102,9 @@ struct EventEditorSpaceResizerHover : public UniqueEvent{};
 struct EventEditorSpaceResizerDragging : public UniqueEvent{};
 
 
-
-enum NodeType{
-    ENTRY,
-    NODE,
-    OPTION,
-};
-
-
 struct EventSpawnNode : public NonUniqueEvent{
     vec2 spawn_pos;
-    NodeType type;
+    GraphManager::NodeType type;
 };
 
 struct EventMouseJustClickSelectedObj : public NonUniqueEvent{

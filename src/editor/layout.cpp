@@ -186,7 +186,7 @@ void EditorLayout::refresh_theme(){
 
     colors[ImGuiCol_Header]            = secondary2;
     colors[ImGuiCol_HeaderHovered]     = accent2;
-    colors[ImGuiCol_HeaderActive]      = ImVec4(accent2.x * 2.0f, accent2.y * 2.0f, accent2.z * 2.0f, 1.0f);
+    colors[ImGuiCol_HeaderActive]      = ImVec4(accent2.x * 0.5f, accent2.y * 0.5f, accent2.z * 0.5f, 1.0f);
 
     colors[ImGuiCol_Tab]               = secondary1;
     colors[ImGuiCol_TabHovered]        = accent2;

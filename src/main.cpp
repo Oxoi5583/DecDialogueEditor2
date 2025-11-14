@@ -1,3 +1,4 @@
+#include "core/random_server.h"
 #include "editor/layout.h"
 #include "editor/space.h"
 #include "engine/font_loader.h"
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]) {
     GraphSelection::Ref()->init();
     EngineWindowResizer::Ref()->init();
 
-    GraphManager* graph_manager = ObjectServer::Ref()->queue_create<GraphManager>();
+    GraphManager::Ref()->init();
 
     Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
     test_timer->start();
@@ -80,6 +81,7 @@ int main(int argc, char* argv[]) {
 
         GraphViewport::Ref()->update();
         GraphSelection::Ref()->pre_update();
+        GraphManager::Ref()->update();
         EditorLayout::Ref()->ui_update();
         EngineWindowResizer::Ref()->update();
 
@@ -98,8 +100,20 @@ int main(int argc, char* argv[]) {
 
         if(test_timer->timeout_and_reset_in_cycle(5)){
             EventSpawnNode event;
-            event.spawn_pos = {test_timer->get_current_cycle() * 10,0.0f};
-            event.type = NodeType::NODE;
+
+            event.spawn_pos = { RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250
+                                ,RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250};
+            event.type = GraphManager::NodeType::NODE;
+            EventServer::Ref()->emit(event);
+
+            event.spawn_pos = { RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250
+                                ,RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250};
+            event.type = GraphManager::NodeType::ENTRY;
+            EventServer::Ref()->emit(event);
+
+            event.spawn_pos = { RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250
+                                ,RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250};
+            event.type = GraphManager::NodeType::OPTION;
             EventServer::Ref()->emit(event);
         }
 

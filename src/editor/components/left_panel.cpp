@@ -1,6 +1,8 @@
 #include "editor/components/left_panel.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
+#include "nlohmann/json.hpp"
+#include "obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/object_server.h"
@@ -38,13 +40,14 @@ void EditorLeftPanel::pre_process(){
         ImGuiStyle& style = ImGui::GetStyle();
         style.TabRounding = 0.1f;
 
+        std::vector<std::string> items;
+        GraphManager::PanelData panel_data = GraphManager::Ref()->get_panel_data();
 
-        std::vector<std::string> items = {
-            "Item 1", "Item 2", "Item 3", "Item 4", "Item 5",
-            "Item 6", "Item 7", "Item 8", "Item 9", "Item 10",
-            "Item 11", "Item 12", "Item 13", "Item 14", "Item 15",
-            "Item 16", "Item 17", "Item 18", "Item 19", "Item 20"
-        };
+        for(GraphManager::NodeInfo info : panel_data.other_info_list){
+            std::string name = std::to_string(info.id);
+            items.push_back(name);
+        }
+
 
         ImGui::Begin("EditorLeftPanel", &is_display, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
@@ -80,7 +83,8 @@ void EditorLeftPanel::pre_process(){
 
                     double item_height = ImGui::GetTextLineHeightWithSpacing();
                     ImGui::PushStyleColor(ImGuiCol_FrameBg, ThemeLoader::Ref()->get_imgui_color("SecondaryColour2"));
-                    if (ImGui::BeginListBox("##MyListBox2", ImVec2(-FLT_MIN, item_height * items.size() + 5))){
+                    double height = (items.empty()) ? 0 : item_height * items.size() + 5;
+                    if (ImGui::BeginListBox("##MyListBox2", ImVec2(-FLT_MIN, height))){
                         for (int i = 0; i < items.size(); ++i){
                             if (ImGui::Selectable(("*"+items[i]).c_str(), false)){
                                 

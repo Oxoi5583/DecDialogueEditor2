@@ -134,14 +134,18 @@ mat2 rotate(float angle) {
 
 void main() {
     float half_width = width / 2.0;
-    float dist = distance(instance_start, instance_end);
     vec2 dir = normalize(instance_end - instance_start);
+
+    vec2 start = instance_start - (dir * half_width);
+    vec2 end = instance_end + (dir * half_width);
+
+    float dist = distance(start, end);
 
     vec2 l_dir = rotate(radians(-90.0)) * dir;
     vec2 r_dir = rotate(radians(90.0)) * dir;
 
-    vec2 left_down = instance_start + (l_dir * half_width);
-    vec2 right_down = instance_start + (r_dir * half_width);
+    vec2 left_down = start + (l_dir * half_width);
+    vec2 right_down = start + (r_dir * half_width);
     vec2 left_up = left_down + (dir * dist);
     vec2 right_up = right_down + (dir * dist);
 
