@@ -67,22 +67,24 @@ GraphManager::NodeInfo GraphManager::m_create_info(GraphBase* m_ptr){
     return info;
 }
 
-std::vector<OID> GraphManager::m_get_all_children(OID p_parent_id, bool p_is_first_recur){
+std::vector<OID> GraphManager::m_get_all_children(OID p_parent_id, bool p_is_self_contain, std::unordered_set<OID> p_ancestors){
     std::vector<OID> ret;
 
-    if(!m_infos.contains(p_parent_id)){
-        return ret;
-    }
-    
-    if(!p_is_first_recur){
+    if(p_is_self_contain){
         ret.push_back(p_parent_id);
     }
 
-    NodeInfo info = m_infos[p_parent_id];
-    for(OID& id : info.direct_children){
-        auto sub_list = m_get_all_children(id, false);
-        for(OID& s_id : sub_list){
-            ret.push_back(s_id);
+    p_ancestors.emplace(p_parent_id);
+
+    auto direct_children = m_infos[p_parent_id].direct_children;
+    for(OID& id : direct_children){
+        if(p_ancestors.contains(id)){
+            continue;
+        }
+
+        auto sub_children = m_get_all_children(id, true, p_ancestors);
+        for(OID& sub_id : sub_children){
+            ret.push_back(sub_id);
         }
     }
 
@@ -180,7 +182,7 @@ void GraphManager::m_regenerate_panel_data(){
         m_panel_data.primary_info_list.push_back(info);
         std::vector<NodeInfo> secondary_info_list = std::vector<NodeInfo>();
 
-        std::vector<OID> children = m_get_all_children(id);
+        std::vector<OID> children = m_get_all_children(id, false);
         for(OID& s_id : children){
             used_ids.emplace(s_id);
 

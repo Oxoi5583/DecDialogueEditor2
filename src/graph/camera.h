@@ -12,6 +12,7 @@ using namespace glm;
 class GraphCamera : public Singleton<GraphCamera>{
 private:
     float m_zoom = 1;
+    vec2 m_target;
     Rect2 m_rect;
 
     vec2 m_viewport_size_buffer;
@@ -29,7 +30,8 @@ private:
     void m_job_update_view();
     void m_job_update_projection();
     void m_job_update_is_dragging();
-    void m_job_update_control();
+    void m_job_update_control_motion();
+    void m_job_update_control_zoom();
     void m_job_draw_border();
 public:
     GraphCamera()

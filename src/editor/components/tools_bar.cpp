@@ -38,9 +38,6 @@ void EditorToolsBar::pre_process(){
     }
 
     ImGui::End();
-
-
-
 }
 void EditorToolsBar::process(){
 }

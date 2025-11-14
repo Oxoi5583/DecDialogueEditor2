@@ -41,6 +41,8 @@ public:
     double get_viewport_left_border();
     double get_viewport_right_border();
 
+    vec2 get_viewport_window_ratio();
+
     vec2 screen_to_viewport(vec2 p_pos);
     vec2 viewport_to_screen(vec2 p_pos);
 };

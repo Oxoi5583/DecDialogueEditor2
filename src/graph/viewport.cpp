@@ -147,3 +147,10 @@ double GraphViewport::get_viewport_left_border(){
 double GraphViewport::get_viewport_right_border(){
     return m_viewport_rect.get_right_down().x;
 }
+
+vec2 GraphViewport::get_viewport_window_ratio(){
+    vec2 window_size = EngineWindow::Ref()->get_window_size();
+    vec2 viewport_size = get_viewport_size();
+
+    return {viewport_size.x / window_size.x ,viewport_size.y / window_size.y};
+}

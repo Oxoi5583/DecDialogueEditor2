@@ -25,8 +25,8 @@ void EngineInputHub::init(){
 
 void EngineInputHub::polling_sdl_event(){
     SDL_CaptureMouse(true);
-    m_mouse_motion = vec2();
-    m_mouse_wheel = vec2();
+    m_mouse_motion = vec2(0.0f,0.0f);
+    m_mouse_wheel = vec2(0.0f,0.0f);
     m_mouse_left_button_just_clicked = false;
     m_mouse_right_button_just_clicked = false;
     m_mouse_left_button_just_released = false;

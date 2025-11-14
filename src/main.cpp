@@ -98,6 +98,7 @@ int main(int argc, char* argv[]) {
         GraphSelection::Ref()->post_update();
         GraphSelection::Ref()->draw();
 
+
         if(test_timer->timeout_and_reset_in_cycle(5)){
             EventSpawnNode event;
 
