@@ -37,6 +37,11 @@ void GraphGrid::init(){
     m_create_grid();
 }
 void GraphGrid::draw(){
+    double zoom = GraphCamera::Ref()->get_zoom();
+    double width = m_width / zoom;
+
+    DEBUG_MSG("zoom : " << zoom);
+
     m_color = ThemeLoader::Ref()->get_color("GridColour");
 
     Rect2 window_rect = GraphCamera::Ref()->get_zoomed_rect();
@@ -49,7 +54,7 @@ void GraphGrid::draw(){
 
     
     for(GraphGridLine& line : lines){
-        EngineRenderer::Ref()->draw_line(line.start, line.end, m_color, m_width);
+        EngineRenderer::Ref()->draw_line(line.start, line.end, m_color, width);
     }
 }
 

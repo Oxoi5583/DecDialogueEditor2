@@ -1,6 +1,7 @@
 #include "obj/graph/base.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "core/timer_server.h"
+#include "graph/camera.h"
 #include "server/object_server.h"
 #include "theme/theme_loader.h"
 
@@ -43,7 +44,7 @@ void GraphBase::draw(){
         return;
     }
 
-    const float borderSize = 2.0f;
+    const float borderSize = 2.0f / GraphCamera::Ref()->get_zoom();
     Rect2 borderRect(
         m_rect.get_center(),
         m_rect.get_size() + vec2(borderSize * 2.0f)
@@ -66,7 +67,7 @@ void GraphBase::draw(){
     );
 
     if(this->is_selected()){
-        const double width = 6.5;
+        const double width = 6.5 / GraphCamera::Ref()->get_zoom();
 
         vec2 lt = m_rect.get_left_top();
         vec2 rt = m_rect.get_right_top();
