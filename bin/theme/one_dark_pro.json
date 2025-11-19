@@ -12,5 +12,8 @@
     "GridColour": "3E4451",
     "SelectAreaColour": "6A758A80",
     "SelectAreaBorderColour": "949CAD",
-    "SelectableHighlightColour": "83ECFF"
+    "SelectableHighlightColour": "83ECFF",
+    "EntryColour": "E5CD9F",
+    "NodeColour": "73B4C3",
+    "OptionColour": "D4C5EE"
 }

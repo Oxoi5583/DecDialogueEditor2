@@ -35,6 +35,9 @@ private:
         "SelectAreaColour",
         "SelectAreaBorderColour",
         "SelectableHighlightColour",
+        "EntryColour",
+        "NodeColour",
+        "OptionColour",
     };
 
     std::set<char> m_acceptable_char = {
@@ -66,6 +69,8 @@ public:
     std::string get_color_string(std::string p_key);
     vec4 get_color(std::string p_key);
     ImVec4 get_imgui_color(const std::string& key);
+    ImU32 get_imgui_color_int(const std::string& key);
+    ImU32 ImVec4_to_int(const ImVec4& v);
 
     std::vector<std::string> get_themes();
 };

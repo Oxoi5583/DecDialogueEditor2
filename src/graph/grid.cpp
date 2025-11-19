@@ -17,19 +17,45 @@ void GraphGrid::m_create_grid(){
     double start_y = - (size_y / 2);
 
     for(size_t y = 0; y < grid_columns; y++){
+        double width = m_width;
         float fm_line_x = start_x;
         float fm_line_y = start_y + (y * grid_interval);
         float to_line_x = start_x + size_x;
         float to_line_y = start_y+ (y * grid_interval);
-        GraphGridLine line = {{fm_line_x,fm_line_y},{to_line_x,to_line_y}};
+
+        bool is_skippable = false;
+        if((y % 2) != 0){
+            is_skippable = true;
+        }
+
+        if(!is_skippable){
+            width = width * 1.5f;
+        }else{
+            width = width * 1.0f;
+        }
+
+        GraphGridLine line = {is_skippable, width, {round(fm_line_x),round(fm_line_y)},{round(to_line_x),round(to_line_y)}};
         m_horizontal_lines.emplace(fm_line_y,line);
     }
     for(size_t x = 0; x < grid_columns; x++){
+        double width = m_width;
         float fm_line_x = start_x + (x * grid_interval);
         float fm_line_y = start_y;
         float to_line_x = start_x + (x * grid_interval);
         float to_line_y = start_y + size_y;
-        GraphGridLine line = {{fm_line_x,fm_line_y},{to_line_x,to_line_y}};
+
+        bool is_skippable = false;
+        if((x % 2) != 0){
+            is_skippable = true;
+        }
+
+        if(!is_skippable){
+            width = width * 1.5f;
+        }else{
+            width = width * 1.0f;
+        }
+
+        GraphGridLine line = {is_skippable, width, {round(fm_line_x),round(fm_line_y)},{round(to_line_x),round(to_line_y)}};
         m_vertical_lines.emplace(fm_line_x,line);
     }
 }
@@ -38,9 +64,7 @@ void GraphGrid::init(){
 }
 void GraphGrid::draw(){
     double zoom = GraphCamera::Ref()->get_zoom();
-    double width = m_width / zoom;
-
-    DEBUG_MSG("zoom : " << zoom);
+    
 
     m_color = ThemeLoader::Ref()->get_color("GridColour");
 
@@ -52,9 +76,18 @@ void GraphGrid::draw(){
             right_down.x, right_down.y
         );
 
-    
-    for(GraphGridLine& line : lines){
-        EngineRenderer::Ref()->draw_line(line.start, line.end, m_color, width);
+    bool will_skip = false;
+    if(lines.size() >= 100){
+        will_skip = true;
+    }
+
+    for(size_t i = 0; i < lines.size(); i ++){
+        GraphGridLine& line = lines[i];
+        if(will_skip && line.is_skippable){
+            continue;
+        }
+
+        EngineRenderer::Ref()->draw_line(line.start, line.end, m_color, ceil(line.width / std::min(zoom, 1.0)));
     }
 }
 

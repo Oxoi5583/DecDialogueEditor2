@@ -234,3 +234,11 @@ void ObjectServer::reorder(){
         m_commands.pop();
     }
 }
+
+ObjectServer::Layer ObjectServer::get_layer(OID p_id){
+    if(!is_id_valid(p_id)){
+        return ObjectServer::Layer::GRAPH_LAYER;
+    }
+
+    return m_layers[p_id];
+}

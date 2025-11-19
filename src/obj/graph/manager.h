@@ -28,6 +28,7 @@ public:
         NodeType type;
         std::string name;
         std::string content;
+        bool is_selected;
         std::vector<std::string> signals;
         std::vector<OID> direct_children;
     };
@@ -37,6 +38,8 @@ public:
         std::vector<std::vector<NodeInfo>> secondary_info_list;
         std::vector<NodeInfo> other_info_list;
     };
+
+    std::unordered_set<std::string> m_exists_names;
 private:
     const double m_data_refresh_second = 1.2f;
     Timer* m_data_refresh_timer;
@@ -68,6 +71,13 @@ public:
 
     void init();
     void update();
+
+    bool is_name_duplicated(std::string p_name);
+    std::string new_name_if_duplicated(std::string p_name);
+    std::string get_default_name(NodeType p_type);
+
+    void notify_name_removed(std::string p_name);
+    void notify_name_added(std::string p_name);
 
     PanelData get_panel_data();
 };

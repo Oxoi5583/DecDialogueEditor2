@@ -167,3 +167,17 @@ ImVec4 ThemeLoader::get_imgui_color(const std::string& key){
     vec4 c = ThemeLoader::Ref()->get_color(key);
     return ImVec4(c.x, c.y, c.z, c.w);
 };
+
+ImU32 ThemeLoader::get_imgui_color_int(const std::string& key){
+    ImVec4 c = ThemeLoader::Ref()->get_imgui_color(key);
+    return ImVec4_to_int(c);
+};
+
+ImU32 ThemeLoader::ImVec4_to_int(const ImVec4& v){
+    return IM_COL32(
+                (int)(v.x * 255.0f), // Red
+                (int)(v.y * 255.0f), // Green
+                (int)(v.z * 255.0f), // Blue
+                (int)(v.w * 255.0f)  // Alpha
+            );
+}

@@ -8,6 +8,7 @@
 #include "server/object_base.h"
 #include "server/object_server.h"
 #include <algorithm>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -61,6 +62,7 @@ GraphManager::NodeInfo GraphManager::m_create_info(GraphBase* m_ptr){
     info.type = m_ptr->get_type();
     info.name = m_ptr->get_name();
     info.content = m_ptr->get_content();
+    info.is_selected = m_ptr->is_selected();
     info.signals = m_ptr->get_signals();
     info.direct_children = m_ptr->get_children();
 
@@ -204,10 +206,12 @@ void GraphManager::m_regenerate_panel_data(){
 }
 
 void GraphManager::m_data_refresh(){
+    /*
     if(!m_data_refresh_timer->timeout_and_reset()){
         return;
     }
-
+    */
+    
     m_clear_garbage();
     m_refetch_node_data();
     m_regenerate_panel_data();
@@ -215,4 +219,56 @@ void GraphManager::m_data_refresh(){
 
 GraphManager::PanelData GraphManager::get_panel_data(){
     return m_panel_data;
+}
+
+bool GraphManager::is_name_duplicated(std::string p_name){
+    return m_exists_names.contains(p_name);
+}
+std::string GraphManager::new_name_if_duplicated(std::string p_name){
+    if(!is_name_duplicated(p_name)){
+        return p_name;
+    }
+
+    int index = 1;
+    std::string new_name = p_name + " (" + std::to_string(index) + ")";
+
+    while(is_name_duplicated(new_name)){
+        index++;
+        new_name = p_name + " (" + std::to_string(index) + ")";
+    }
+
+    return new_name;
+}
+std::string GraphManager::get_default_name(NodeType p_type){
+    std::string new_name;
+    switch (p_type) {
+        case BASE:
+            new_name = "Base";
+            break;
+        case ENTRY:
+            new_name = "Entry";
+            break;
+        case NODE:
+            new_name = "Node";
+            break;
+        case OPTION:
+            new_name = "Option";
+            break;
+        default:
+            new_name = "Unknown";
+            break;
+    }
+
+    return new_name_if_duplicated(new_name);
+}
+
+void GraphManager::notify_name_removed(std::string p_name){
+    if(m_exists_names.contains(p_name)){
+        m_exists_names.erase(p_name);
+    }
+}
+void GraphManager::notify_name_added(std::string p_name){
+    if(!m_exists_names.contains(p_name)){
+        m_exists_names.emplace(p_name);
+    }
 }

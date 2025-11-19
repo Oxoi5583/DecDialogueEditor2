@@ -21,6 +21,7 @@ private:
     vec2 m_screen_mouse_pos_center;
 
     bool m_is_mouse_in_window = false;
+    bool m_is_mouse_in_viewport = false;
 
     bool m_is_left_just_clicked = false;
     bool m_is_left_clicked = false;
@@ -96,6 +97,7 @@ public:
     bool is_clicked(MouseButton p_button = MouseButton::LEFT);
     bool is_just_released(MouseButton p_button = MouseButton::LEFT);
     bool is_mouse_in_window();
+    bool is_mouse_in_viewport();
 
     // Cursor control
     void cursor_default();

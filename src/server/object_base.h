@@ -9,6 +9,7 @@ class ObjectServer;
 
 class ObjectBase{
 private:
+    int m_layer;
     static OID m_next_id;
     static OID fetch_id();
 
@@ -29,6 +30,9 @@ public:
     bool is_ready() const;
 
     void queue_free();
+
+    void set_layer(int p_layer);
+    int get_layer();
 
     friend class ObjectServer;
 };

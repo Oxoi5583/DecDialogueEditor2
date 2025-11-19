@@ -120,6 +120,10 @@ void SelectableObject::m_unselect_if_other_clicked(){
         return;
     }
 
+    if(!MouseServer::Ref()->is_mouse_in_viewport()){
+        return;
+    }
+
     if(EventServer::Ref()->has<EventMouseJustClickSelectedObj>()){
         return;
     }
@@ -174,6 +178,11 @@ void SelectableObject::m_emit_event(){
     }
     if(is_drag_ready() && is_selected()){
         GraphSelection::Ref()->store_selection_buffer();
+    }
+    if(was_hovered() && is_selected()){
+        EventSelectedObjHovering event;
+        event.obj_id = this->get_id();
+        EventServer::Ref()->emit(event);
     }
     if(is_dragging() && is_selected()){
         EventSelectedObjDragging event;

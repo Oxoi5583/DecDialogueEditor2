@@ -2,8 +2,11 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "core/timer_server.h"
 #include "graph/camera.h"
+#include "imgui/imgui.h"
+#include "obj/graph/manager.h"
 #include "server/object_server.h"
 #include "theme/theme_loader.h"
+#include <string>
 
 
 Rect2& GraphBase::m_init_shape(){
@@ -16,7 +19,9 @@ GraphBase::GraphBase()
 : m_rect(m_init_shape()){
     BIND_CLASS(GraphBase);
 }
-GraphBase::~GraphBase(){}
+GraphBase::~GraphBase(){
+    GraphManager::Ref()->notify_name_removed(m_name);
+}
 
 vec2 GraphBase::get_position() const{
     return m_rect.get_position();
@@ -35,7 +40,11 @@ bool GraphBase::is_point_intersect(vec2& p_point){
     return m_rect.is_point_intersect(p_point);
 }
 
-void GraphBase::ready(){}
+void GraphBase::ready(){
+    GraphManager::NodeType type = this->get_type();
+    std::string default_name = GraphManager::Ref()->get_default_name(type);
+    set_name(default_name);
+}
 void GraphBase::pre_process(){}
 void GraphBase::process(){}
 void GraphBase::post_process(){}
@@ -50,15 +59,34 @@ void GraphBase::draw(){
         m_rect.get_size() + vec2(borderSize * 2.0f)
     );
 
+    ImVec4 rect_colour;
+    switch(get_type()){
+        case GraphManager::BASE:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
+            break;
+        case GraphManager::ENTRY:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("EntryColour");
+            break;
+        case GraphManager::NODE:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("NodeColour");
+            break;
+        case GraphManager::OPTION:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("OptionColour");
+            break;
+        default:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
+            break;
+    }
+
     EngineRenderer::Ref()->draw_rect(
         borderRect,
-        vec4(0.2f, 0.2f, 0.2f, 1.0f),
+        vec4( rect_colour.x * 0.2f, rect_colour.y * 0.2f, rect_colour.z * 0.2f, rect_colour.w * 1.0f),
         -1
     );
 
     vec4 fillColor = this->was_clicked()
-        ? vec4(1.0f, 1.0f, 1.0f, 1.0f)
-        : vec4(0.7f, 0.7f, 0.7f, 1.0f);
+        ? vec4( rect_colour.x * 1.0f, rect_colour.y * 1.0f, rect_colour.z * 1.0f, rect_colour.w * 1.0f)
+        : vec4( rect_colour.x * 0.7f, rect_colour.y * 0.7f, rect_colour.z * 0.7f, rect_colour.w * 0.7f);
 
     EngineRenderer::Ref()->draw_rect(
         m_rect,
@@ -75,7 +103,6 @@ void GraphBase::draw(){
         vec2 ld = m_rect.get_left_down();
 
         vec4 border_color = ThemeLoader::Ref()->get_color("SelectableHighlightColour");
-
 
         EngineRenderer::Ref()->draw_line(lt, rt, border_color, width);
         EngineRenderer::Ref()->draw_line(rt, rd, border_color, width);
@@ -106,7 +133,9 @@ std::vector<OID> GraphBase::get_children(){
 }
 
 void GraphBase::set_name(std::string p_name){
+    p_name = GraphManager::Ref()->new_name_if_duplicated(p_name);
     m_name = p_name;
+    GraphManager::Ref()->notify_name_added(m_name);
 }
 void GraphBase::set_content(std::string p_content){
     m_content = p_content;
@@ -140,5 +169,4 @@ void GraphBase::remove_children(OID p_id){
     }
     m_children.erase(p_id);
 }
-
 

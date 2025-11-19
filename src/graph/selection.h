@@ -5,6 +5,8 @@
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
 #include <queue>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 using namespace glm;
@@ -23,6 +25,7 @@ private:
     Rect2 m_selection_area;
 
     std::vector<OID> m_selected_group_dragging_buffer;
+    std::unordered_set<OID> m_selected_group_dragging_buffer_us;
     std::vector<OID> m_selected;
 
     void m_update_state();
@@ -66,4 +69,9 @@ public:
 
     void store_selection_buffer();
     void release_selection_buffer();
+
+    void unselect_all();
+
+    std::vector<OID> get_selected();
+    bool is_id_in_dragging_buffer(OID& p_id);
 };

@@ -9,6 +9,7 @@
 #include "obj/abstract/selectable.h"
 #include "obj/graph/manager.h"
 #include "server/object_base.h"
+#include "server/object_server.h"
 #include "struct/shape/rect2.h"
 #include <vector>
 
@@ -20,6 +21,7 @@ private:
     std::string m_content;
     std::vector<std::string> m_signals;
     std::set<OID> m_children;
+
 
     Rect2& m_rect;
     Rect2& m_init_shape();
@@ -54,4 +56,5 @@ public:
     void set_signal(int p_index, std::string p_signal);
     void add_children(OID p_id);
     void remove_children(OID p_id);
+
 };

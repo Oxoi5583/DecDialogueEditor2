@@ -176,15 +176,19 @@ void GraphSelection::place_all_selection(){
 }
 
 bool GraphSelection::is_group_dragging(){
-    return EventServer::Ref()->has<EventSelectedObjGroupDragging>();
+    return m_is_group_dragging;
 }
 
 void GraphSelection::m_store_selection_buffer(){
     m_selected_group_dragging_buffer.resize(m_selected.size());
     std::copy(m_selected.begin(), m_selected.end(), m_selected_group_dragging_buffer.begin());
+    for(OID& id : m_selected_group_dragging_buffer){
+        m_selected_group_dragging_buffer_us.emplace(id);
+    }
 }
 void GraphSelection::m_release_selection_buffer(){
     std::vector<OID>().swap(m_selected_group_dragging_buffer);
+    m_selected_group_dragging_buffer_us.clear();
 }
 
 void GraphSelection::store_selection_buffer(){
@@ -192,4 +196,26 @@ void GraphSelection::store_selection_buffer(){
 }
 void GraphSelection::release_selection_buffer(){
     m_release_selection_buffer();
+}
+
+
+void GraphSelection::unselect_all(){
+    for(OID& id : m_selected){
+        if(ObjectServer::Ref()->is_id_valid(id)){
+            SelectableObject* obj = ObjectServer::Ref()->get_instance<SelectableObject>(id);
+            obj->unselect();
+        }
+    }
+}
+
+std::vector<OID> GraphSelection::get_selected(){
+    if(!m_is_group_dragging){
+        return m_selected;
+    }else{
+        return m_selected_group_dragging_buffer;
+    }
+}
+
+bool GraphSelection::is_id_in_dragging_buffer(OID& p_id){
+    return m_selected_group_dragging_buffer_us.contains(p_id);
 }

@@ -12,6 +12,8 @@
 using namespace glm;
 
 struct GraphGridLine{
+    bool is_skippable;
+    double width;
     vec2 start;
     vec2 end;
 };

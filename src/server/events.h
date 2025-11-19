@@ -5,6 +5,8 @@
 #include "obj/graph/manager.h"
 #include "server/mouse_server.h"
 #include "server/object_base.h"
+#include "server/object_server.h"
+#include <vector>
 
 using namespace glm;
 
@@ -46,11 +48,13 @@ struct EventMouseHoverObj : public UniqueEvent{
 struct EventMouseJustClickObj : public NonUniqueEvent{
     vec2 click_pos;
     OID obj_id;
+    ObjectServer::Layer layer;
 };
 
 struct EventMouseClickObj : public NonUniqueEvent{
     vec2 click_pos;
     OID obj_id;
+    ObjectServer::Layer layer;
 };
 
 struct EventMouseDragObj : public NonUniqueEvent{
@@ -120,9 +124,22 @@ struct EventSelectedObjDragging : public NonUniqueEvent{
     OID obj_id;
 };
 
+struct EventSelectedObjHovering : public NonUniqueEvent{
+    OID obj_id;
+};
+
+
 struct EventSelectedObjPlaced : public NonUniqueEvent{
     OID obj_id;
 };
 
 struct EventSelectedObjGroupDragging : public UniqueEvent{};
 struct EventSelectedObjGroupPlaced : public UniqueEvent{};
+
+struct EventLeftPanelItemHovered : public NonUniqueEvent{
+    OID id;
+};
+struct EventLeftPanelSelectedItemHovered : public NonUniqueEvent{
+    std::vector<OID> ids;
+};
+

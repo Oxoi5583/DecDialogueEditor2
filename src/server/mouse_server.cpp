@@ -3,6 +3,7 @@
 #include "SDL3/SDL_mouse.h"
 #include "engine/window.h"
 #include "engine/input_hub.h"
+#include "graph/viewport.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/object_server.h"
@@ -49,6 +50,16 @@ void MouseServer::update() {
     m_screen_mouse_pos = hub->get_mouse_position();
     m_screen_mouse_pos_center = m_screen_mouse_pos - (EngineWindow::Ref()->get_window_size() / 2.0f);
     m_is_mouse_in_window = hub->is_mouse_in_window();
+    if(m_is_mouse_in_window){
+        if(GraphViewport::Ref()->get_viewport_rect().is_point_intersect(m_screen_mouse_pos)
+            && !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)){
+            m_is_mouse_in_viewport = true;
+        }else{
+            m_is_mouse_in_viewport = false;
+        }
+    }else{
+        m_is_mouse_in_viewport = false;
+    }
 
     m_is_left_just_clicked = hub->is_mouse_left_button_just_clicked();
     m_is_left_clicked = hub->is_mouse_left_button_clicked();
@@ -210,6 +221,7 @@ vec2 MouseServer::get_mouse_screen_position_center() const { return m_screen_mou
 vec2 MouseServer::get_mouse_world_position() const { return m_world_mouse_pos; }
 
 bool MouseServer::is_mouse_in_window() { return m_is_mouse_in_window; }
+bool MouseServer::is_mouse_in_viewport() { return m_is_mouse_in_viewport; }
 
 bool MouseServer::is_just_clicked(MouseButton p_button) {
     switch (p_button) {

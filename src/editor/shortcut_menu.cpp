@@ -1,0 +1,119 @@
+#include "editor/shortcut_menu.h"
+#include "DecToolsBox/debug/messenger.h"
+#include "imgui/imgui.h"
+#include "server/event_server.h"
+#include "server/events.h"
+#include "server/mouse_server.h"
+#include "server/object_base.h"
+#include "server/object_server.h"
+#include <vector>
+
+
+bool EditorShortcutMenu::Option::has_options(){
+    return !options.empty();
+}
+
+void EditorShortcutMenu::m_control_mode(){
+    m_menu_pos = MouseServer::Ref()->get_mouse_world_position();
+    std::vector<OID>().swap(m_related_obj_ids);
+
+    if(EventServer::Ref()->has<EventLeftPanelSelectedItemHovered>()){
+        EventLeftPanelSelectedItemHovered event = EventServer::Ref()->poll_first<EventLeftPanelSelectedItemHovered>();
+        auto ids = event.ids;
+
+        int done = 0;
+
+        for(OID& id : ids){
+            if(ObjectServer::Ref()->is_id_valid(id)){
+                m_related_obj_ids.push_back(id);
+                done++;
+            }
+        }
+
+        if(done == 1){
+            m_current_mode = ModeFlag::MODE_INSPECTOR_ON_NODE;
+        }
+        
+        if(done > 1){
+            m_current_mode = ModeFlag::MODE_INSPECTOR_ON_NODES;
+        }
+
+        if(done > 0){
+            return;
+        }
+    }
+
+    if(EventServer::Ref()->has<EventLeftPanelItemHovered>()){
+        EventLeftPanelItemHovered event = EventServer::Ref()->poll_first<EventLeftPanelItemHovered>();
+        if(ObjectServer::Ref()->is_id_valid(event.id)){
+            m_related_obj_ids.push_back(event.id);
+
+            m_current_mode = ModeFlag::MODE_INSPECTOR_ON_NODE;
+            return;
+        }
+    }
+
+    if(EventServer::Ref()->has<EventSelectedObjHovering>()){
+        auto list = EventServer::Ref()->poll<EventMouseSelectedObj>();
+        if(list.size() > 1){
+            for(auto& e : list){
+                m_related_obj_ids.push_back(e.obj_id);
+            }
+
+            m_current_mode = ModeFlag::MODE_GRAPH_ON_NODES;
+            return;
+        }
+    }
+
+    if(EventServer::Ref()->has<EventMouseHoverOnWorld>()){
+        m_current_mode = ModeFlag::MODE_GRAPH_ON_WORLD;
+        return;
+    }
+
+    if(EventServer::Ref()->has<EventMouseHoverObj>()){
+        EventMouseHoverObj event = EventServer::Ref()->poll_first<EventMouseHoverObj>();
+        OID id = event.obj_id;
+        if(ObjectServer::Ref()->is_id_valid(id)){
+            m_related_obj_ids.push_back(event.obj_id);
+
+            m_current_mode = ModeFlag::MODE_GRAPH_ON_NODE;
+            return;
+        }
+    }
+
+}
+
+void EditorShortcutMenu::m_draw_menu(){
+    Option& root = m_menu[m_current_mode];
+    if (ImGui::IsMouseClicked(1)) {
+        m_control_mode();
+        ImGui::OpenPopup(m_root_name);
+    }
+    if (ImGui::BeginPopup(m_root_name, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
+        m_draw_options(root.options);
+        ImGui::EndPopup();
+    }
+}
+
+void EditorShortcutMenu::m_draw_options(std::vector<Option>& p_options){
+    for(auto &opt : p_options){
+        if(opt.has_options()){
+            if(ImGui::BeginMenu(opt.name.c_str())){
+                m_draw_options(opt.options);
+                ImGui::EndMenu();
+            }
+        }else{
+            if(ImGui::MenuItem(opt.name.c_str())){
+                opt.action();
+            }
+        }
+    }
+}
+
+void EditorShortcutMenu::update(){
+    m_draw_menu();
+}
+
+bool EditorShortcutMenu::is_opened(){
+    return ImGui::IsPopupOpen(m_root_name);
+}

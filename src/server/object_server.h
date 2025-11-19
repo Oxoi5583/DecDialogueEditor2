@@ -122,6 +122,8 @@ public:
         m_draw_functions.emplace(new_id, std::vector<std::function<void()>>());
         m_layers.emplace(new_id, p_layer);
 
+        ptr->set_layer((int)p_layer);
+
         return ptr;
     }
 
@@ -140,6 +142,8 @@ public:
     void move_to_back(OID p_id);
     
     void reorder();
+
+    Layer get_layer(OID p_id);
 };
 
 

@@ -1,4 +1,5 @@
 #include "server/object_base.h"
+#include "server/object_server.h"
 
 OID ObjectBase::m_next_id = 100;
 
@@ -22,4 +23,11 @@ void ObjectBase::queue_free(){
 
 bool ObjectBase::is_ready() const{
     return m_is_ready;
+}
+
+void ObjectBase::set_layer(int p_layer){
+    m_layer = p_layer;
+}
+int ObjectBase::get_layer(){
+    return m_layer;
 }

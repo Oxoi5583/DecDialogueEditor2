@@ -1,5 +1,6 @@
 #include "core/random_server.h"
 #include "editor/layout.h"
+#include "editor/shortcut_menu.h"
 #include "editor/space.h"
 #include "engine/font_loader.h"
 #include "engine/input_hub.h"
@@ -121,6 +122,7 @@ int main(int argc, char* argv[]) {
         EngineWindowResizer::Ref()->post_update();
         MouseServer::Ref()->update();
         EditorLayout::Ref()->ui_draw();
+        EditorShortcutMenu::Ref()->update();
 
         if(is_first_frame){
             GraphCamera::Ref()->refresh_left_top_buffer();

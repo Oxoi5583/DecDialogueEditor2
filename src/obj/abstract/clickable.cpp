@@ -55,16 +55,20 @@ bool ClickableObject::was_just_released(){
 
 
 void ClickableObject::m_emit_event(){
+    ObjectServer::Layer layer = (ObjectServer::Layer)this->get_layer();
+
     if(was_just_clicked()){
         EventMouseJustClickObj event;
         event.obj_id = this->get_id();
         event.click_pos = MouseServer::Ref()->get_mouse_world_position();
+        event.layer = layer;
         EventServer::Ref()->emit(event);
     }
     if(was_clicked()){
         EventMouseClickObj event;
         event.obj_id = this->get_id();
         event.click_pos = MouseServer::Ref()->get_mouse_world_position();
+        event.layer = layer;
         EventServer::Ref()->emit(event);
     }
 }
