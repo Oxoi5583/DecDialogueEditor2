@@ -3,6 +3,7 @@
 #include "DecToolsBox/abstract./singleton.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "glm/ext/vector_float2.hpp"
+#include "graph/camera.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/object_base.h"
@@ -15,6 +16,8 @@
 class EditorShortcutMenu : public Singleton<EditorShortcutMenu>{
 public:
     enum ModeFlag{
+        MODE_NULL,
+
         MODE_GRAPH_ON_WORLD,
         MODE_GRAPH_ON_NODE,
         MODE_GRAPH_ON_NODES,
@@ -77,6 +80,49 @@ private:
         },
         std::function<void()>()
     };
+
+    
+    Option m_option_create_node_at_cam__entry = {
+        "Entry",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = GraphCamera::Ref()->get_target();
+            event.type = GraphManager::NodeType::ENTRY;
+            EventServer::Ref()->emit(event);
+        }
+    };
+    Option m_option_create_node_at_cam__node = {
+        "Node",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = GraphCamera::Ref()->get_target();
+            event.type = GraphManager::NodeType::NODE;
+            EventServer::Ref()->emit(event);
+        }
+    };
+    Option m_option_create_node_at_cam__option = {
+        "Option",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = GraphCamera::Ref()->get_target();
+            event.type = GraphManager::NodeType::OPTION;
+            EventServer::Ref()->emit(event);
+        }
+    };
+
+    Option m_option_create_node_at_cam = {
+        "Create node",
+        {
+            m_option_create_node_at_cam__entry,
+            m_option_create_node_at_cam__node,
+            m_option_create_node_at_cam__option,
+        },
+        std::function<void()>()
+    };
+
     Option m_option_delete_node = {
         "Delete node",
         {},
@@ -104,6 +150,11 @@ private:
 
 
 
+    Option m_null = {
+        "Root",
+        {},
+        std::function<void()>()
+    };
     Option m_graph_on_world = {
         "Root",
         {
@@ -131,14 +182,14 @@ private:
     Option m_inspector_on_list = {
         "Root",
         {
-            m_option_create_node,
+            m_option_create_node_at_cam,
         },
         std::function<void()>()
     };
     Option m_inspector_on_node = {
         "Root",
         {
-            m_option_create_node,
+            m_option_create_node_at_cam,
             m_option_delete_node,
         },
         std::function<void()>()
@@ -146,13 +197,14 @@ private:
     Option m_inspector_on_nodes = {
         "Root",
         {
-            m_option_create_node,
+            m_option_create_node_at_cam,
             m_option_delete_nodes,
         },
         std::function<void()>()
     };
 
     std::map<ModeFlag, Option> m_menu = {
+        {ModeFlag::MODE_NULL, m_null},
         /*   Mode Graph   */
         {ModeFlag::MODE_GRAPH_ON_WORLD, m_graph_on_world},
         {ModeFlag::MODE_GRAPH_ON_NODE , m_graph_on_node},

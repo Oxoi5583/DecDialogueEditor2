@@ -32,6 +32,8 @@ private:
     void m_update_inpector_secondary_list(int p_parent_index);
     void m_update_inpector_other_list();
 
+    void m_emit_event();
+
     int m_index = 0;
 
     void m_store_last_click_id(OID p_id);

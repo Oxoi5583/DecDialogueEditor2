@@ -143,3 +143,4 @@ struct EventLeftPanelSelectedItemHovered : public NonUniqueEvent{
     std::vector<OID> ids;
 };
 
+struct EventLeftPanelHovered : public NonUniqueEvent{};

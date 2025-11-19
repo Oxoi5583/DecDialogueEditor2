@@ -53,40 +53,55 @@ void EditorShortcutMenu::m_control_mode(){
         }
     }
 
-    if(EventServer::Ref()->has<EventSelectedObjHovering>()){
-        auto list = EventServer::Ref()->poll<EventMouseSelectedObj>();
-        if(list.size() > 1){
-            for(auto& e : list){
-                m_related_obj_ids.push_back(e.obj_id);
-            }
-
-            m_current_mode = ModeFlag::MODE_GRAPH_ON_NODES;
-            return;
-        }
-    }
-
-    if(EventServer::Ref()->has<EventMouseHoverOnWorld>()){
-        m_current_mode = ModeFlag::MODE_GRAPH_ON_WORLD;
+    if(EventServer::Ref()->has<EventLeftPanelHovered>()){
+        m_current_mode = ModeFlag::MODE_INSPECTOR_ON_LIST;
         return;
     }
 
-    if(EventServer::Ref()->has<EventMouseHoverObj>()){
-        EventMouseHoverObj event = EventServer::Ref()->poll_first<EventMouseHoverObj>();
-        OID id = event.obj_id;
-        if(ObjectServer::Ref()->is_id_valid(id)){
-            m_related_obj_ids.push_back(event.obj_id);
+    if(MouseServer::Ref()->is_mouse_in_viewport()){
+        if(EventServer::Ref()->has<EventSelectedObjHovering>()){
+            auto list = EventServer::Ref()->poll<EventMouseSelectedObj>();
+            if(list.size() > 1){
+                for(auto& e : list){
+                    m_related_obj_ids.push_back(e.obj_id);
+                }
 
-            m_current_mode = ModeFlag::MODE_GRAPH_ON_NODE;
+                m_current_mode = ModeFlag::MODE_GRAPH_ON_NODES;
+                return;
+            }
+        }
+    }
+
+    if(MouseServer::Ref()->is_mouse_in_viewport()){
+        if(EventServer::Ref()->has<EventMouseHoverOnWorld>()){
+            m_current_mode = ModeFlag::MODE_GRAPH_ON_WORLD;
             return;
         }
     }
 
+    if(MouseServer::Ref()->is_mouse_in_viewport()){
+        if(EventServer::Ref()->has<EventMouseHoverObj>()){
+            EventMouseHoverObj event = EventServer::Ref()->poll_first<EventMouseHoverObj>();
+            OID id = event.obj_id;
+            if(ObjectServer::Ref()->is_id_valid(id)){
+                m_related_obj_ids.push_back(event.obj_id);
+
+                m_current_mode = ModeFlag::MODE_GRAPH_ON_NODE;
+                return;
+            }
+        }
+    }
+
+    m_current_mode = ModeFlag::MODE_NULL;
 }
 
 void EditorShortcutMenu::m_draw_menu(){
     Option& root = m_menu[m_current_mode];
     if (ImGui::IsMouseClicked(1)) {
         m_control_mode();
+        
+        if(m_current_mode == ModeFlag::MODE_NULL) return;
+    
         ImGui::OpenPopup(m_root_name);
     }
     if (ImGui::BeginPopup(m_root_name, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {

@@ -92,10 +92,15 @@ void EditorLeftPanel::m_update_inpector(){
             m_update_inpector_primary_list();
             m_update_inpector_other_list();
             m_update_range_select();
+            m_emit_event();
 
 
             ImGui::EndListBox();
         }
+        ImGui::EndTabItem();
+    }
+    
+    if (ImGui::BeginTabItem("Test")){
         ImGui::EndTabItem();
     }
 }
@@ -361,7 +366,6 @@ void EditorLeftPanel::m_refresh_panel_data(){
         return;
     }
 
-    DEBUG_MSG("GraphSelection::Ref()->is_group_dragging() : " << GraphSelection::Ref()->is_group_dragging());
     if(GraphSelection::Ref()->is_group_dragging()){
         return;
     }
@@ -376,4 +380,11 @@ void EditorLeftPanel::m_update_penel_properties(){
     }
     ImGui::SetNextWindowSize({m_window_rect.get_size().x, m_window_rect.get_size().y});
     ImGui::SetNextWindowPos({m_window_rect.get_left_top().x, m_window_rect.get_left_top().y});
+}
+
+void EditorLeftPanel::m_emit_event(){
+    if(this->was_hovered()){
+        EventLeftPanelHovered event;
+        EventServer::Ref()->emit(event);
+    }
 }

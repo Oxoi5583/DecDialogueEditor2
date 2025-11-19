@@ -87,6 +87,9 @@ void GraphCamera::m_job_update_control_zoom(){
     if(m_is_dragging){
         return;
     }
+    if(!MouseServer::Ref()->is_mouse_in_viewport()){
+        return;
+    }
 
     const double zoom_speed = 0.1f;
     const double current_zoom = this->get_zoom();
