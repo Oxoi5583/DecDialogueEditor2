@@ -26,7 +26,6 @@ void DragableObject::m_update_state(){
         case State::READY:{
             vec2 new_mouse_pos = MouseServer::Ref()->get_mouse_world_position();
             if(m_ready_mouse_pos != new_mouse_pos){
-                m_dragging_position_offset = MouseServer::Ref()->get_mouse_world_position() - this->get_position();
                 drag();
                 break;
             }
@@ -88,8 +87,8 @@ void DragableObject::ready(){
 
 }
 void DragableObject::pre_process(){
-    m_update_state();
     m_handle_action();
+    m_update_state();
     m_emit_event();
 }
 void DragableObject::process(){

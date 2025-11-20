@@ -163,16 +163,10 @@ void GraphSelection::m_execute_external_events(){
     }
 }
 void GraphSelection::drag_all_selection(){
-    EventSelectedObjGroupDragging event;
-    EventServer::Ref()->emit(event);
-    m_is_group_dragging = true;
-    m_events.emplace(Event::DRAG_ALL_SELECTION);
+    m_drag_all_selection();
 }
 void GraphSelection::place_all_selection(){
-    EventSelectedObjGroupPlaced event;
-    EventServer::Ref()->emit(event);
-    m_is_group_dragging = false;
-    m_events.emplace(Event::PLACE_ALL_SELECTION);
+    m_place_all_selection();
 }
 
 bool GraphSelection::is_group_dragging(){

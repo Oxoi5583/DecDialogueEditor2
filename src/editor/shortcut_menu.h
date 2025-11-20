@@ -2,12 +2,18 @@
 
 #include "DecToolsBox/abstract./singleton.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "ext/debug/messenger_ext.h"
 #include "glm/ext/vector_float2.hpp"
 #include "graph/camera.h"
+#include "graph/grid.h"
+#include "obj/graph/base.h"
+#include "obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include <cmath>
+#include <cstddef>
 #include <functional>
 #include <map>
 #include <string>
@@ -148,6 +154,172 @@ private:
         }
     };
 
+    void m_sorting_ids_for_align(std::vector<OID>& p_ids);
+
+    Option m_option_align_nodes__to_rectangle = {
+        "To rectangle",
+        {},
+        [this](){
+            auto& ids = this->m_related_obj_ids;
+            int count = ids.size();
+            int width = std::ceil(std::sqrt((float)count));
+            int height = std::ceil((float)count / (float)width);
+
+            m_sorting_ids_for_align(ids);
+            OID& first_id = ids[0];
+            GraphBase* first_obj = ObjectServer::Ref()->get_instance<GraphBase>(first_id);
+            vec2 first_pos = first_obj->get_position();
+
+            double interval = GraphGrid::Ref()->grid_interval;
+            vec2 new_first_pos = {
+                std::floor(first_pos.x / interval) * interval,
+                std::floor(first_pos.y / interval) * interval
+            };
+
+            int index = 0;
+            for(size_t x = 0; x < width; x++){
+                for(size_t y = 0; y < height; y++){
+                    if(index >= ids.size()){
+                        break;
+                    }
+
+                    OID id = ids[index];
+                    if(!ObjectServer::Ref()->is_id_valid(id)){
+                        continue;
+                    }
+
+                    vec2 new_pos = new_first_pos + vec2(
+                        3 * interval * x,
+                        3 * interval * y
+                    );
+
+                    GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+                    obj->set_position(new_pos);
+
+                    index++;
+                }
+            }
+
+            for(OID& id : ids){
+                if(!ObjectServer::Ref()->is_id_valid(id)){
+                    continue;
+                }
+                ObjectServer::Ref()->get_instance<GraphBase>(id)->select();
+            }
+        }
+    };
+    Option m_option_align_nodes__to_vertical = {
+        "To vertical",
+        {},
+        [this](){
+            auto& ids = this->m_related_obj_ids;
+            int count = ids.size();
+
+            m_sorting_ids_for_align(ids);
+            OID& first_id = ids[0];
+            GraphBase* first_obj = ObjectServer::Ref()->get_instance<GraphBase>(first_id);
+            vec2 first_pos = first_obj->get_position();
+
+            double interval = GraphGrid::Ref()->grid_interval;
+            vec2 new_first_pos = {
+                std::floor(first_pos.x / interval) * interval,
+                std::floor(first_pos.y / interval) * interval
+            };
+
+            GraphManager::NodeType current_type = first_obj->get_type();
+            int x = 0;
+            int y = 0;
+            for(OID& id : ids){
+                if(!ObjectServer::Ref()->is_id_valid(id)){
+                    continue;
+                }
+
+                GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+                if(current_type != obj->get_type()){
+                    x++;
+                    y = 0;
+                    current_type = obj->get_type();
+                }
+
+                vec2 new_pos = new_first_pos + vec2(
+                    3 * interval * x,
+                    3 * interval * y
+                );
+
+                obj->set_position(new_pos);
+
+                y++;
+            }
+
+            for(OID& id : ids){
+                if(!ObjectServer::Ref()->is_id_valid(id)){
+                    continue;
+                }
+                ObjectServer::Ref()->get_instance<GraphBase>(id)->select();
+            }
+        }
+    };
+    Option m_option_align_nodes__to_horizontal = {
+        "To horizontal",
+        {},
+        [this](){
+            auto& ids = this->m_related_obj_ids;
+            int count = ids.size();
+
+            m_sorting_ids_for_align(ids);
+            OID& first_id = ids[0];
+            GraphBase* first_obj = ObjectServer::Ref()->get_instance<GraphBase>(first_id);
+            vec2 first_pos = first_obj->get_position();
+
+            double interval = GraphGrid::Ref()->grid_interval;
+            vec2 new_first_pos = {
+                std::floor(first_pos.x / interval) * interval,
+                std::floor(first_pos.y / interval) * interval
+            };
+
+            GraphManager::NodeType current_type = first_obj->get_type();
+            int x = 0;
+            int y = 0;
+            for(OID& id : ids){
+                if(!ObjectServer::Ref()->is_id_valid(id)){
+                    continue;
+                }
+
+                GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+                if(current_type != obj->get_type()){
+                    x = 0;
+                    y++;
+                    current_type = obj->get_type();
+                }
+
+                vec2 new_pos = new_first_pos + vec2(
+                    3 * interval * x,
+                    3 * interval * y
+                );
+
+                obj->set_position(new_pos);
+
+                x++;
+            }
+
+            for(OID& id : ids){
+                if(!ObjectServer::Ref()->is_id_valid(id)){
+                    continue;
+                }
+                ObjectServer::Ref()->get_instance<GraphBase>(id)->select();
+            }
+
+        }
+    };
+    Option m_option_align_nodes = {
+        "Align nodes",
+        {
+            m_option_align_nodes__to_rectangle,
+            m_option_align_nodes__to_vertical,
+            m_option_align_nodes__to_horizontal,
+        },
+        [this](){}
+    };
 
 
     Option m_null = {
@@ -175,6 +347,7 @@ private:
         {
             m_option_create_node,
             m_option_delete_nodes,
+            m_option_align_nodes,
         },
         std::function<void()>()
     };
@@ -199,6 +372,7 @@ private:
         {
             m_option_create_node_at_cam,
             m_option_delete_nodes,
+            m_option_align_nodes,
         },
         std::function<void()>()
     };

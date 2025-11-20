@@ -296,6 +296,9 @@ void EditorLeftPanel::m_update_range_select(){
 
     for(OID& id : m_iterated_ids){
         if(id == m_last_1_click_id || id == m_last_2_click_id){
+            if(ObjectServer::Ref()->is_id_valid(id)){
+                ObjectServer::Ref()->get_instance<SelectableObject>(id)->select();
+            }
             is_in_range = (is_in_range) ? false : true;
         }
 

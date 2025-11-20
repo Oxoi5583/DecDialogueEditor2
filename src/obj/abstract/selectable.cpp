@@ -188,6 +188,8 @@ void SelectableObject::m_emit_event(){
         EventSelectedObjDragging event;
         event.obj_id = this->get_id();
         EventServer::Ref()->emit(event);
+
+        GraphSelection::Ref()->drag_all_selection();
     }
     if(is_placed() && is_selected()){
         GraphSelection::Ref()->release_selection_buffer();

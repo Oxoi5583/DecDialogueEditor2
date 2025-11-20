@@ -1,6 +1,7 @@
 #include "editor/shortcut_menu.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "imgui/imgui.h"
+#include "obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -131,4 +132,14 @@ void EditorShortcutMenu::update(){
 
 bool EditorShortcutMenu::is_opened(){
     return ImGui::IsPopupOpen(m_root_name);
+}
+
+void EditorShortcutMenu::m_sorting_ids_for_align(std::vector<OID>& p_ids){
+    std::sort(p_ids.begin(), p_ids.end(), 
+            [](OID& x, OID& y){
+            GraphBase* x_ptr = ObjectServer::Ref()->get_instance<GraphBase>(x);
+            GraphBase* y_ptr = ObjectServer::Ref()->get_instance<GraphBase>(y);
+            return (int)x_ptr->get_type() < (int)y_ptr->get_type();
+        }
+    );
 }
