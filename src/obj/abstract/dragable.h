@@ -24,6 +24,7 @@ private:
 
     vec2 m_ready_mouse_pos;
     vec2 m_dragging_position_offset;
+    vec2 m_dragging_position_start;
 
     void m_align_grid();
 public:

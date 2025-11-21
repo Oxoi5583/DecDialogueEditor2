@@ -1,10 +1,17 @@
 #include "obj/abstract/dragable.h"
+#include "engine/input_hub.h"
+#include "engine/input_key.h"
+#include "engine/renderer.h"
+#include "glm/geometric.hpp"
+#include "graph/camera.h"
 #include "graph/grid.h"
 #include "graph/selection.h"
+#include "imgui/imgui.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_server.h"
+#include "theme/theme_loader.h"
 #include <cmath>
 
 
@@ -64,6 +71,37 @@ void DragableObject::m_handle_action(){
         case State::DRAG:{
             vec2 mouse_pos = MouseServer::Ref()->get_mouse_world_position();
             vec2 new_pos = mouse_pos - m_dragging_position_offset;
+
+
+            if(EngineInputHub::Ref()->keyboard_is_just_down(K_LSHIFT)){
+                m_dragging_position_start = this->get_position();
+            }
+
+            if(EngineInputHub::Ref()->keyboard_is_down(K_LSHIFT)){
+                vec2 old_pos = m_dragging_position_start;
+                double changed_x = new_pos.x - old_pos.x;
+                double changed_y = new_pos.y - old_pos.y;
+                double width = 1.0f / GraphCamera::Ref()->get_zoom();
+
+                if(std::abs(changed_x) > std::abs(changed_y)){
+                    vec4 hint_color = ThemeLoader::Ref()->get_color("AccentColour1");
+                    new_pos = old_pos + vec2(changed_x, 0.0f);
+
+                    vec2 cg = glm::normalize(new_pos - old_pos);
+                    vec2 fm = old_pos + vec2(cg.x * 999999, cg.y * 999999);
+                    vec2 to = old_pos - vec2(cg.x * 999999, cg.y * 999999);
+                    EngineRenderer::Ref()->draw_line(fm, to, hint_color, width);
+                }else{
+                    vec4 hint_color = ThemeLoader::Ref()->get_color("AccentColour1");
+                    new_pos = old_pos + vec2(0.0f, changed_y);
+
+                    vec2 cg = glm::normalize(new_pos - old_pos);
+                    vec2 fm = old_pos + vec2(cg.x * 999999, cg.y * 999999);
+                    vec2 to = old_pos - vec2(cg.x * 999999, cg.y * 999999);
+                    EngineRenderer::Ref()->draw_line(fm, to, hint_color, width);
+                }
+            }
+
             this->set_position(new_pos);
 
             EventMouseDragObj event;
@@ -114,7 +152,6 @@ bool DragableObject::is_placed(){
     return m_current_state == State::PLACE;
 }
 
-
 void DragableObject::drag_ready(){
     if(!is_drag_ready()){
         m_current_state = State::READY;
@@ -123,6 +160,7 @@ void DragableObject::drag_ready(){
 }
 void DragableObject::drag(){
     if(!is_dragging()){
+        m_dragging_position_start = this->get_position();
         m_dragging_position_offset = MouseServer::Ref()->get_mouse_world_position() - this->get_position();
         m_current_state = State::DRAG;
     }

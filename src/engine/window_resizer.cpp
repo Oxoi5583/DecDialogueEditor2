@@ -107,6 +107,10 @@ void EngineWindowResizer::m_refresh_collision(){
             EventMouseOnResizer event2;
             event2.dir = dir;
             EventServer::Ref()->emit(event2);
+            
+            EventMouseHoverObjLastFrame event3;
+            event3.hovering_pos = mouse_pos;
+            EventServer::Ref()->emit(event3);
             return;
         }
     }
@@ -122,6 +126,9 @@ void EngineWindowResizer::m_refresh_collision(){
             event2.dir = dir;
             EventServer::Ref()->emit(event2);
 
+            EventMouseHoverObjLastFrame event3;
+            event3.hovering_pos = mouse_pos;
+            EventServer::Ref()->emit(event3);
             return;
         }
     }

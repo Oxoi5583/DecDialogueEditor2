@@ -148,22 +148,83 @@ bool Rect2::m_compare_xy(vec2 p_pos){
 bool Rect2::is_point_intersect(vec2 p_pos){
     return m_compare_xy(p_pos);
 }
+static float cross2D(const vec2& a, const vec2& b) {
+    return a.x * b.y - a.y * b.x;
+}
+
+bool Rect2::m_segment_intersect(const vec2& p1, const vec2& p2,
+                              const vec2& p3, const vec2& p4){
+    vec2 r = p2 - p1;
+    vec2 s = p4 - p3;
+
+    float rxs = cross2D(r, s);
+    float qpxr = cross2D((p3 - p1), r);
+
+    if (fabs(rxs) < 1e-6) return false;
+
+    float t = cross2D((p3 - p1), s) / rxs;
+    float u = qpxr / rxs;
+
+    return (t >= 0.0f && t <= 1.0f &&
+            u >= 0.0f && u <= 1.0f);
+}
+
+
+bool Rect2::is_segment_intersect(const vec2& p1, const vec2& p2){
+    vec2 lt = get_left_top();
+    vec2 ld = get_left_down();
+    vec2 rd = get_right_down();
+    vec2 rt = get_right_top();
+
+    vec2 rectPts[4] = { lt, ld, rd, rt };
+
+    if (m_cross_product(p1) || m_cross_product(p2)){
+        return true;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        vec2 a = rectPts[i];
+        vec2 b = rectPts[(i + 1) % 4];
+
+        if (m_segment_intersect(p1, p2, a, b)){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 bool Rect2::is_rect_intersect(Rect2 p_rect){
-    std::vector<vec2> points = p_rect.get_points();
-    for(vec2 point : points){
-        if(this->is_point_intersect(point)){
-            return true;
-        }
+    Rect2 rect_buf = p_rect;
+    vec2 rect_size = rect_buf.get_size();
+    
+    if(rect_size.x < 1.0f){
+        rect_size.x = 1.01f;
+    }
+    if(rect_size.y < 1.0f){
+        rect_size.y = 1.01f;
     }
 
-    std::vector<vec2> rev_points = this->get_points();
-    for(vec2 point : rev_points){
-        if(p_rect.is_point_intersect(point)){
-            return true;
-        }
+    rect_buf.set_size(rect_size);
+
+    Rect2 this_buf = *this;
+    vec2 this_size = this_buf.get_size();
+    
+    if(this_size.x < 1.0f){
+        this_size.x = 1.01f;
+    }
+    if(this_size.y < 1.0f){
+        this_size.y = 1.01f;
     }
 
+    this_buf.set_size(this_size);
+
+    std::vector<vec2> points = rect_buf.get_points();
+    if(this_buf.is_segment_intersect(points[0], points[1])) return true;
+    if(this_buf.is_segment_intersect(points[1], points[2])) return true;
+    if(this_buf.is_segment_intersect(points[2], points[3])) return true;
+    if(this_buf.is_segment_intersect(points[3], points[0])) return true;
     return false;
 }
 

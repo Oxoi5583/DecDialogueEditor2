@@ -45,6 +45,13 @@ struct EventMouseHoverObj : public UniqueEvent{
     bool is_pointer_cursor = false;
 };
 
+struct EventMouseHoverObjLastFrame : public NonUniqueEvent{
+    vec2 hovering_pos;
+    OID obj_id;
+
+    bool is_pointer_cursor = false;
+};
+
 struct EventMouseJustClickObj : public NonUniqueEvent{
     vec2 click_pos;
     OID obj_id;
@@ -144,3 +151,16 @@ struct EventLeftPanelSelectedItemHovered : public NonUniqueEvent{
 };
 
 struct EventLeftPanelHovered : public NonUniqueEvent{};
+
+struct EventStartConnect : public NonUniqueEvent{
+    OID id;
+};
+struct EventSearchingConnect : public NonUniqueEvent{
+    OID id;
+};
+struct EventEndConnect : public NonUniqueEvent{
+    OID fm_id;
+    OID to_id;
+};
+
+struct EventLockedAll : public NonUniqueEvent{};

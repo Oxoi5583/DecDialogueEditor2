@@ -1,5 +1,6 @@
 #include "graph/selection.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "ext/debug/messenger_ext.h"
 #include "engine/renderer.h"
 #include "imgui/imgui.h"
 #include "obj/abstract/selectable.h"

@@ -164,8 +164,6 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
         const double sec_item_height = ImGui::GetTextLineHeightWithSpacing();
         const double sec_list_area_height = (sec_item_size == 0) ? 0.0f : sec_item_height * sec_item_size + 5;
         const ImVec2 sec_list_area = ImVec2(-FLT_MIN, sec_list_area_height);
-
-
                                                                 
         if (ImGui::BeginListBox(sec_list_box_name, sec_list_area)){
             for (int s = 0; s < sec_item_size; ++s){
@@ -217,6 +215,11 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
 
 void EditorLeftPanel::m_update_inpector_other_list(){
     auto other_item_list = m_panel_data.other_info_list;
+
+    if(!other_item_list.empty()){
+        ImGui::Separator();
+    }
+
     const int other_item_size = other_item_list.size();
     if (other_item_size > 0){
         const char* other_list_box_name = "##InspectorOtherListBox";

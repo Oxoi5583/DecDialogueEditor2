@@ -42,6 +42,10 @@ void SelectableObject::unselect(){
 }
 
 void SelectableObject::m_update_state(){
+    if(EventServer::Ref()->has<EventLockedAll>()){
+        return;
+    }
+
     switch (m_state) {
         case IDLE:{
             m_select_if_clicked();

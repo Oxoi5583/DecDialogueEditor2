@@ -4,6 +4,8 @@
 #include "graph/camera.h"
 #include "imgui/imgui.h"
 #include "obj/graph/manager.h"
+#include "server/event_server.h"
+#include "server/events.h"
 #include "server/object_server.h"
 #include "theme/theme_loader.h"
 #include <string>
@@ -45,7 +47,9 @@ void GraphBase::ready(){
     std::string default_name = GraphManager::Ref()->get_default_name(type);
     set_name(default_name);
 }
-void GraphBase::pre_process(){}
+void GraphBase::pre_process(){
+    m_handle_event_connect();
+}
 void GraphBase::process(){}
 void GraphBase::post_process(){}
 void GraphBase::draw(){
@@ -170,3 +174,12 @@ void GraphBase::remove_children(OID p_id){
     m_children.erase(p_id);
 }
 
+
+void GraphBase::m_handle_event_connect(){
+    if(EventServer::Ref()->has<EventStartConnect>()){
+        EventStartConnect event = EventServer::Ref()->poll_first<EventStartConnect>();
+        if(this->get_id() == event.id){
+            DEBUG_MSG("Start Connect");
+        }
+    }
+}

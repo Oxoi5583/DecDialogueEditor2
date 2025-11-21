@@ -14,6 +14,8 @@ private:
 
     bool m_cross_product(vec2 p_pos);
     bool m_compare_xy(vec2 p_pos);
+    bool m_segment_intersect(const vec2& p1, const vec2& p2,
+                              const vec2& p3, const vec2& p4);
 public:
     static constexpr vec2 max_vec2 =  {std::numeric_limits<float>().max(),std::numeric_limits<float>().max()};
     static constexpr vec2 min_vec2 =  {std::numeric_limits<float>().min(),std::numeric_limits<float>().min()};
@@ -44,6 +46,7 @@ public:
 
 
     bool is_point_intersect(vec2 p_pos) override;
+    bool is_segment_intersect(const vec2& p1, const vec2& p2);
     bool is_rect_intersect(Rect2 p_rect);
 
     

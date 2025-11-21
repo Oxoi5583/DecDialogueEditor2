@@ -198,7 +198,7 @@ void EditorLayout::refresh_theme(){
 
     colors[ImGuiCol_SliderGrab]        = accent1;
     colors[ImGuiCol_SliderGrabActive]  = accent2;
-    colors[ImGuiCol_Separator]         = secondary3;
+    colors[ImGuiCol_Separator]         = accent1;
     colors[ImGuiCol_SeparatorHovered]  = accent2;
     colors[ImGuiCol_SeparatorActive]   = ImVec4(accent2.x * 0.5f, accent2.y * 0.5f, accent2.z * 0.5f, 1.0f);;
 

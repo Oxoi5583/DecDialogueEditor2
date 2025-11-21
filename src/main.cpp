@@ -9,6 +9,7 @@
 #include "engine/window_resizer.h"
 #include "graph/background.h"
 #include "graph/camera.h"
+#include "graph/connection.h"
 #include "graph/grid.h"
 #include "graph/selection.h"
 #include "graph/viewport.h"
@@ -18,6 +19,7 @@
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include "struct/shape/line.h"
 #include "struct/shape/rect2.h"
 #include <cmath>
 #include <imgui/imgui.h>
@@ -81,6 +83,7 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->clear_garbage();
 
         GraphViewport::Ref()->update();
+        GraphConnection::Ref()->pre_update();
         GraphSelection::Ref()->pre_update();
         GraphManager::Ref()->update();
         EditorLayout::Ref()->ui_update();
@@ -96,10 +99,10 @@ int main(int argc, char* argv[]) {
         ObjectServer::Ref()->draw();
         
         GraphBackground::Ref()->update();
+        GraphConnection::Ref()->post_update();
         GraphSelection::Ref()->post_update();
         GraphSelection::Ref()->draw();
-
-
+        
         if(test_timer->timeout_and_reset_in_cycle(5)){
             EventSpawnNode event;
 

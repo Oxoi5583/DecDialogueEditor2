@@ -19,6 +19,11 @@ void ClickableObject::pre_process(){
     m_was_just_clicked = false;
     m_was_just_released = false;
 
+    if(EventServer::Ref()->has<EventLockedAll>()){
+        m_was_clicked = false;
+        return;
+    }
+
     if(this->was_hovered()){
         if(MouseServer::Ref()->is_just_clicked()){
             m_was_just_clicked = true;

@@ -86,7 +86,25 @@ private:
         },
         std::function<void()>()
     };
+    
+    Option m_option_connect = {
+        "Connect...",
+        {},
+        [this](){
+            if(this->m_related_obj_ids.empty()){
+                return;
+            }
 
+            OID id = this->m_related_obj_ids[0];
+            if(!ObjectServer::Ref()->is_id_valid(id)){
+                return;
+            }
+
+            EventStartConnect event;
+            event.id = id;
+            EventServer::Ref()->emit(event);
+        }
+    };
     
     Option m_option_create_node_at_cam__entry = {
         "Entry",
@@ -337,6 +355,7 @@ private:
     Option m_graph_on_node = {
         "Root",
         {
+            m_option_connect,
             m_option_create_node,
             m_option_delete_node,
         },

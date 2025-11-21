@@ -366,6 +366,9 @@ void EditorSpace::SplitResizer::m_state_event_in_HOVER(){
     EventMouseHoverObj event2;
     event2.is_pointer_cursor = true;
     EventServer::Ref()->emit(event2);
+    EventMouseHoverObjLastFrame event3;
+    event3.is_pointer_cursor = true;
+    EventServer::Ref()->emit(event3);
 }
 void EditorSpace::SplitResizer::m_state_event_in_DRAGGING(){
     EventEditorSpaceResizerHover event1;
@@ -373,6 +376,9 @@ void EditorSpace::SplitResizer::m_state_event_in_DRAGGING(){
     EventMouseHoverObj event2;
     event2.is_pointer_cursor = true;
     EventServer::Ref()->emit(event2);
+    EventMouseHoverObjLastFrame event3;
+    event3.is_pointer_cursor = true;
+    EventServer::Ref()->emit(event3);
 }
 
 

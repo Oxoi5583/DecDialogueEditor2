@@ -25,6 +25,8 @@ private:
 
     Rect2& m_rect;
     Rect2& m_init_shape();
+
+    void m_handle_event_connect();
 public:
     GraphBase();
     ~GraphBase();

@@ -37,4 +37,6 @@ private:
     bool m_changed_cursor = true;
     
     Type m_type = Type::WORLD;
+
+    vec2 get_mouse_pos();
 };
