@@ -18,29 +18,40 @@ using namespace glm;
 
 class GraphConnectionLine : public ClickableObject{
 private:
-    Line m_line;
+    Line& m_init_shape();
+    Line& m_line;
+
     OID m_from_id;
     OID m_to_id;
+
+    vec2 m_center_pos;
+    vec2 m_from_pos;
+    vec2 m_to_pos;
     
+    const vec2 m_arrow_size = {5.0f, 5.0f};
+    
+    vec2 m_arrow_pos_middle;
+    vec2 m_arrow_pos_left;
+    vec2 m_arrow_pos_right;
+
+    void m_update_pos_buffer();
     void m_update_line_pos();
-    void m_handle_event_connect();
+    void m_remove_if_double_clicked();
+    void m_update_z_index();
+
+
 public:
     GraphConnectionLine();
     ~GraphConnectionLine();
-
 
     OID get_from_id() const;
     OID get_to_id() const;
     void set_from_id(OID p_id);
     void set_to_id(OID p_id);
 
-
-    bool is_point_intersect(vec2& p_point); 
-
     void ready();
     void pre_process();
     void process();
     void post_process();
     void draw();
-
 };

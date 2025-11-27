@@ -158,9 +158,22 @@ struct EventStartConnect : public NonUniqueEvent{
 struct EventSearchingConnect : public NonUniqueEvent{
     OID id;
 };
-struct EventEndConnect : public NonUniqueEvent{
+struct EventCreateConnection : public NonUniqueEvent{
     OID fm_id;
     OID to_id;
 };
+struct EventRemoveConnection : public NonUniqueEvent{
+    OID fm_id;
+    OID to_id;
+};
+struct EventCreateConnectionLinePart : public NonUniqueEvent{
+    OID parent_id;
+    OID id;
+};
+struct EventRemoveConnectionLinePart : public NonUniqueEvent{
+    OID parent_id;
+    OID id;
+};
+
 
 struct EventLockedAll : public NonUniqueEvent{};

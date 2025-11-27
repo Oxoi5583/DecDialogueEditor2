@@ -1,5 +1,6 @@
 #include "graph/connection.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "obj/graph/connection_line.h"
 #include "obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
@@ -36,6 +37,7 @@ void GraphConnection::m_update_state(){
         }
         case PLACED_CONNECT:{
             if(m_condition_placed_to_nul()){
+                m_create_connection_obj();
                 m_state = State::NUL;
                 break;
             }
@@ -46,6 +48,7 @@ void GraphConnection::m_update_state(){
 
 bool GraphConnection::m_condition_nul_to_start(){
     if(EventServer::Ref()->has<EventStartConnect>()){
+        m_start_id = EventServer::Ref()->poll_first<EventStartConnect>().id;
         return true;
     }
     return false;
@@ -72,6 +75,7 @@ bool GraphConnection::m_condition_search_to_placed(){
         return false;
     }
 
+    m_end_id = hovered_id;
     return true;
 }
 bool GraphConnection::m_condition_search_to_nul(){
@@ -111,12 +115,42 @@ void GraphConnection::m_emit_event(){
     }
 }
 
+void GraphConnection::m_handle_event(){
+    if(EventServer::Ref()->has<EventCreateConnection>()){
+        auto events = EventServer::Ref()->poll<EventCreateConnection>();
+        for(auto event : events){
+            if(!m_connections.contains(event.fm_id)){
+                m_connections.emplace(event.fm_id, std::set<OID>());
+            }
+
+            m_connections[event.fm_id].emplace(event.to_id);
+        }
+    }
+
+    if(EventServer::Ref()->has<EventRemoveConnection>()){
+        auto events = EventServer::Ref()->poll<EventRemoveConnection>();
+        for(auto event : events){
+            DEBUG_MSG("EventRemoveConnection : " << event.fm_id);
+            if(!m_connections.contains(event.fm_id)){
+                continue;
+            }
+            
+            m_connections[event.fm_id].erase(event.to_id);
+
+            if(m_connections[event.fm_id].size() == 0){
+                m_connections.erase(event.fm_id);
+            }
+        }
+    }
+}
+
 void GraphConnection::init(){
     
 }
 void GraphConnection::pre_update(){
     m_update_state();
     m_emit_event();
+    m_handle_event();
 }
 void GraphConnection::post_update(){
 
@@ -127,4 +161,17 @@ void GraphConnection::draw(){
 
 bool GraphConnection::is_connecting(){
     return m_state != State::NUL;
+}
+
+void GraphConnection::m_create_connection_obj(){
+    GraphConnectionLine* line_obj = ObjectServer::Ref()->queue_create<GraphConnectionLine>();
+    line_obj->set_from_id(m_start_id);
+    line_obj->set_to_id(m_end_id);
+}
+
+std::set<OID> GraphConnection::get_connection(OID p_id){
+    if(!m_connections.contains(p_id)){
+        return std::set<OID>();
+    }
+    return m_connections[p_id];
 }

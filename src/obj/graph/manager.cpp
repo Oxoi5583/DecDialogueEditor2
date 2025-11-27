@@ -188,7 +188,7 @@ void GraphManager::m_regenerate_panel_data(){
         for(OID& s_id : children){
             used_ids.emplace(s_id);
 
-            NodeInfo& s_info = m_infos[s_id];
+            NodeInfo s_info = m_infos[s_id];
             secondary_info_list.push_back(s_info);
         }
 
@@ -200,7 +200,7 @@ void GraphManager::m_regenerate_panel_data(){
             continue;
         }
 
-        NodeInfo& info = m_infos[id];
+        NodeInfo info = m_infos[id];
         m_panel_data.other_info_list.push_back(info);
     }
 }

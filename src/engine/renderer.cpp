@@ -126,6 +126,8 @@ uniform mat4 projection;
 layout (location = 10) in vec4 i_color;
 
 out vec4 f_color;
+out float f_width;
+out float f_dist;
 
 mat2 rotate(float angle) {
     return mat2(cos(angle), -sin(angle),
@@ -158,16 +160,25 @@ void main() {
     gl_Position = projection * view * vec4(real_pos, 0.0, 1.0);
 
     f_color = i_color;
+    f_width = width;
+    f_dist = (a_pos.x - 0.5f) * width;
 }
 )";
 const char* instanced_line_fragment_shader_src = R"(
 #version 330 core
 in vec4 f_color;
+in float f_width;
+in float f_dist;
 
 out vec4 FragColor;
 
+uniform float feather = 1.0;
+
 void main() {
-    FragColor = f_color;
+    float d = abs(f_dist);
+    float alpha = smoothstep(f_width / 2.0f, (f_width / 2.0f) - feather, d);
+
+    FragColor = vec4(f_color.rgb, f_color.a * alpha);
 }
 )";
 

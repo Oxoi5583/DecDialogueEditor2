@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "engine/input_hub.h"
 #include "SDL3/SDL_mouse.h"
+#include <queue>
 #include <vector>
 
 using namespace glm;
@@ -55,6 +56,8 @@ private:
 
     void m_set_cursor(int p_index);
     void m_set_cursor(SDL_Cursor* p_ptr);
+
+    void m_event_handle_normal_request();
     void m_event_handle_reset();
     void m_event_handle_resize_event();
     void m_event_handle_hover_event();
@@ -82,6 +85,7 @@ private:
     SDL_Cursor* m_get_cursor_W_resize();
 
     SDL_Cursor* m_final_cursor = nullptr;
+    std::queue<int> m_cursor_commands_buffer;
 public:
     MouseServer();
     ~MouseServer();

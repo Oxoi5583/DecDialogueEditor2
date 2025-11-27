@@ -171,7 +171,9 @@ void ObjectServer::clear_garbage(){
                 m_instances.begin(),
                 m_instances.end(),
                 [garbages](std::unique_ptr<ObjectBase>& obj){
-                        return garbages.contains(obj->get_id());
+                        OID id = obj->get_id();
+                        bool is_garbage = garbages.contains(id);
+                        return is_garbage;
                     }
             ),
         m_instances.end()
@@ -192,11 +194,19 @@ bool ObjectServer::is_id_valid(OID p_id){
 
 
 void ObjectServer::move_to_front(OID p_id){
-    ReorderCommand c = {Direction::FRONT, p_id};
+    ReorderCommand c = {Direction::FRONT, p_id, 0};
     m_commands.emplace(c);
 }
 void ObjectServer::move_to_back(OID p_id){
-    ReorderCommand c = {Direction::BACK, p_id};
+    ReorderCommand c = {Direction::BACK, p_id, 0};
+    m_commands.emplace(c);
+}
+void ObjectServer::move_to_specific_front(OID p_id, OID p_target_id){
+    ReorderCommand c = {Direction::FRONT, p_id, p_target_id};
+    m_commands.emplace(c);
+}
+void ObjectServer::move_to_specific_back(OID p_id, OID p_target_id){
+    ReorderCommand c = {Direction::BACK, p_id, p_target_id};
     m_commands.emplace(c);
 }
 
@@ -224,13 +234,33 @@ void ObjectServer::reorder(){
         auto& list = m_layer_to_list(layer);
 
         switch (c.dir) {
-            case FRONT:
-                list.move_to_front(ptr);
-                break;
-            case BACK:
-                list.move_to_back(ptr);
-                break;
-        }
+                case FRONT:{
+                    list.move_to_front(ptr);
+                    break;
+                }
+                case BACK:{
+                    list.move_to_back(ptr);
+                    break;
+                }
+                case FRONT_SPEC:{
+                    if(!is_id_valid(c.target_id)){
+                        m_commands.pop();
+                        continue;
+                    }
+                    ObjectBase* target_ptr = this->get_instance<ObjectBase>(c.target_id);
+                    list.move_to_specific_front(ptr, target_ptr);
+                    break;
+                }
+                case BACK_SPEC:{
+                    if(!is_id_valid(c.target_id)){
+                        m_commands.pop();
+                        continue;
+                    }
+                    ObjectBase* target_ptr = this->get_instance<ObjectBase>(c.target_id);
+                    list.move_to_specific_back(ptr, target_ptr);
+                    break;
+                }
+            }
         m_commands.pop();
     }
 }

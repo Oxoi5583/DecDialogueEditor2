@@ -85,14 +85,21 @@ void MouseServer::update() {
     m_emit_event_if_middle_clicked();
     m_emit_event_if_middle_released();
 
+    m_final_cursor = nullptr;
+    m_event_handle_normal_request();
     m_event_handle_reset();
     m_event_handle_hover_event();
     m_event_handle_resize_event();
     m_event_handle_set_to_cursor();
 }
+void MouseServer::m_event_handle_normal_request(){
+    while (!m_cursor_commands_buffer.empty()) {
+        int c = m_cursor_commands_buffer.front();
+        m_final_cursor = cursors[c];
+        m_cursor_commands_buffer.pop();
+    }
+}
 void MouseServer::m_event_handle_reset(){
-    m_final_cursor = nullptr;
-
     m_resizer_event = EventServer::Ref()->poll<EventMouseOnResizer>(); 
     m_obj_hover_event = EventServer::Ref()->poll<EventMouseHoverObj>(); 
     if(m_resizer_event.empty() && m_obj_hover_event.empty()){ 
@@ -260,26 +267,26 @@ void MouseServer::m_set_cursor(SDL_Cursor* p_ptr) {
     }
     SDL_SetCursor(p_ptr);
 }
-void MouseServer::cursor_default()      { m_set_cursor(SDL_SYSTEM_CURSOR_DEFAULT); }
-void MouseServer::cursor_text()         { m_set_cursor(SDL_SYSTEM_CURSOR_TEXT); }
-void MouseServer::cursor_wait()         { m_set_cursor(SDL_SYSTEM_CURSOR_WAIT); }
-void MouseServer::cursor_crosshair()    { m_set_cursor(SDL_SYSTEM_CURSOR_CROSSHAIR); }
-void MouseServer::cursor_progress()     { m_set_cursor(SDL_SYSTEM_CURSOR_PROGRESS); }
-void MouseServer::cursor_pointer()      { m_set_cursor(SDL_SYSTEM_CURSOR_POINTER); }
-void MouseServer::cursor_move()         { m_set_cursor(SDL_SYSTEM_CURSOR_MOVE); }
-void MouseServer::cursor_not_allowed()  { m_set_cursor(SDL_SYSTEM_CURSOR_NOT_ALLOWED); }
-void MouseServer::cursor_NS_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_NS_RESIZE); }
-void MouseServer::cursor_EW_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_EW_RESIZE); }
-void MouseServer::cursor_NWSE_resize()  { m_set_cursor(SDL_SYSTEM_CURSOR_NWSE_RESIZE); }
-void MouseServer::cursor_NESW_resize()  { m_set_cursor(SDL_SYSTEM_CURSOR_NESW_RESIZE); }
-void MouseServer::cursor_NW_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_NW_RESIZE); }
-void MouseServer::cursor_N_resize()     { m_set_cursor(SDL_SYSTEM_CURSOR_N_RESIZE); }
-void MouseServer::cursor_NE_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_NE_RESIZE); }
-void MouseServer::cursor_E_resize()     { m_set_cursor(SDL_SYSTEM_CURSOR_E_RESIZE); }
-void MouseServer::cursor_SE_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_SE_RESIZE); }
-void MouseServer::cursor_S_resize()     { m_set_cursor(SDL_SYSTEM_CURSOR_S_RESIZE); }
-void MouseServer::cursor_SW_resize()    { m_set_cursor(SDL_SYSTEM_CURSOR_SW_RESIZE); }
-void MouseServer::cursor_W_resize()     { m_set_cursor(SDL_SYSTEM_CURSOR_W_RESIZE); }
+void MouseServer::cursor_default()      { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_DEFAULT); }
+void MouseServer::cursor_text()         { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_TEXT); }
+void MouseServer::cursor_wait()         { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_WAIT); }
+void MouseServer::cursor_crosshair()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_CROSSHAIR); }
+void MouseServer::cursor_progress()     { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_PROGRESS); }
+void MouseServer::cursor_pointer()      { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_POINTER); }
+void MouseServer::cursor_move()         { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_MOVE); }
+void MouseServer::cursor_not_allowed()  { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_NOT_ALLOWED); }
+void MouseServer::cursor_NS_resize()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_NS_RESIZE); }
+void MouseServer::cursor_EW_resize()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_EW_RESIZE); }
+void MouseServer::cursor_NWSE_resize()  { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_NWSE_RESIZE); }
+void MouseServer::cursor_NESW_resize()  { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_NESW_RESIZE); }
+void MouseServer::cursor_NW_resize()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_NW_RESIZE); }
+void MouseServer::cursor_N_resize()     { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_N_RESIZE); }
+void MouseServer::cursor_NE_resize()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_NE_RESIZE); }
+void MouseServer::cursor_E_resize()     { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_E_RESIZE); }
+void MouseServer::cursor_SE_resize()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_SE_RESIZE); }
+void MouseServer::cursor_S_resize()     { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_S_RESIZE); }
+void MouseServer::cursor_SW_resize()    { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_SW_RESIZE); }
+void MouseServer::cursor_W_resize()     { m_cursor_commands_buffer.emplace(SDL_SYSTEM_CURSOR_W_RESIZE); }
 
 
 SDL_Cursor* MouseServer::m_get_cursor_default()      { return cursors[SDL_SYSTEM_CURSOR_DEFAULT]; }

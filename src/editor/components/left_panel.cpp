@@ -145,13 +145,14 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
                 0.0f,
                 0
             );
-
-            m_update_inpector_secondary_list(p);
         }
-        ImGui::PopStyleColor(3);
 
+        ImGui::PopStyleColor(3);
+        
         m_iterated_ids.push_back(pri_id);
         m_index++;
+
+        m_update_inpector_secondary_list(p);
     }
 }
 
@@ -159,13 +160,13 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
     auto& sec_item_list = m_panel_data.secondary_info_list[p_parent_index];
     const int sec_item_size = sec_item_list.size();
     if (sec_item_size > 0){
-        const char* sec_list_box_name = "##InspectorSecListBox";
+        const std::string sec_list_box_name = "##InspectorSecListBox";
 
         const double sec_item_height = ImGui::GetTextLineHeightWithSpacing();
         const double sec_list_area_height = (sec_item_size == 0) ? 0.0f : sec_item_height * sec_item_size + 5;
         const ImVec2 sec_list_area = ImVec2(-FLT_MIN, sec_list_area_height);
                                                                 
-        if (ImGui::BeginListBox(sec_list_box_name, sec_list_area)){
+        if (ImGui::BeginListBox((sec_list_box_name + std::to_string(p_parent_index)).c_str(), sec_list_area)){
             for (int s = 0; s < sec_item_size; ++s){
                 auto sec_id = sec_item_list[s].id;
 
@@ -176,7 +177,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                 auto sec_name = padding + int_to_roman(s + 1) + " - " + sec_item_list[s].name;
                 auto sec_content = sec_item_list[s].content;
 
-                const ImVec4 sec_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+                const ImVec4 sec_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
                 const ImVec4 sec_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
                 const ImVec4 sec_list_box_text_color = (is_selected) ? ThemeLoader::Ref()->get_imgui_color("HighlightTextColour") 
                                                                         : ThemeLoader::Ref()->get_imgui_color("TextColour");
@@ -203,7 +204,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                     );
                 }
 
-                ImGui::PopStyleVar();
+                ImGui::PopStyleColor(3);
 
                 m_iterated_ids.push_back(sec_id);
                 m_index++;

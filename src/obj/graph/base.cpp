@@ -2,6 +2,7 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "core/timer_server.h"
 #include "graph/camera.h"
+#include "graph/connection.h"
 #include "imgui/imgui.h"
 #include "obj/graph/manager.h"
 #include "server/event_server.h"
@@ -178,8 +179,25 @@ void GraphBase::remove_children(OID p_id){
 void GraphBase::m_handle_event_connect(){
     if(EventServer::Ref()->has<EventStartConnect>()){
         EventStartConnect event = EventServer::Ref()->poll_first<EventStartConnect>();
-        if(this->get_id() == event.id){
-            DEBUG_MSG("Start Connect");
+    }
+
+    if(EventServer::Ref()->has<EventCreateConnection>()){
+        auto events = EventServer::Ref()->poll<EventCreateConnection>();
+        for(auto event : events){
+            if(event.fm_id == this->get_id()){
+            DEBUG_MSG("has EventCreateConnection");
+                add_children(event.to_id);
+            }
+        }
+    }
+    
+    if(EventServer::Ref()->has<EventRemoveConnection>()){
+        auto events = EventServer::Ref()->poll<EventRemoveConnection>();
+        for(auto event : events){
+            if(event.fm_id == this->get_id()){
+                DEBUG_MSG("has EventRemoveConnection");
+                remove_children(event.to_id);
+            }
         }
     }
 }

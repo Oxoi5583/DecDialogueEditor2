@@ -46,6 +46,9 @@ void DragableObject::m_update_state(){
             break;
         }
         case State::DRAG:{
+            if(EventServer::Ref()->has<EventLockedAll>()){
+                place();
+            }
             if(this->was_just_released()){
                 place();
             }

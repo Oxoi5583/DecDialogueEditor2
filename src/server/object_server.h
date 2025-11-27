@@ -42,10 +42,13 @@ private:
     enum Direction{
         FRONT,
         BACK,
+        FRONT_SPEC,
+        BACK_SPEC,
     };
     struct ReorderCommand{
         Direction dir;
         OID id;
+        OID target_id;
     };
 
     std::queue<ReorderCommand> m_commands;
@@ -140,6 +143,8 @@ public:
 
     void move_to_front(OID p_id);
     void move_to_back(OID p_id);
+    void move_to_specific_front(OID p_id, OID p_target_id);
+    void move_to_specific_back(OID p_id, OID p_target_id);
     
     void reorder();
 

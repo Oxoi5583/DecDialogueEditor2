@@ -187,7 +187,7 @@ Timer::Timer(Timer& t){
 }
 
 Timer::~Timer(){
-    INFO_MSG("Timer (id : " << id.id << ") Freed.");
+    //INFO_MSG("Timer (id : " << id.id << ") Freed.");
 }
 
 void Timer::update(double delta){

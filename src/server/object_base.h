@@ -23,7 +23,7 @@ protected:
 public:
     ObjectBase()
     : m_id(fetch_id()){}
-    ~ObjectBase(){};
+    virtual ~ObjectBase(){};
 
     OID get_id() const;
     bool is_alive() const;

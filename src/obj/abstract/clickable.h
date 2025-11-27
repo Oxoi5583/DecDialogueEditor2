@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/timer_server.h"
 #include "obj/abstract/hoverable.h"
 #include "server/object_base.h"
 
@@ -8,6 +9,9 @@ private:
     bool m_was_just_clicked = false;
     bool m_was_clicked = false;
     bool m_was_just_released = false;
+
+    int m_click_times = 0;
+    Timer* m_double_click_timer = nullptr;
 
     void m_emit_event();
 public:
@@ -20,6 +24,7 @@ public:
     void post_process();
     void draw();
     
+    bool was_just_double_clicked();
     bool was_just_clicked();
     bool was_clicked();
     bool was_just_released();

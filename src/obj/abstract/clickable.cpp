@@ -1,4 +1,5 @@
 #include "obj/abstract/clickable.h"
+#include "DecToolsBox/debug/messenger.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -7,13 +8,15 @@
 
 ClickableObject::ClickableObject(){
     BIND_CLASS(ClickableObject);
+    m_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 250) ,false);
+    m_double_click_timer->stop();
 }
 ClickableObject::~ClickableObject(){
 
 }
 
 void ClickableObject::ready(){
-
+    
 }
 void ClickableObject::pre_process(){
     m_was_just_clicked = false;
@@ -29,6 +32,18 @@ void ClickableObject::pre_process(){
             m_was_just_clicked = true;
             m_was_clicked = true;
             ObjectServer::Ref()->move_to_front(this->get_id());
+
+            m_click_times += 1;
+            if(!m_double_click_timer->is_timeout()){
+                m_double_click_timer->reset();
+                m_double_click_timer->start();
+            }
+        }
+
+        if(m_double_click_timer->is_timeout()){
+            m_click_times = 0;
+            m_double_click_timer->stop();
+            m_double_click_timer->reset();
         }
     }
 
@@ -48,6 +63,10 @@ void ClickableObject::draw(){
 
 }
 
+
+bool ClickableObject::was_just_double_clicked(){
+    return (m_click_times == 2);
+}
 bool ClickableObject::was_just_clicked(){
     return m_was_just_clicked;
 }

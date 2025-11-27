@@ -36,8 +36,8 @@ public:
     vec2 get_from() const;
     vec2 get_to() const;
     double get_width() const;
-    void set_from(vec2& p_pos);
-    void set_to(vec2& p_pos);
+    void set_from(vec2 p_pos);
+    void set_to(vec2 p_pos);
     void set_width(double p_width);
 
     bool is_point_intersect(vec2 p_pos) override;
