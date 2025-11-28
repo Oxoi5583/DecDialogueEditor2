@@ -21,6 +21,7 @@ public:
         ENTRY,
         NODE,
         OPTION,
+        REPEATER,
     };
 
     struct NodeInfo{
@@ -65,6 +66,7 @@ private:
     void m_spawn_entry(vec2 p_pos);
     void m_spawn_node(vec2 p_pos);
     void m_spawn_option(vec2 p_pos);
+    void m_spawn_repeater(vec2 p_pos);
 public:
     GraphManager();
     ~GraphManager();

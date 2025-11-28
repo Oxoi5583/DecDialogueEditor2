@@ -20,7 +20,7 @@ public:
         m_shape = std::make_unique<T>(p_shape);
     }
     template<typename T>
-    T& get_shape(){
+    T& get_shape() const{
         static_assert( std::is_base_of<ShapeBase, T>::value, "Shape have to be inherited from class ShapeBase." );
         return static_cast<T&>(*m_shape.get());
     }

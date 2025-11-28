@@ -131,6 +131,7 @@ void DragableObject::pre_process(){
     m_handle_action();
     m_update_state();
     m_emit_event();
+    m_align_grid();
 }
 void DragableObject::process(){
 
@@ -171,7 +172,6 @@ void DragableObject::drag(){
 void DragableObject::place(){
     if(!is_placed()){
         m_current_state = State::PLACE;
-        m_align_grid();
     }
 }
 

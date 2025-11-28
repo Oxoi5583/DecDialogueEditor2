@@ -3,6 +3,7 @@
 #include "core/timer_server.h"
 #include "ext/debug/messenger_ext.h"
 #include "glm/ext/vector_float2.hpp"
+#include "obj/graph/repeater.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/object_base.h"
@@ -45,6 +46,17 @@ void GraphManager::m_spawn_node(vec2 p_pos){
 }
 void GraphManager::m_spawn_option(vec2 p_pos){
     GraphOption* new_node = ObjectServer::Ref()->queue_create<GraphOption>();
+    
+    NodeInfo info = m_create_info(new_node);
+
+    m_all_node_ids.push_back(info.id);
+    m_non_entry_node_ids.push_back(info.id);
+    m_infos.emplace(info.id, info);
+
+    new_node->set_position(p_pos);
+}
+void GraphManager::m_spawn_repeater(vec2 p_pos){
+    GraphRepeater* new_node = ObjectServer::Ref()->queue_create<GraphRepeater>();
     
     NodeInfo info = m_create_info(new_node);
 
@@ -122,6 +134,9 @@ void GraphManager::m_poll_spawn_event(){
                 m_spawn_option(spawn_pos);
                 break;
             }
+            case REPEATER:
+                m_spawn_repeater(spawn_pos);
+                break;
             case BASE:
                 break;
         }
@@ -253,6 +268,9 @@ std::string GraphManager::get_default_name(NodeType p_type){
             break;
         case OPTION:
             new_name = "Option";
+            break;
+        case REPEATER:
+            new_name = "Repeater";
             break;
         default:
             new_name = "Unknown";

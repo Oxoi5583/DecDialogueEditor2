@@ -16,7 +16,7 @@
 
 using namespace glm;
 
-class GraphConnectionLine : public ClickableObject{
+class GraphConnectionLine : public DragableObject{
 private:
     Line& m_init_shape();
     Line& m_line;
@@ -29,16 +29,17 @@ private:
     vec2 m_to_pos;
     
     const vec2 m_arrow_size = {5.0f, 5.0f};
+    const vec2 m_arrow_size_max = {10.0f, 10.0f};
     
     vec2 m_arrow_pos_middle;
     vec2 m_arrow_pos_left;
     vec2 m_arrow_pos_right;
 
     void m_update_pos_buffer();
-    void m_update_line_pos();
+    void m_update_pos();
     void m_remove_if_double_clicked();
+    void m_remove_if_parent_removed();
     void m_update_z_index();
-
 
 public:
     GraphConnectionLine();

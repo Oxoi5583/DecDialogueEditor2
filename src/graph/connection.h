@@ -2,6 +2,7 @@
 
 #include "DecToolsBox/abstract./singleton.h"
 #include "glm/ext/vector_float2.hpp"
+#include "obj/graph/base.h"
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
 #include <map>
@@ -39,6 +40,17 @@ private:
     void m_emit_event();
     void m_create_connection_obj();
     void m_handle_event();
+
+    std::vector<OID> m_on_screen_ids;
+    void m_refresh_screen_ids();
+    std::unordered_set<OID> m_connectables;
+    void m_refresh_connectables();
+
+    bool m_test_connection__target_not_self(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__target_not_entry(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__target_not_connected(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__to_repeater_not_have_parent(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__fm_repeater_not_have_children(GraphBase* p_fm, GraphBase* p_to);
 public:
     void init();
     void pre_update();
@@ -48,4 +60,6 @@ public:
     bool is_connecting();
 
     std::set<OID> get_connection(OID p_id);
+
+    bool test_connection(OID p_fm_id, OID p_to_id);
 };

@@ -177,3 +177,7 @@ struct EventRemoveConnectionLinePart : public NonUniqueEvent{
 
 
 struct EventLockedAll : public NonUniqueEvent{};
+
+struct EventTryConnectTo : public NonUniqueEvent{
+    std::unordered_set<OID> conntectables;
+};

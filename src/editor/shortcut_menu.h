@@ -76,6 +76,16 @@ private:
             EventServer::Ref()->emit(event);
         }
     };
+    Option m_option_create_node__repeater = {
+        "Repeater",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = this->m_menu_pos;
+            event.type = GraphManager::NodeType::REPEATER;
+            EventServer::Ref()->emit(event);
+        }
+    };
 
     Option m_option_create_node = {
         "Create node",
@@ -83,6 +93,7 @@ private:
             m_option_create_node__entry,
             m_option_create_node__node,
             m_option_create_node__option,
+            m_option_create_node__repeater,
         },
         std::function<void()>()
     };

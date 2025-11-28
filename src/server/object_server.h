@@ -27,6 +27,7 @@ private:
     ordered_list<ObjectBase>& m_layer_to_list(Layer p_layer);
 
     std::vector<std::unique_ptr<ObjectBase>> m_instances;
+    std::vector<OID> m_ids;
 
     std::unordered_map<OID, ObjectBase*> m_id_to_instances;
     std::unordered_map<OID, std::vector<std::function<void()>>> m_ready_functions;
@@ -116,6 +117,7 @@ public:
         T* ptr = static_cast<T*>(m_instances.back().get());
         m_obj_buffer.push(std::make_pair(ptr, p_layer));
         OID new_id = ptr->get_id();
+        m_ids.push_back(new_id);
 
         m_id_to_instances.emplace(new_id, ptr);
         m_ready_functions.emplace(new_id, std::vector<std::function<void()>>());
@@ -149,6 +151,8 @@ public:
     void reorder();
 
     Layer get_layer(OID p_id);
+
+    std::vector<OID> get_all_ids();
 };
 
 

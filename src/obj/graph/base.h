@@ -21,9 +21,9 @@ private:
     std::string m_content;
     std::vector<std::string> m_signals;
     std::set<OID> m_children;
+    std::set<OID> m_parent;
 
 
-    Rect2& m_rect;
     Rect2& m_init_shape();
 
     void m_handle_event_connect();
@@ -49,14 +49,24 @@ public:
     std::string get_name();
     std::string get_content();
     std::vector<std::string> get_signals();
-    std::vector<OID> get_children();
 
     void set_name(std::string p_name);
     void set_content(std::string p_content);
     void add_signals();
     void remove_signals(int p_index);
     void set_signal(int p_index, std::string p_signal);
+
     void add_children(OID p_id);
     void remove_children(OID p_id);
 
+    void add_parent(OID p_id);
+    void remove_parent(OID p_id);
+
+    OID skip_from_repeater();
+    std::vector<OID> skip_to_repeater();
+
+    std::vector<OID> get_children(bool is_repeater_skip = false);
+    std::vector<OID> get_parent(bool is_repeater_skip = false);
+    std::set<OID> get_children_set(bool is_repeater_skip = false);
+    std::set<OID> get_parent_set(bool is_repeater_skip = false);
 };

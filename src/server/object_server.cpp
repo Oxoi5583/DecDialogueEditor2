@@ -178,6 +178,17 @@ void ObjectServer::clear_garbage(){
             ),
         m_instances.end()
     );
+    m_ids.erase(
+        std::remove_if(
+                m_ids.begin(),
+                m_ids.end(),
+                [garbages](OID& id){
+                        bool is_garbage = garbages.contains(id);
+                        return is_garbage;
+                    }
+            ),
+        m_ids.end()
+    );
 }
 
 bool ObjectServer::is_id_valid(OID p_id){
@@ -271,4 +282,8 @@ ObjectServer::Layer ObjectServer::get_layer(OID p_id){
     }
 
     return m_layers[p_id];
+}
+
+std::vector<OID> ObjectServer::get_all_ids(){
+    return m_ids;
 }

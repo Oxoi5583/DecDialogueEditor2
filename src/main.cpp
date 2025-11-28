@@ -42,6 +42,10 @@
 #include "config/config_loader.h"
 #include "core/timer_server.h"
 
+#include "DecToolsBox/struct/condition.h"
+
+
+
 int main(int argc, char* argv[]) {
     ThemeLoader::Ref()->load();
     ConfigLoader::Ref()->load();
@@ -69,6 +73,7 @@ int main(int argc, char* argv[]) {
     DEBUG_MSG("End Init.");
 
     bool is_first_frame = true;
+
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
@@ -140,5 +145,6 @@ int main(int argc, char* argv[]) {
 
     EngineRenderer::Ref()->destory_all();
     EngineWindow::Ref()->destory_all();
+
     return 0;
 }

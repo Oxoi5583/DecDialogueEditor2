@@ -1,12 +1,17 @@
 #include "graph/connection.h"
+#include "DecToolsBox/struct/condition.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "obj/abstract/movable.h"
 #include "obj/graph/connection_line.h"
 #include "obj/graph/manager.h"
+#include "obj/graph/node.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include <algorithm>
+#include <vector>
 
 void GraphConnection::m_update_state(){
     switch (m_state) {
@@ -66,6 +71,10 @@ bool GraphConnection::m_condition_search_to_placed(){
         return false;
     }
 
+    if(!m_connectables.contains(hovered_id)){
+        return false;
+    }
+
     ObjectBase* hovered_obj = ObjectServer::Ref()->get_instance<ObjectBase>(hovered_id);
     if(hovered_obj->get_layer() != (int)ObjectServer::Layer::GRAPH_LAYER){
         return false;
@@ -79,6 +88,9 @@ bool GraphConnection::m_condition_search_to_placed(){
     return true;
 }
 bool GraphConnection::m_condition_search_to_nul(){
+    if(m_connectables.empty()){
+        return true;
+    }
     if(!MouseServer::Ref()->is_mouse_in_viewport()){
         return false;
     }
@@ -101,14 +113,21 @@ void GraphConnection::m_emit_event(){
             break;
         }
         case START_CONNECT:{
+            m_refresh_screen_ids();
+            m_refresh_connectables();
             EventServer::Ref()->emit(EventLockedAll());
             break;
         }
         case SEARCH_CONNECT:{
+            EventTryConnectTo event;
+            event.conntectables = m_connectables;
+            EventServer::Ref()->emit(event);
             EventServer::Ref()->emit(EventLockedAll());
             break;
         }
         case PLACED_CONNECT:{
+            std::vector<OID>().swap(m_on_screen_ids);
+            std::unordered_set<OID>().swap(m_connectables);
             EventServer::Ref()->emit(EventLockedAll());
             break;
         }
@@ -130,7 +149,6 @@ void GraphConnection::m_handle_event(){
     if(EventServer::Ref()->has<EventRemoveConnection>()){
         auto events = EventServer::Ref()->poll<EventRemoveConnection>();
         for(auto event : events){
-            DEBUG_MSG("EventRemoveConnection : " << event.fm_id);
             if(!m_connections.contains(event.fm_id)){
                 continue;
             }
@@ -174,4 +192,117 @@ std::set<OID> GraphConnection::get_connection(OID p_id){
         return std::set<OID>();
     }
     return m_connections[p_id];
+}
+
+void GraphConnection::m_refresh_screen_ids(){
+    std::vector<OID>().swap(m_on_screen_ids);
+    std::vector<OID> ids = ObjectServer::Ref()->get_all_ids();
+    for(OID& id : ids){
+        MovableObject* obj = ObjectServer::Ref()->get_instance<MovableObject>(id);
+        if(obj){
+            if(obj->is_on_camera()){
+                m_on_screen_ids.push_back(id);
+            }
+        }
+    }
+}
+void GraphConnection::m_refresh_connectables(){
+    std::unordered_set<OID>().swap(m_connectables);
+    for(OID& id : m_on_screen_ids){
+        if(test_connection(m_start_id, id)){
+            m_connectables.emplace(id);
+        }
+    }
+}
+
+bool GraphConnection::m_test_connection__target_not_self(GraphBase* p_fm, GraphBase* p_to){
+    return p_fm->get_id() != p_to->get_id();
+}
+bool GraphConnection::m_test_connection__target_not_entry(GraphBase* p_fm, GraphBase* p_to){
+    return p_to->get_type() != GraphManager::ENTRY;
+}
+bool GraphConnection::m_test_connection__target_not_connected(GraphBase* p_fm, GraphBase* p_to){
+    OID ancestor_id = p_fm->skip_from_repeater();
+    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(ancestor_id);
+    std::set<OID> children = ancestor->get_children_set(true);
+    return !children.contains(p_to->get_id());
+}
+bool GraphConnection::m_test_connection__to_repeater_not_have_parent(GraphBase* p_fm, GraphBase* p_to){
+    if(p_to->get_type() == GraphManager::REPEATER){
+        std::set<OID> parent = p_to->get_parent_set();
+        return parent.empty();
+    }
+    return true;
+}
+bool GraphConnection::m_test_connection__fm_repeater_not_have_children(GraphBase* p_fm, GraphBase* p_to){
+    if(p_fm->get_type() == GraphManager::REPEATER){
+        std::set<OID> children = p_fm->get_children_set();
+        return children.empty();
+    }
+    return true;
+}
+
+
+
+bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
+    GraphBase* fm_node = ObjectServer::Ref()->get_instance<GraphBase>(p_fm_id);
+    GraphBase* to_node = ObjectServer::Ref()->get_instance<GraphBase>(p_to_id);
+    if(to_node == nullptr || fm_node == nullptr){
+        return false;
+    }
+
+    Condition c_1 = Condition()
+            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_self(fm_node, to_node); })
+            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_entry(fm_node, to_node); })
+            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_connected(fm_node, to_node); })
+            .add_required([this, fm_node, to_node](){ return this->m_test_connection__to_repeater_not_have_parent(fm_node, to_node); });
+
+    if(!c_1){
+        return false;
+    }
+
+    if(fm_node->get_type() == GraphManager::REPEATER){
+        OID id_skip_repeater = fm_node->skip_from_repeater();
+        GraphBase* obj_skip_repeater = ObjectServer::Ref()->get_instance<GraphBase>(id_skip_repeater);
+        if(obj_skip_repeater){
+            fm_node = obj_skip_repeater;
+        }
+    }
+
+    std::vector<GraphBase*> to_nodes;
+    if(to_node->get_type() == GraphManager::REPEATER){
+        if(!m_test_connection__to_repeater_not_have_parent(fm_node, to_node)){
+            return false;
+        }
+
+        std::vector<OID> ids_skip_repeater = to_node->skip_to_repeater();
+        for(OID& id : ids_skip_repeater){
+            GraphBase* obj_skip_repeater = ObjectServer::Ref()->get_instance<GraphBase>(id);
+            if(obj_skip_repeater){
+                to_nodes.push_back(obj_skip_repeater);
+            }
+        }
+        DEBUG_MSG("1");
+    }else{
+        DEBUG_MSG("1");
+        to_nodes.push_back(to_node);
+        DEBUG_MSG("1");
+    }
+
+    for(GraphBase* to_node_2 : to_nodes){
+        Condition c_2 = Condition()
+            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_self(fm_node, to_node_2); })
+            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_entry(fm_node, to_node_2); })
+            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_connected(fm_node, to_node_2); })
+            .add_alternative(1, [this, fm_node, to_node_2](){ return this->m_test_connection__to_repeater_not_have_parent(fm_node, to_node_2); })
+            .add_alternative(1, [this, fm_node, to_node_2](){ return this->m_test_connection__fm_repeater_not_have_children(fm_node, to_node_2); });
+
+        bool c_2_ret = c_2.result();
+        if(!c_2_ret){
+            return false;
+        }
+    }
+
+
+    return true;
 }
