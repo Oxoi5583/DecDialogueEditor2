@@ -65,8 +65,8 @@ public:
     OID skip_from_repeater();
     std::vector<OID> skip_to_repeater();
 
-    std::vector<OID> get_children(bool is_repeater_skip = false);
-    std::vector<OID> get_parent(bool is_repeater_skip = false);
-    std::set<OID> get_children_set(bool is_repeater_skip = false);
-    std::set<OID> get_parent_set(bool is_repeater_skip = false);
+    std::vector<OID> get_children(bool is_pass_repeater = false);
+    std::vector<OID> get_parent(bool is_pass_repeater = false);
+    std::set<OID> get_children_set(bool is_pass_repeater = false);
+    std::set<OID> get_parent_set(bool is_pass_repeater = false);
 };

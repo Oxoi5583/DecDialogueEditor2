@@ -51,6 +51,8 @@ private:
     bool m_test_connection__target_not_connected(GraphBase* p_fm, GraphBase* p_to);
     bool m_test_connection__to_repeater_not_have_parent(GraphBase* p_fm, GraphBase* p_to);
     bool m_test_connection__fm_repeater_not_have_children(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__not_connect_to_normal_node_yet(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__all_connect_type_is_option(GraphBase* p_fm, GraphBase* p_to);
 public:
     void init();
     void pre_update();

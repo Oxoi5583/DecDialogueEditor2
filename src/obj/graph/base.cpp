@@ -152,37 +152,24 @@ std::vector<std::string> GraphBase::get_signals(){
     return m_signals;
 }
 std::vector<OID> GraphBase::get_children(bool is_pass_repeater){
+    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(this->skip_from_repeater());
+    if(!ancestor){
+        return {get_id()};
+    }
+
     std::vector<OID> ret;
-    for(OID id : m_children){
-        ret.push_back(id);
-    }
 
-    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(this->skip_from_repeater());
-    if(!ancestor){
-        return ret;
-    }
+    std::set<OID> children = ancestor->m_children;
+    for(OID id : children){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
 
-    if(is_pass_repeater){
-        std::vector<OID> ids_skip_repeater = ancestor->skip_to_repeater();
-        for(OID id : ids_skip_repeater){
+        if(obj->get_type() == GraphManager::REPEATER && is_pass_repeater){
+            std::vector<OID> sub_children = obj->skip_to_repeater();
+            for(OID sub_id : sub_children){
+                ret.push_back(sub_id);
+            }
+        }else{
             ret.push_back(id);
-        }
-    }
-
-    return ret;
-}
-std::set<OID> GraphBase::get_children_set(bool is_pass_repeater){
-    std::set<OID> ret = m_children;
-
-    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(this->skip_from_repeater());
-    if(!ancestor){
-        return ret;
-    }
-
-    if(is_pass_repeater){
-        std::vector<OID> ids_skip_repeater = ancestor->skip_to_repeater();
-        for(OID id : ids_skip_repeater){
-            ret.emplace(id);
         }
     }
 
@@ -190,23 +177,78 @@ std::set<OID> GraphBase::get_children_set(bool is_pass_repeater){
 }
 std::vector<OID> GraphBase::get_parent(bool is_pass_repeater){
     std::vector<OID> ret;
-    for(OID id : m_parent){
-        ret.push_back(id);
+    if(!is_pass_repeater){
+        for(OID id : m_parent){
+            ret.push_back(id);
+        }
+        return ret;
     }
 
-    if(is_pass_repeater){
-        OID id_skip_repeater = this->skip_from_repeater();
-        ret.push_back(id_skip_repeater);
+    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(this->skip_from_repeater());
+    if(!ancestor){
+        return {get_id()};
+    }
+
+    for(OID id : ancestor->m_parent){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+
+        if(obj->get_type() == GraphManager::REPEATER){
+            OID sub_parent = obj->skip_from_repeater();
+            ret.push_back(sub_parent);
+        }else{
+            ret.push_back(id);
+        }
+    }
+
+    return ret;
+}
+std::set<OID> GraphBase::get_children_set(bool is_pass_repeater){
+    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(this->skip_from_repeater());
+    if(!ancestor){
+        return {get_id()};
+    }
+
+    std::set<OID> ret;
+
+    std::set<OID> children = ancestor->m_children;
+    for(OID id : children){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+
+        if(obj->get_type() == GraphManager::REPEATER && is_pass_repeater){
+            std::vector<OID> sub_children = obj->skip_to_repeater();
+            for(OID sub_id : sub_children){
+                ret.emplace(sub_id);
+            }
+        }else{
+            ret.emplace(id);
+        }
     }
 
     return ret;
 }
 std::set<OID> GraphBase::get_parent_set(bool is_pass_repeater){
-    std::set<OID> ret = m_parent;
+    std::set<OID> ret;
+    if(!is_pass_repeater){
+        for(OID id : m_parent){
+            ret.emplace(id);
+        }
+        return ret;
+    }
 
-    if(is_pass_repeater){
-        OID id_skip_repeater = this->skip_from_repeater();
-        ret.emplace(id_skip_repeater);
+    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(this->skip_from_repeater());
+    if(!ancestor){
+        return {get_id()};
+    }
+
+    for(OID id : ancestor->m_parent){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+
+        if(obj->get_type() == GraphManager::REPEATER){
+            OID sub_parent = obj->skip_from_repeater();
+            ret.emplace(sub_parent);
+        }else{
+            ret.emplace(id);
+        }
     }
 
     return ret;
@@ -310,14 +352,14 @@ OID GraphBase::skip_from_repeater(){
     return obj->skip_from_repeater();
 }
 std::vector<OID> GraphBase::skip_to_repeater(){
-    if(this->get_children_set().empty()){
+    if(this->m_children.empty()){
         return {this->get_id()};
     }
     
     std::vector<OID> ret;
     
-    std::vector<OID> children = this->get_children();
-    for(OID& id : children){
+    std::set<OID> children = this->m_children;
+    for(OID id : children){
         GraphBase* g_obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
         if(g_obj){
             std::vector<OID> cc = g_obj->skip_to_repeater();

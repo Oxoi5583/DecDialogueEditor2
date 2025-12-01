@@ -23,26 +23,25 @@ GraphRepeater::GraphRepeater()
 GraphRepeater::~GraphRepeater(){}
 
 void GraphRepeater::ready(){}
-void GraphRepeater::pre_process(){}
-void GraphRepeater::process(){
-    /*
-    **** Should have better pass repeater api!!
-    
-    */
-    if(is_selected()){
-        OID fm = this->skip_from_repeater();
-        std::vector<OID> to = ObjectServer::Ref()->get_instance<GraphBase>(fm)->skip_to_repeater();
-        to.push_back(fm);
-
-        for(OID id : to){
-            vec2 pos = ObjectServer::Ref()->get_instance<SelectableObject>(id)->get_position();
-            EngineRenderer::Ref()->draw_circle(pos, 25, vec4(1.0f,1.0f,0.0f,1.0f), -1);
-        }
-    }
+void GraphRepeater::pre_process(){
+    m_refresh_from_and_to();
 }
+void GraphRepeater::process(){}
 void GraphRepeater::post_process(){}
 void GraphRepeater::draw(){}
 
+void GraphRepeater::m_refresh_from_and_to(){
+    m_from_id = this->skip_from_repeater();
+    m_to_ids = this->skip_to_repeater();
+}
+
 GraphManager::NodeType GraphRepeater::get_type(){
     return GraphManager::NodeType::REPEATER;
+}
+
+OID GraphRepeater::get_repeater_from(){
+    return m_from_id;
+}
+std::vector<OID> GraphRepeater::get_repeater_to(){
+    return m_to_ids;
 }

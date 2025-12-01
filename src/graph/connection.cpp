@@ -5,6 +5,7 @@
 #include "obj/graph/connection_line.h"
 #include "obj/graph/manager.h"
 #include "obj/graph/node.h"
+#include "obj/graph/repeater.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -241,7 +242,39 @@ bool GraphConnection::m_test_connection__fm_repeater_not_have_children(GraphBase
     }
     return true;
 }
+bool GraphConnection::m_test_connection__not_connect_to_normal_node_yet(GraphBase* p_fm, GraphBase* p_to){
+    std::vector<OID> check_list;
 
+    auto set = p_fm->get_children(true);
+    for(OID id : set){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+        if(obj->get_type() == GraphManager::NODE){
+            return false;
+        }
+    }
+
+    return true;
+}
+bool GraphConnection::m_test_connection__all_connect_type_is_option(GraphBase* p_fm, GraphBase* p_to){
+    bool is_connected_to_option = false;
+
+    auto set = p_fm->get_children(true);
+    for(OID id : set){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+        if(obj->get_type() == GraphManager::OPTION){
+            is_connected_to_option = true;
+        }
+    }
+
+    if(is_connected_to_option){
+        GraphManager::NodeType to_type = p_to->get_type();
+        if(to_type != GraphManager::OPTION){
+            return false;
+        }
+    }
+
+    return true;
+}
 
 
 bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
@@ -282,11 +315,8 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
                 to_nodes.push_back(obj_skip_repeater);
             }
         }
-        DEBUG_MSG("1");
     }else{
-        DEBUG_MSG("1");
         to_nodes.push_back(to_node);
-        DEBUG_MSG("1");
     }
 
     for(GraphBase* to_node_2 : to_nodes){
@@ -294,6 +324,8 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
             .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_self(fm_node, to_node_2); })
             .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_entry(fm_node, to_node_2); })
             .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_connected(fm_node, to_node_2); })
+            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__not_connect_to_normal_node_yet(fm_node, to_node_2); })
+            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__all_connect_type_is_option(fm_node, to_node_2); })
             .add_alternative(1, [this, fm_node, to_node_2](){ return this->m_test_connection__to_repeater_not_have_parent(fm_node, to_node_2); })
             .add_alternative(1, [this, fm_node, to_node_2](){ return this->m_test_connection__fm_repeater_not_have_children(fm_node, to_node_2); });
 
