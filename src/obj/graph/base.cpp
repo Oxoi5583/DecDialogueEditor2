@@ -25,7 +25,7 @@ GraphBase::GraphBase(){
     BIND_CLASS(GraphBase);
 }
 GraphBase::~GraphBase(){
-    GraphManager::Ref()->notify_name_removed(m_name);
+    GraphManager::Ref()->notify_name_removed(m_properties["Name"].value);
 }
 
 vec2 GraphBase::get_position() const{
@@ -143,10 +143,10 @@ GraphManager::NodeType GraphBase::get_type(){
 }
 
 std::string GraphBase::get_name(){
-    return m_name;
+    return m_properties["Name"].value;
 }
 std::string GraphBase::get_content(){
-    return m_content;
+    return m_properties["Content"].value;
 }
 std::vector<std::string> GraphBase::get_signals(){
     return m_signals;
@@ -256,11 +256,11 @@ std::set<OID> GraphBase::get_parent_set(bool is_pass_repeater){
 
 void GraphBase::set_name(std::string p_name){
     p_name = GraphManager::Ref()->new_name_if_duplicated(p_name);
-    m_name = p_name;
-    GraphManager::Ref()->notify_name_added(m_name);
+    m_properties["Name"].value = p_name;
+    GraphManager::Ref()->notify_name_added(m_properties["Name"].value);
 }
 void GraphBase::set_content(std::string p_content){
-    m_content = p_content;
+    m_properties["Content"].value = p_content;
 }
 void GraphBase::add_signals(){
     m_signals.push_back("");
@@ -352,7 +352,7 @@ OID GraphBase::skip_from_repeater(){
     return obj->skip_from_repeater();
 }
 std::vector<OID> GraphBase::skip_to_repeater(){
-    if(this->m_children.empty()){
+    if(this->m_children.empty() || this->get_type() != GraphManager::REPEATER){
         return {this->get_id()};
     }
     
@@ -374,4 +374,7 @@ std::vector<OID> GraphBase::skip_to_repeater(){
     }else{
         return ret;
     }
+}
+std::map<std::string,GraphBase::Property>& GraphBase::get_properties(){
+    return m_properties;
 }

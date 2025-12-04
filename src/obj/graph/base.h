@@ -11,18 +11,28 @@
 #include "server/object_base.h"
 #include "server/object_server.h"
 #include "struct/shape/rect2.h"
+#include <map>
+#include <string>
 #include <vector>
 
 using namespace glm;
 
 class GraphBase : public SelectableObject{
+public:
+    struct Property{
+        std::string value;
+        uint max_size;
+    };
+
 private:
-    std::string m_name;
-    std::string m_content;
     std::vector<std::string> m_signals;
     std::set<OID> m_children;
     std::set<OID> m_parent;
 
+    std::map<std::string,Property> m_properties = {
+        {"Name",{"", 50}},
+        {"Content",{ "", 1000}},
+    };
 
     Rect2& m_init_shape();
 
@@ -69,4 +79,6 @@ public:
     std::vector<OID> get_parent(bool is_pass_repeater = false);
     std::set<OID> get_children_set(bool is_pass_repeater = false);
     std::set<OID> get_parent_set(bool is_pass_repeater = false);
+
+    std::map<std::string,Property>& get_properties();
 };

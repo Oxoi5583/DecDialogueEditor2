@@ -1,4 +1,5 @@
 #include "core/random_server.h"
+#include "editor/detail_window.h"
 #include "editor/layout.h"
 #include "editor/shortcut_menu.h"
 #include "editor/space.h"
@@ -74,6 +75,7 @@ int main(int argc, char* argv[]) {
 
     bool is_first_frame = true;
 
+    ObjectServer::Ref()->queue_create<EditorDetailWindow>(ObjectServer::Layer::UI_LAYER);
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();

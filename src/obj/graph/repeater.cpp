@@ -2,6 +2,7 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "core/timer_server.h"
 #include "engine/renderer.h"
+#include "obj/abstract/movable.h"
 #include "obj/abstract/selectable.h"
 #include "obj/graph/base.h"
 #include "server/object_base.h"
