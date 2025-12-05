@@ -176,13 +176,15 @@ void DragableObject::place(){
 }
 
 void DragableObject::m_align_grid(){
-    vec2 pos = this->get_position();
-    double x = pos.x;
-    double y = pos.y;
-    x = roundf(x / GraphGrid::Ref()->grid_interval) * GraphGrid::Ref()->grid_interval;
-    y = roundf(y / GraphGrid::Ref()->grid_interval) * GraphGrid::Ref()->grid_interval;
+    if(m_is_align_grid){
+        vec2 pos = this->get_position();
+        double x = pos.x;
+        double y = pos.y;
+        x = roundf(x / GraphGrid::Ref()->grid_interval) * GraphGrid::Ref()->grid_interval;
+        y = roundf(y / GraphGrid::Ref()->grid_interval) * GraphGrid::Ref()->grid_interval;
 
-    this->set_position({x,y});
+        this->set_position({x,y});
+    }
 }
 
 void DragableObject::m_emit_event(){
@@ -196,4 +198,14 @@ void DragableObject::m_emit_event(){
         event.obj_id = get_id();
         EventServer::Ref()->emit(event);
     }
+}
+
+bool DragableObject::is_align_grid(){
+    return m_is_align_grid;
+}
+void DragableObject::enable_align_grid(){
+    m_is_align_grid = true;
+}
+void DragableObject::disable_align_grid(){
+    m_is_align_grid = false;
 }

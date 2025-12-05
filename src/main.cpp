@@ -1,5 +1,5 @@
 #include "core/random_server.h"
-#include "editor/detail_window.h"
+#include "editor/components/detail_window.h"
 #include "editor/layout.h"
 #include "editor/shortcut_menu.h"
 #include "editor/space.h"

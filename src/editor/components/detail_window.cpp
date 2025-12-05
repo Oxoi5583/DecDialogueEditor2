@@ -1,5 +1,9 @@
-#include "editor/detail_window.h"
+#include "editor/components/detail_window.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "engine/renderer.h"
+#include "graph/camera.h"
+#include "glm/ext/vector_float2.hpp"
+#include "graph/viewport.h"
 #include "imgui/imgui.h"
 #include "obj/graph/manager.h"
 #include "server/event_server.h"
@@ -24,22 +28,46 @@ EditorDetailWindow::~EditorDetailWindow(){
 }
 
 void EditorDetailWindow::ready(){
-    
+    Rect2 rect;
+    rect.set_position(vec2(0.0f,0.0f));
+    rect.set_size(vec2(100.0f, 100.0f));
+    this->set_shape(rect);
+    this->disable_align_grid();
 }
 void EditorDetailWindow::pre_process(){
+    ObjectServer::Ref()->move_to_front(this->get_id());
+
     if(m_opened){
-        ImGui::SetNextWindowFocus();
+        vec2 world_lt_pos = this->get_shape<Rect2>().get_left_top();
+        vec2 world_rd_pos = this->get_shape<Rect2>().get_right_down();
+
+        GraphCamera* gc = GraphCamera::Ref();
+        GraphViewport* gv = GraphViewport::Ref();
+        vec2 screen_lt_pos = gc->world_to_viewport(world_lt_pos);
+        vec2 screen_rd_pos = gc->world_to_viewport(world_rd_pos);
+        vec2 size = screen_rd_pos - screen_lt_pos;
+
         ImGui::SetNextWindowCollapsed(m_collapsed);
+        ImGui::SetNextWindowPos({screen_lt_pos.x, screen_lt_pos.y});
+        ImGui::SetNextWindowSize({size.x, size.y});
+
         ImGui::Begin((m_obj_name + " " + m_name).c_str(),&m_opened);
-        if(ImGui::IsWindowHovered()){
-            EventMouseHoverObj event;
-            event.is_pointer_cursor = false;
-            event.obj_id = this->get_id();
-            event.hovering_pos = MouseServer::Ref()->get_mouse_world_position();
-            EventServer::Ref()->emit(event);
-        }
 
         m_draw_fields();
+
+        /*
+        ImVec2 new_lt_pos_imgui = ImGui::GetWindowPos();
+        ImVec2 new_size_imgui = ImGui::GetWindowSize();
+
+        vec2 new_lt_pos = {new_lt_pos_imgui.x, new_lt_pos_imgui.y};
+        vec2 new_size = {new_size_imgui.x, new_size_imgui.y};
+        vec2 new_rd_pos = new_lt_pos + new_size;
+
+        vec2 new_world_lt_pos = gc->viewport_to_world(gv->screen_to_viewport(new_lt_pos));
+        vec2 new_world_rd_pos = gc->viewport_to_world(gv->screen_to_viewport(new_rd_pos));
+
+        this->get_shape<Rect2>().set_AABB(new_world_lt_pos, new_world_rd_pos);
+        */
 
         ImGui::End();
     }
@@ -51,12 +79,15 @@ void EditorDetailWindow::post_process(){
     
 }
 void EditorDetailWindow::draw(){
-    
+    EngineRenderer::Ref()->draw_circle(this->get_shape<Rect2>().get_center(), 5.0f, vec4(1.0f,1.0f,0.0f,1.0f), -1);
+    EngineRenderer::Ref()->draw_circle(GraphCamera::Ref()->get_zoomed_rect().get_left_top(), 5.0f, vec4(1.0f,1.0f,0.0f,1.0f), -1);
 }
+
 #include <cmath>
 std::vector<std::string> EditorDetailWindow::static_str_pipeline = {};
 const std::string EditorDetailWindow::lb = "\t\n";
 int EditorDetailWindow::max_cols = 80;
+
 void EditorDetailWindow::m_replace_all_substring(std::string& str, const std::string& from, const std::string& to) {
     size_t start_pos = 0;
     while((start_pos = str.find(from, start_pos)) != std::string::npos) {

@@ -162,9 +162,27 @@ mat4 GraphCamera::get_projection() const{
 
 
 vec2 GraphCamera::world_to_viewport(vec2 p_pos){
-    mat4 transform = mat4(1.0f);
-    transform = glm::translate(transform, vec3(get_zoomed_rect().get_left_top(),0.0f));
-    return inverse(transform) * vec4(p_pos, 0.0f, 1.0f);
+    Rect2 zoomed_rect = get_zoomed_rect();
+    vec2 zoomed_size = zoomed_rect.get_size();
+
+    vec2 world_anchor = zoomed_rect.get_left_top();
+
+    vec2 wd_changed_anchor = p_pos - world_anchor;
+    vec2 changed_ratio = {
+        wd_changed_anchor.x / zoomed_size.x,
+        wd_changed_anchor.y / zoomed_size.y
+    };
+
+    Rect2 viewport_rect2 = GraphViewport::Ref()->get_viewport_rect();
+    vec2 viewport_size = viewport_rect2.get_size();
+
+    vec2 viewport_anchor = viewport_rect2.get_left_top();
+    vec2 vp_changed_anchor = {
+        changed_ratio.x * viewport_size.x,
+        changed_ratio.y * viewport_size.y
+    };
+
+    return viewport_anchor + vp_changed_anchor;
 }
 vec2 GraphCamera::viewport_to_world(vec2 p_pos){
     Rect2 zoomed_rect = get_zoomed_rect();

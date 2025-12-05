@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-class EditorDetailWindow : public ObjectBase{
+class EditorDetailWindow : public DragableObject{
 private:
     struct Field{
         std::string name;
@@ -21,8 +21,8 @@ private:
     };
 
     std::vector<Field> m_fields = {
-        {"a", "b1", "b1", 1000},
-        {"b", "b2", "b2", 1000},
+        {"a", "b1", "b1", 100},
+        {"b", "b2", "b2", 500},
         {"c", "b3", "b3", 1000},
     };
 

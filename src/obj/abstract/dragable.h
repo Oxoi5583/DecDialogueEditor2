@@ -27,6 +27,8 @@ private:
     vec2 m_dragging_position_start;
 
     void m_align_grid();
+
+    bool m_is_align_grid = true;
 public:
     DragableObject();
     ~DragableObject();
@@ -45,4 +47,8 @@ public:
     void drag_ready();
     void drag();
     void place();
+
+    bool is_align_grid();
+    void enable_align_grid();
+    void disable_align_grid();
 };
