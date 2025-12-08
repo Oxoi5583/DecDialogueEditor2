@@ -223,10 +223,15 @@ bool GraphConnection::m_test_connection__target_not_entry(GraphBase* p_fm, Graph
     return p_to->get_type() != GraphManager::ENTRY;
 }
 bool GraphConnection::m_test_connection__target_not_connected(GraphBase* p_fm, GraphBase* p_to){
-    OID ancestor_id = p_fm->skip_from_repeater();
-    GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(ancestor_id);
-    std::set<OID> children = ancestor->get_children_set(true);
-    return !children.contains(p_to->get_id());
+    std::vector<OID> ancestor_ids = p_fm->skip_from_repeater();
+    for(OID& ancestor_id : ancestor_ids){
+        GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(ancestor_id);
+        std::set<OID> children = ancestor->get_children_set(true);
+        if(children.contains(p_to->get_id())){
+            return false;
+        }
+    }
+    return true;
 }
 bool GraphConnection::m_test_connection__to_repeater_not_have_parent(GraphBase* p_fm, GraphBase* p_to){
     if(p_to->get_type() == GraphManager::REPEATER){
@@ -268,7 +273,7 @@ bool GraphConnection::m_test_connection__all_connect_type_is_option(GraphBase* p
 
     if(is_connected_to_option){
         GraphManager::NodeType to_type = p_to->get_type();
-        if(to_type != GraphManager::OPTION){
+        if(to_type != GraphManager::OPTION && to_type != GraphManager::REPEATER){
             return false;
         }
     }
@@ -287,54 +292,54 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
     Condition c_1 = Condition()
             .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_self(fm_node, to_node); })
             .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_entry(fm_node, to_node); })
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_connected(fm_node, to_node); })
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__to_repeater_not_have_parent(fm_node, to_node); });
+            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_connected(fm_node, to_node); });
 
     if(!c_1){
         return false;
     }
 
+    std::vector<GraphBase*> fm_nodes;
     if(fm_node->get_type() == GraphManager::REPEATER){
-        OID id_skip_repeater = fm_node->skip_from_repeater();
-        GraphBase* obj_skip_repeater = ObjectServer::Ref()->get_instance<GraphBase>(id_skip_repeater);
-        if(obj_skip_repeater){
-            fm_node = obj_skip_repeater;
-        }
-    }
-
-    std::vector<GraphBase*> to_nodes;
-    if(to_node->get_type() == GraphManager::REPEATER){
-        if(!m_test_connection__to_repeater_not_have_parent(fm_node, to_node)){
-            return false;
-        }
-
-        std::vector<OID> ids_skip_repeater = to_node->skip_to_repeater();
+        std::vector<OID> ids_skip_repeater = fm_node->skip_from_repeater();
         for(OID& id : ids_skip_repeater){
             GraphBase* obj_skip_repeater = ObjectServer::Ref()->get_instance<GraphBase>(id);
             if(obj_skip_repeater){
-                to_nodes.push_back(obj_skip_repeater);
+                fm_nodes.push_back(obj_skip_repeater);
             }
         }
-    }else{
-        to_nodes.push_back(to_node);
     }
 
-    for(GraphBase* to_node_2 : to_nodes){
-        Condition c_2 = Condition()
-            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_self(fm_node, to_node_2); })
-            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_entry(fm_node, to_node_2); })
-            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__target_not_connected(fm_node, to_node_2); })
-            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__not_connect_to_normal_node_yet(fm_node, to_node_2); })
-            .add_required([this, fm_node, to_node_2](){ return this->m_test_connection__all_connect_type_is_option(fm_node, to_node_2); })
-            .add_alternative(1, [this, fm_node, to_node_2](){ return this->m_test_connection__to_repeater_not_have_parent(fm_node, to_node_2); })
-            .add_alternative(1, [this, fm_node, to_node_2](){ return this->m_test_connection__fm_repeater_not_have_children(fm_node, to_node_2); });
-
-        bool c_2_ret = c_2.result();
-        if(!c_2_ret){
-            return false;
+    for(GraphBase* fm_sub_node : fm_nodes){
+        std::vector<GraphBase*> to_nodes;
+        if(to_node->get_type() == GraphManager::REPEATER){
+            std::vector<OID> ids_skip_repeater = to_node->skip_to_repeater();
+            for(OID& id : ids_skip_repeater){
+                GraphBase* obj_skip_repeater = ObjectServer::Ref()->get_instance<GraphBase>(id);
+                if(obj_skip_repeater){
+                    to_nodes.push_back(obj_skip_repeater);
+                }
+            }
+        }else{
+            to_nodes.push_back(to_node);
         }
-    }
 
+        for(GraphBase* to_node_2 : to_nodes){
+            Condition c_2 = Condition()
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_self(fm_sub_node, to_node_2); })
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_entry(fm_sub_node, to_node_2); })
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_connected(fm_sub_node, to_node_2); })
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__not_connect_to_normal_node_yet(fm_sub_node, to_node_2); })
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__all_connect_type_is_option(fm_sub_node, to_node_2); })
+                .add_alternative(1, [this, fm_sub_node, to_node_2](){ return this->m_test_connection__fm_repeater_not_have_children(fm_sub_node, to_node_2); });
+
+            bool c_2_ret = c_2.result();
+            if(!c_2_ret){
+                return false;
+            }
+
+        }
+
+    }
 
     return true;
 }

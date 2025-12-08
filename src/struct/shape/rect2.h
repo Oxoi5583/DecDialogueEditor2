@@ -48,6 +48,7 @@ public:
     bool is_point_intersect(vec2 p_pos) override;
     bool is_segment_intersect(const vec2& p1, const vec2& p2);
     bool is_rect_intersect(Rect2 p_rect);
+    bool is_rect_in(Rect2 p_rect);
 
     
     void move_left_top(vec2 p_pos, vec2 p_min = min_vec2, vec2 p_max = max_vec2);

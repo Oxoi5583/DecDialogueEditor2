@@ -9,6 +9,7 @@ class MovableObject : public ObjectBase {
 private:
     std::unique_ptr<ShapeBase> m_shape = std::make_unique<ShapeBase>();
     bool m_is_on_camera = false;
+    bool m_is_full_rect_in_camera = false; 
 public:
     MovableObject();
     ~MovableObject();
@@ -36,4 +37,6 @@ public:
     void draw();
 
     bool is_on_camera();
+    void enable_full_rect_in_camera();
+    void disable_full_rect_in_camera();
 };

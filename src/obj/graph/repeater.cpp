@@ -32,7 +32,7 @@ void GraphRepeater::post_process(){}
 void GraphRepeater::draw(){}
 
 void GraphRepeater::m_refresh_from_and_to(){
-    m_from_id = this->skip_from_repeater();
+    m_from_ids = this->skip_from_repeater();
     m_to_ids = this->skip_to_repeater();
 }
 
@@ -40,8 +40,8 @@ GraphManager::NodeType GraphRepeater::get_type(){
     return GraphManager::NodeType::REPEATER;
 }
 
-OID GraphRepeater::get_repeater_from(){
-    return m_from_id;
+std::vector<OID> GraphRepeater::get_repeater_from(){
+    return m_from_ids;
 }
 std::vector<OID> GraphRepeater::get_repeater_to(){
     return m_to_ids;

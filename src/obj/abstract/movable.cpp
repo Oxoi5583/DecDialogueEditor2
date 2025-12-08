@@ -29,7 +29,7 @@ void MovableObject::pre_process(){
 void MovableObject::process(){
     vec2 pos = m_shape->get_position();
     vec2 size = m_shape->get_size();
-    m_is_on_camera = GraphCamera::Ref()->is_rect_on_camera({pos,size});
+    m_is_on_camera = GraphCamera::Ref()->is_rect_on_camera({pos,size},m_is_full_rect_in_camera);
 }
 void MovableObject::post_process(){
 }
@@ -38,4 +38,11 @@ void MovableObject::draw(){
 
 bool MovableObject::is_on_camera(){
     return m_is_on_camera;
+}
+
+void MovableObject::enable_full_rect_in_camera(){
+    m_is_full_rect_in_camera = true;
+}
+void MovableObject::disable_full_rect_in_camera(){
+    m_is_full_rect_in_camera = false;
 }

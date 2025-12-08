@@ -182,7 +182,11 @@ vec2 GraphCamera::world_to_viewport(vec2 p_pos){
         changed_ratio.y * viewport_size.y
     };
 
-    return viewport_anchor + vp_changed_anchor;
+    vec2 ret = viewport_anchor + vp_changed_anchor;
+
+    ret = ret - viewport_anchor;
+
+    return ret;
 }
 vec2 GraphCamera::viewport_to_world(vec2 p_pos){
     Rect2 zoomed_rect = get_zoomed_rect();
@@ -217,7 +221,12 @@ void GraphCamera::go_to_left_top_buffer(){
     this->set_target(new_target);
 }
 
-bool GraphCamera::is_rect_on_camera(Rect2 p_rect){
-    Rect2 camera_rect = this->get_zoomed_rect();
-    return camera_rect.is_rect_intersect(p_rect);
+bool GraphCamera::is_rect_on_camera(Rect2 p_rect, bool p_is_full_needed){
+    if(p_is_full_needed){
+        Rect2 camera_rect = this->get_zoomed_rect();
+        return camera_rect.is_rect_in(p_rect);
+    }else{
+        Rect2 camera_rect = this->get_zoomed_rect();
+        return camera_rect.is_rect_intersect(p_rect);
+    }
 }

@@ -181,3 +181,8 @@ struct EventLockedAll : public NonUniqueEvent{};
 struct EventTryConnectTo : public NonUniqueEvent{
     std::unordered_set<OID> conntectables;
 };
+
+
+struct EventOpenDetailsWindow : public NonUniqueEvent{
+    OID id;
+};

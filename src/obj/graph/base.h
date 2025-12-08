@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/timer_server.h"
+#include "editor/components/detail_window.h"
 #include "engine/renderer.h"
 #include "glm/ext/vector_float2.hpp"
 #include "obj/abstract/clickable.h"
@@ -15,11 +16,14 @@
 #include <string>
 #include <vector>
 
+#include "DecToolsBox/container/ordered_map.h"
+
 using namespace glm;
 
 class GraphBase : public SelectableObject{
 public:
     struct Property{
+        std::string name;
         std::string value;
         uint max_size;
     };
@@ -29,14 +33,17 @@ private:
     std::set<OID> m_children;
     std::set<OID> m_parent;
 
-    std::map<std::string,Property> m_properties = {
-        {"Name",{"", 50}},
-        {"Content",{ "", 1000}},
+    std::string m_name;
+    std::string m_content;
+
+    OrderedMap<std::string,Property> m_properties = {
+        {"Unique Id", {"Unique Id","", 50}},
     };
 
     Rect2& m_init_shape();
 
     void m_handle_event_connect();
+
 public:
     GraphBase();
     ~GraphBase();
@@ -45,6 +52,8 @@ public:
     vec2 get_size() const;
     void set_position(vec2& p_position);
     void set_size(vec2& p_size);
+
+    void add_property(std::string name, std::string value, uint max_size);
 
     bool is_point_intersect(vec2& p_point); 
 
@@ -57,14 +66,14 @@ public:
     virtual GraphManager::NodeType get_type();
 
     std::string get_name();
-    std::string get_content();
     std::vector<std::string> get_signals();
 
     void set_name(std::string p_name);
-    void set_content(std::string p_content);
     void add_signals();
     void remove_signals(int p_index);
     void set_signal(int p_index, std::string p_signal);
+
+    void set_property(std::string name, std::string value, uint max_size);
 
     void add_children(OID p_id);
     void remove_children(OID p_id);
@@ -72,7 +81,7 @@ public:
     void add_parent(OID p_id);
     void remove_parent(OID p_id);
 
-    OID skip_from_repeater();
+    std::vector<OID> skip_from_repeater();
     std::vector<OID> skip_to_repeater();
 
     std::vector<OID> get_children(bool is_pass_repeater = false);
@@ -80,5 +89,7 @@ public:
     std::set<OID> get_children_set(bool is_pass_repeater = false);
     std::set<OID> get_parent_set(bool is_pass_repeater = false);
 
-    std::map<std::string,Property>& get_properties();
+    std::vector<Property> get_properties();
+
+    void open_details_window();
 };

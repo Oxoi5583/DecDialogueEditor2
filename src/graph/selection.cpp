@@ -15,6 +15,10 @@
 
 
 void GraphSelection::m_update_state(){
+    if(EventServer::Ref()->has<EventLockedAll>()){
+        return;
+    }
+
     switch (m_state) {
         case IDLE:{
             if(EventServer::Ref()->has<EventMouseJustClickedOnWorld>()){

@@ -9,7 +9,9 @@ GraphNode::GraphNode(){
 }
 GraphNode::~GraphNode(){}
 
-void GraphNode::ready(){}
+void GraphNode::ready(){
+    this->add_property("Content", "", 1000);
+}
 void GraphNode::pre_process(){}
 void GraphNode::process(){}
 void GraphNode::post_process(){}

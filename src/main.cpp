@@ -1,3 +1,4 @@
+#include "DecToolsBox/container/ordered_map.h"
 #include "core/random_server.h"
 #include "editor/components/detail_window.h"
 #include "editor/layout.h"
@@ -28,6 +29,7 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <string>
 #include <vector>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <SDL3/SDL_opengles2.h>
@@ -71,11 +73,7 @@ int main(int argc, char* argv[]) {
     
     EditorLayout::Ref()->ui_init();
 
-    DEBUG_MSG("End Init.");
-
     bool is_first_frame = true;
-
-    ObjectServer::Ref()->queue_create<EditorDetailWindow>(ObjectServer::Layer::UI_LAYER);
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
@@ -110,24 +108,6 @@ int main(int argc, char* argv[]) {
         GraphSelection::Ref()->post_update();
         GraphSelection::Ref()->draw();
         
-        if(test_timer->timeout_and_reset_in_cycle(5)){
-            EventSpawnNode event;
-
-            event.spawn_pos = { RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250
-                                ,RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250};
-            event.type = GraphManager::NodeType::NODE;
-            EventServer::Ref()->emit(event);
-
-            event.spawn_pos = { RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250
-                                ,RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250};
-            event.type = GraphManager::NodeType::ENTRY;
-            EventServer::Ref()->emit(event);
-
-            event.spawn_pos = { RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250
-                                ,RandomServer::Ref()->get_uniform_distr_random_float(-1.0, 1.0f) * 250};
-            event.type = GraphManager::NodeType::OPTION;
-            EventServer::Ref()->emit(event);
-        }
 
         EngineWindowResizer::Ref()->post_update();
         MouseServer::Ref()->update();
@@ -147,6 +127,6 @@ int main(int argc, char* argv[]) {
 
     EngineRenderer::Ref()->destory_all();
     EngineWindow::Ref()->destory_all();
-
+    
     return 0;
 }

@@ -28,6 +28,7 @@ void EditorToolsBar::pre_process(){
     m_update_shape();
 
     Rect2 window_rect = EditorLayout::Ref()->covnert_to_window(*(Rect2*)m_space);
+    //ImGui::SetNextWindowFocus();
     ImGui::SetNextWindowSize({window_rect.get_size().x, window_rect.get_size().y});
     ImGui::SetNextWindowPos({window_rect.get_left_top().x, window_rect.get_left_top().y});
 

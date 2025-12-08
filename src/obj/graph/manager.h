@@ -28,7 +28,6 @@ public:
         OID id;
         NodeType type;
         std::string name;
-        std::string content;
         bool is_selected;
         std::vector<std::string> signals;
         std::vector<OID> direct_children;

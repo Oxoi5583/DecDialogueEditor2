@@ -73,7 +73,6 @@ GraphManager::NodeInfo GraphManager::m_create_info(GraphBase* m_ptr){
     info.id = m_ptr->get_id();
     info.type = m_ptr->get_type();
     info.name = m_ptr->get_name();
-    info.content = m_ptr->get_content();
     info.is_selected = m_ptr->is_selected();
     info.signals = m_ptr->get_signals();
     info.direct_children = m_ptr->get_children();

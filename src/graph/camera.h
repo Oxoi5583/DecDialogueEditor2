@@ -63,5 +63,5 @@ public:
     vec2 world_to_viewport(vec2 p_pos);
     vec2 viewport_to_world(vec2 p_pos);
 
-    bool is_rect_on_camera(Rect2 p_rect);
+    bool is_rect_on_camera(Rect2 p_rect, bool p_is_full_needed = false);
 };

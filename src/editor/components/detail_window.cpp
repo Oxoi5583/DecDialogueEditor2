@@ -1,10 +1,14 @@
 #include "editor/components/detail_window.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "engine/renderer.h"
+#include "engine/window.h"
+#include "glm/geometric.hpp"
 #include "graph/camera.h"
 #include "glm/ext/vector_float2.hpp"
+#include "graph/selection.h"
 #include "graph/viewport.h"
 #include "imgui/imgui.h"
+#include "obj/abstract/movable.h"
 #include "obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
@@ -20,83 +24,101 @@
 #include <vector>
 
 
-EditorDetailWindow::EditorDetailWindow(){
-    BIND_CLASS(EditorDetailWindow);
+EditorDetailsWindow::EditorDetailsWindow(){
+    BIND_CLASS(EditorDetailsWindow);
+    Rect2 rect;
+    rect.set_size(vec2(600.0f, 300.0f));
+    this->set_shape(rect);
 }
-EditorDetailWindow::~EditorDetailWindow(){
-    
+EditorDetailsWindow::~EditorDetailsWindow(){
+    this->save();
 }
 
-void EditorDetailWindow::ready(){
-    Rect2 rect;
-    rect.set_position(vec2(0.0f,0.0f));
-    rect.set_size(vec2(100.0f, 100.0f));
-    this->set_shape(rect);
+void EditorDetailsWindow::ready(){
     this->disable_align_grid();
 }
-void EditorDetailWindow::pre_process(){
-    ObjectServer::Ref()->move_to_front(this->get_id());
+void EditorDetailsWindow::pre_process(){
+    if(!ObjectServer::Ref()->is_id_valid(m_parent_id)){
+        this->queue_free();
+        return;
+    }
 
-    if(m_opened){
+    if(m_opened && this->is_on_camera()){
         vec2 world_lt_pos = this->get_shape<Rect2>().get_left_top();
         vec2 world_rd_pos = this->get_shape<Rect2>().get_right_down();
 
         GraphCamera* gc = GraphCamera::Ref();
         GraphViewport* gv = GraphViewport::Ref();
-        vec2 screen_lt_pos = gc->world_to_viewport(world_lt_pos);
-        vec2 screen_rd_pos = gc->world_to_viewport(world_rd_pos);
+        vec2 screen_lt_pos = gv->viewport_to_screen(gc->world_to_viewport(world_lt_pos));
+        vec2 screen_rd_pos = gv->viewport_to_screen(gc->world_to_viewport(world_rd_pos));
+        
         vec2 size = screen_rd_pos - screen_lt_pos;
 
         ImGui::SetNextWindowCollapsed(m_collapsed);
         ImGui::SetNextWindowPos({screen_lt_pos.x, screen_lt_pos.y});
         ImGui::SetNextWindowSize({size.x, size.y});
 
-        ImGui::Begin((m_obj_name + " " + m_name).c_str(),&m_opened);
 
+        ImGui::Begin((m_obj_name + " " + m_name).c_str(),&m_opened, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+        ImVec2 curr_size = ImGui::GetWindowSize();
+        ImVec2 curr_pos = ImGui::GetWindowPos();
         m_draw_fields();
-
-        /*
-        ImVec2 new_lt_pos_imgui = ImGui::GetWindowPos();
-        ImVec2 new_size_imgui = ImGui::GetWindowSize();
-
-        vec2 new_lt_pos = {new_lt_pos_imgui.x, new_lt_pos_imgui.y};
-        vec2 new_size = {new_size_imgui.x, new_size_imgui.y};
-        vec2 new_rd_pos = new_lt_pos + new_size;
-
-        vec2 new_world_lt_pos = gc->viewport_to_world(gv->screen_to_viewport(new_lt_pos));
-        vec2 new_world_rd_pos = gc->viewport_to_world(gv->screen_to_viewport(new_rd_pos));
-
-        this->get_shape<Rect2>().set_AABB(new_world_lt_pos, new_world_rd_pos);
-        */
-
         ImGui::End();
     }
 }
-void EditorDetailWindow::process(){
+void EditorDetailsWindow::process(){
     
 }
-void EditorDetailWindow::post_process(){
-    
+void EditorDetailsWindow::post_process(){
+    if(!m_opened){
+        this->queue_free();
+        return;
+    }
+    ObjectServer::Ref()->move_to_front(this->get_id());
 }
-void EditorDetailWindow::draw(){
-    EngineRenderer::Ref()->draw_circle(this->get_shape<Rect2>().get_center(), 5.0f, vec4(1.0f,1.0f,0.0f,1.0f), -1);
-    EngineRenderer::Ref()->draw_circle(GraphCamera::Ref()->get_zoomed_rect().get_left_top(), 5.0f, vec4(1.0f,1.0f,0.0f,1.0f), -1);
+void EditorDetailsWindow::draw(){
+    if(m_opened){
+        Rect2 shadow_rect = this->get_shape<Rect2>();
+        shadow_rect.set_position(shadow_rect.get_position() + vec2(-15.0f, 15.0f) );
+        EngineRenderer::Ref()->draw_rect(shadow_rect, vec4(0.0f,0.0f,0.0f,0.2f), -1);
+    }
+
+    if(ObjectServer::Ref()->is_id_valid(m_parent_id) && m_opened){
+        vec2 parent_pos = ObjectServer::Ref()->get_instance<MovableObject>(m_parent_id)->get_position();
+        std::vector<vec2> points = this->get_shape<Rect2>().get_points();
+        
+        float min_dist = std::numeric_limits<float>::max();
+        vec2 cloest_pos;
+        for(size_t i = 0; i < points.size(); i++){
+            vec2 pos = points[i];
+            float dist = glm::distance(pos, parent_pos);
+            if(dist < min_dist){
+                min_dist = dist;
+                cloest_pos = pos;
+            }
+        }
+        EngineRenderer::Ref()->draw_line(cloest_pos, parent_pos, ThemeLoader::Ref()->get_color("AccentColour1"), 2.0f / GraphCamera::Ref()->get_zoom());
+    }
 }
 
 #include <cmath>
-std::vector<std::string> EditorDetailWindow::static_str_pipeline = {};
-const std::string EditorDetailWindow::lb = "\t\n";
-int EditorDetailWindow::max_cols = 80;
+std::vector<std::string> EditorDetailsWindow::static_str_pipeline = {};
+const std::string EditorDetailsWindow::lb = "\t\n";
+int EditorDetailsWindow::max_cols = 80;
 
-void EditorDetailWindow::m_replace_all_substring(std::string& str, const std::string& from, const std::string& to) {
+void EditorDetailsWindow::m_replace_all_substring(std::string& str, const std::string& from, const std::string& to) {
     size_t start_pos = 0;
     while((start_pos = str.find(from, start_pos)) != std::string::npos) {
         str.replace(start_pos, from.length(), to);
         start_pos += to.length();
     }
 }
-std::string EditorDetailWindow::m_draw_fields_auto_wrap(std::string& p_raw_str, int p_original_len){
+std::string EditorDetailsWindow::m_draw_fields_auto_wrap(std::string& p_raw_str, int p_original_len){
     std::string ret = p_raw_str;
+
+    if(strlen(ret.data()) <= max_cols){
+        return ret;
+    }
 
     bool searching = true;
 
@@ -104,6 +126,10 @@ std::string EditorDetailWindow::m_draw_fields_auto_wrap(std::string& p_raw_str, 
     int run = 0;
     while(searching){
         for(size_t pos = last_lb_pos ;pos < p_original_len; pos++){
+            if(!searching){
+                break;
+            }
+
             if(ret.data()[pos] == '\n' || ret.data()[pos] == '\t') last_lb_pos = pos;
             if(pos >= p_original_len - 1){
                 searching = false;
@@ -119,10 +145,14 @@ std::string EditorDetailWindow::m_draw_fields_auto_wrap(std::string& p_raw_str, 
 
     return ret;
 }
-int EditorDetailWindow::m_draw_fields_auto_wrap_callback(ImGuiInputTextCallbackData* p_data){
+int EditorDetailsWindow::m_draw_fields_auto_wrap_callback(ImGuiInputTextCallbackData* p_data){
     std::string data_str = p_data->Buf;
     int original_len = std::strlen(data_str.c_str());
-    
+
+    if(p_data->BufTextLen <= max_cols){
+        return 0;
+    }
+
     if (data_str.ends_with('\t')){
         p_data->DeleteChars(original_len - 1, 1);
 
@@ -136,6 +166,10 @@ int EditorDetailWindow::m_draw_fields_auto_wrap_callback(ImGuiInputTextCallbackD
     int run = 0;
     while(searching){
         for(size_t pos = last_lb_pos ;pos < original_len; pos++){
+            if(!searching){
+                break;
+            }
+
             if(p_data->Buf[pos] == '\n' || p_data->Buf[pos] == '\t') last_lb_pos = pos;
             if(pos >= original_len - 1){
                 searching = false;
@@ -149,9 +183,9 @@ int EditorDetailWindow::m_draw_fields_auto_wrap_callback(ImGuiInputTextCallbackD
         }
     }
 
-
+    return 0;
 }
-void EditorDetailWindow::m_draw_fields(){
+void EditorDetailsWindow::m_draw_fields(){
     ImVec4 color1 = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     ImVec4 color2 = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
 
@@ -159,7 +193,8 @@ void EditorDetailWindow::m_draw_fields(){
     ImGui::PushStyleColor(ImGuiCol_FrameBgActive, color2);
 
     for (Field& f : m_fields) {
-        ImGui::Text("%s", f.name.c_str());
+        std::string name = f.name;
+        ImGui::Text("%s", name.c_str());
         ImGui::SameLine();
 
         float available_width = ImGui::GetContentRegionAvail().x;
@@ -176,7 +211,7 @@ void EditorDetailWindow::m_draw_fields(){
             ("##" + f.name).c_str(),
             f.value.data(),
             f.max_size,
-            ImVec2(-1, rows * ImGui::GetTextLineHeight()),
+            ImVec2(-1, rows * (ImGui::GetTextLineHeight() + 5.0f)),
             ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_NoHorizontalScroll,
             m_draw_fields_auto_wrap_callback
         );
@@ -184,16 +219,22 @@ void EditorDetailWindow::m_draw_fields(){
         std::string no_lb = f.value;
         m_replace_all_substring(no_lb, lb, "");
         f.raw_value = no_lb;
-        f.raw_value.resize(std::strlen(f.raw_value.c_str()));   
+        f.raw_value.resize(std::strlen(f.raw_value.c_str()));
+
+        if(ImGui::IsItemHovered() && !this->is_dragging()){
+            EventServer::Ref()->block<EventLockedAll>();
+        }
     }
 
     ImGui::PopStyleColor(2);
 }
-void EditorDetailWindow::open_for(OID p_id){
+void EditorDetailsWindow::open_for(OID p_id){
     GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(p_id);
     if(!obj){
         return;
     }
+
+    m_parent_id = p_id;
 
     m_opened = true;
 
@@ -203,9 +244,9 @@ void EditorDetailWindow::open_for(OID p_id){
     m_obj_name = obj->get_name();
 
     for(auto it : properties){
-        std::string property_name = it.first;
-        std::string property_value = it.second.value;
-        uint property_max_size = it.second.max_size;
+        std::string property_name = it.name;
+        std::string property_value = it.value;
+        uint property_max_size = it.max_size;
 
         m_fields.push_back({
             property_name,
@@ -213,5 +254,20 @@ void EditorDetailWindow::open_for(OID p_id){
             property_value,
             property_max_size
         });
+    }
+}
+
+void EditorDetailsWindow::save(){
+    if(!ObjectServer::Ref()->is_id_valid(m_parent_id)){
+        return;
+    }
+
+    GraphBase* ptr = ObjectServer::Ref()->get_instance<GraphBase>(m_parent_id);
+    if(!ptr){
+        return;
+    }
+
+    for(auto& f : m_fields){
+        ptr->set_property(f.name, f.raw_value, f.max_size);
     }
 }

@@ -228,6 +228,23 @@ bool Rect2::is_rect_intersect(Rect2 p_rect){
     return false;
 }
 
+bool Rect2::is_rect_in(Rect2 p_rect){
+    vec2 lt_main = this->get_left_top();
+    vec2 rd_main = this->get_right_down();
+
+    vec2 lt_sub = p_rect.get_left_top();
+    vec2 rd_sub = p_rect.get_right_down();
+
+    vec2 lt_chg = lt_sub - lt_main;
+    vec2 rd_chg = rd_sub - rd_main;
+
+    return (
+        lt_chg.x >= 0.0f &&
+        lt_chg.y >= 0.0f &&
+        rd_chg.x <= 0.0f &&
+        rd_chg.y <= 0.0f
+    );
+}
 
 void Rect2::move_left_top(vec2 p_pos, vec2 p_min, vec2 p_max){
     if(p_min.x < 0) p_min.x = 0.0f;

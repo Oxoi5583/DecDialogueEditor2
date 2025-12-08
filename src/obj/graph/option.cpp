@@ -9,7 +9,9 @@ GraphOption::GraphOption(){
 }
 GraphOption::~GraphOption(){}
 
-void GraphOption::ready(){}
+void GraphOption::ready(){
+    this->add_property("Content", "", 1000);
+}
 void GraphOption::pre_process(){}
 void GraphOption::process(){}
 void GraphOption::post_process(){}

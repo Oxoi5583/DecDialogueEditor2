@@ -49,7 +49,7 @@ public:
     void ui_draw();
     
     const double menu_bar_size = 30;
-    const double tools_bar_size = 90;
+    const double tools_bar_size = 45;
 
     EditorSpace* get_world_space();
     void restore_layout();

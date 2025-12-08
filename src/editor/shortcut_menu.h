@@ -158,6 +158,18 @@ private:
         std::function<void()>()
     };
 
+    Option m_option_edit_node = {
+        "Edit",
+        {},
+        [this](){
+            auto& ids = this->m_related_obj_ids;
+            for(OID& id : ids){
+                EventOpenDetailsWindow event;
+                event.id = id;
+                EventServer::Ref()->emit(event);
+            }
+        }
+    };
     Option m_option_delete_node = {
         "Delete node",
         {},
@@ -366,6 +378,7 @@ private:
     Option m_graph_on_node = {
         "Root",
         {
+            m_option_edit_node,
             m_option_connect,
             m_option_create_node,
             m_option_delete_node,
@@ -375,6 +388,7 @@ private:
     Option m_graph_on_nodes = {
         "Root",
         {
+            m_option_edit_node,
             m_option_create_node,
             m_option_delete_nodes,
             m_option_align_nodes,
@@ -392,6 +406,7 @@ private:
     Option m_inspector_on_node = {
         "Root",
         {
+            m_option_edit_node,
             m_option_create_node_at_cam,
             m_option_delete_node,
         },
@@ -400,6 +415,7 @@ private:
     Option m_inspector_on_nodes = {
         "Root",
         {
+            m_option_edit_node,
             m_option_create_node_at_cam,
             m_option_delete_nodes,
             m_option_align_nodes,

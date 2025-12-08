@@ -49,6 +49,8 @@ void EditorLeftPanel::pre_process(){
 
         m_panel_data = GraphManager::Ref()->get_panel_data();
 
+        //ImGui::SetNextWindowFocus();
+
         ImGui::Begin("EditorLeftPanel", &m_is_displaying, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
         
         if (ImGui::BeginTabBar("TabBar")){
@@ -100,7 +102,10 @@ void EditorLeftPanel::m_update_inpector(){
         ImGui::EndTabItem();
     }
     
-    if (ImGui::BeginTabItem("Test")){
+    if (ImGui::BeginTabItem("Explorer")){
+        if (ImGui::BeginListBox("##ExplorerListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
+            ImGui::EndListBox();
+        }
         ImGui::EndTabItem();
     }
 }
@@ -119,7 +124,6 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
         auto pri_type = pri_item_list[p].type;
         std::string padding = (is_selected) ? " " : "";
         auto pri_name = padding + std::to_string(p + 1) + " - " + pri_item_list[p].name;
-        auto pri_content = pri_item_list[p].content;
 
         const ImVec4 pri_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
         const ImVec4 pri_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
@@ -175,7 +179,6 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                 auto sec_type = sec_item_list[s].type;
                 std::string padding = (is_selected) ? " " : "";
                 auto sec_name = padding + int_to_roman(s + 1) + " - " + sec_item_list[s].name;
-                auto sec_content = sec_item_list[s].content;
 
                 const ImVec4 sec_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
                 const ImVec4 sec_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
@@ -237,7 +240,7 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                 auto other_type = other_item_list[o].type;
                 std::string padding = (is_selected) ? " " : "";
                 auto other_name = padding + "*" + std::to_string(o + 1) + " - " + other_item_list[o].name;
-                auto other_content = other_item_list[o].content;
+
 
                 const ImVec4 other_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
                 const ImVec4 other_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");

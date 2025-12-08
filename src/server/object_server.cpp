@@ -104,7 +104,6 @@ void ObjectServer::post_process(){
 void ObjectServer::draw(){
     for(auto it = m_ui_process_list.rev_begin(); it != m_ui_process_list.rev_end(); ++it){
         OID id = it->get_id();
-        //DEBUG_MSG("OID (draw) : " << id);
         if(it->is_alive() && it->is_ready()){
             auto& functions = m_draw_functions[id];
             for(auto function : functions){
@@ -156,6 +155,7 @@ void ObjectServer::clear_garbage(){
             
             garbages.emplace(id);
             
+            m_ui_process_list.erase(ptr);
             m_graph_process_list.erase(ptr);
             m_id_to_instances.erase(id);
             m_ready_functions.erase(id);
@@ -221,7 +221,7 @@ void ObjectServer::move_to_specific_back(OID p_id, OID p_target_id){
     m_commands.emplace(c);
 }
 
-ordered_list<ObjectBase>& ObjectServer::m_layer_to_list(Layer p_layer){
+OrderedList<ObjectBase>& ObjectServer::m_layer_to_list(Layer p_layer){
     switch (p_layer) {
         case Layer::UI_LAYER:
             return m_ui_process_list;

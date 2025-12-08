@@ -22,9 +22,9 @@ public:
     };
 
 private:
-    ordered_list<ObjectBase> m_graph_process_list;
-    ordered_list<ObjectBase> m_ui_process_list;
-    ordered_list<ObjectBase>& m_layer_to_list(Layer p_layer);
+    OrderedList<ObjectBase> m_graph_process_list;
+    OrderedList<ObjectBase> m_ui_process_list;
+    OrderedList<ObjectBase>& m_layer_to_list(Layer p_layer);
 
     std::vector<std::unique_ptr<ObjectBase>> m_instances;
     std::vector<OID> m_ids;

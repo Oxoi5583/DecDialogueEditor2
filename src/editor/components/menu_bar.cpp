@@ -30,7 +30,7 @@ void EditorMenuBar::pre_process(){
     m_reset_vars();
     m_begin_main_bar();
     m_update_menu_file();
-    m_update_menu_edit();
+    //m_update_menu_edit();
     m_update_menu_themes();
     m_update_maximize_button();
     m_update_minimize_button();
@@ -67,6 +67,7 @@ void EditorMenuBar::m_begin_main_bar(){
     float border = ImGui::GetStyle().FrameBorderSize;
     float target_padding_y = (bar_size - font_size - border * 2.0f) / 2.0f;
 
+    //ImGui::SetNextWindowFocus();
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, target_padding_y));
     ImGui::BeginMainMenuBar();
 }

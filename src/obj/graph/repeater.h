@@ -14,7 +14,7 @@ private:
     Rect2& m_rect;
     Rect2& m_init_shape();
 
-    OID m_from_id;
+    std::vector<OID> m_from_ids;
     std::vector<OID> m_to_ids;
     void m_refresh_from_and_to();
 public:
@@ -29,6 +29,6 @@ public:
 
     GraphManager::NodeType get_type() override;
 
-    OID get_repeater_from();
+    std::vector<OID> get_repeater_from();
     std::vector<OID> get_repeater_to();
 };
