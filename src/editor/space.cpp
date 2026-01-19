@@ -2,8 +2,8 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "engine/renderer.h"
 #include "engine/window.h"
-#include "graph/camera.h"
-#include "graph/viewport.h"
+#include "system/graph/camera.h"
+#include "system/graph/viewport.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -373,12 +373,14 @@ void EditorSpace::SplitResizer::m_state_event_in_HOVER(){
 void EditorSpace::SplitResizer::m_state_event_in_DRAGGING(){
     EventEditorSpaceResizerHover event1;
     EventServer::Ref()->emit(event1);
-    EventMouseHoverObj event2;
-    event2.is_pointer_cursor = true;
+    EventEditorSpaceResizerDragging event2;
     EventServer::Ref()->emit(event2);
-    EventMouseHoverObjLastFrame event3;
+    EventMouseHoverObj event3;
     event3.is_pointer_cursor = true;
     EventServer::Ref()->emit(event3);
+    EventMouseHoverObjLastFrame event4;
+    event4.is_pointer_cursor = true;
+    EventServer::Ref()->emit(event4);
 }
 
 

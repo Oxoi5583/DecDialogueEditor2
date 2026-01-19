@@ -10,7 +10,7 @@
 #include "glm/ext/vector_float3.hpp"
 #include "glm/fwd.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "graph/camera.h"
+#include "system/graph/camera.h"
 
 
 const char* basic_vertex_shader_src = R"(

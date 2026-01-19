@@ -1,7 +1,7 @@
 #pragma once
 
 #include "editor/space.h"
-#include "obj/abstract/clickable.h"
+#include "system/obj/abstract/clickable.h"
 
 class EditorComponentBase : public ClickableObject{
 private:

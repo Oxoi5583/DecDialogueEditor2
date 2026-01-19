@@ -1,11 +1,13 @@
 #include "editor/layout.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "editor/components/left_coordinate.h"
+#include "editor/components/up_coordinate.h"
 #include "editor/space.h"
 #include "ext/debug/messenger_ext.h"
 #include "engine/renderer.h"
 #include "engine/window.h"
-#include "graph/camera.h"
-#include "graph/viewport.h"
+#include "system/graph/camera.h"
+#include "system/graph/viewport.h"
 #include "imgui/imgui.h"
 #include "server/mouse_server.h"
 #include "server/object_server.h"
@@ -58,6 +60,32 @@ void EditorLayout::m_main_space_init(){
 
     m_left_panel_space = m_tools_bar_other_space->get_children().first;
     m_left_panel_other_space = m_tools_bar_other_space->get_children().second;
+
+    m_left_panel_other_space->from = EditorSpace::From::START;
+    m_left_panel_other_space->set_type(EditorSpace::SplitType::VERTICLE);
+
+    m_left_panel_other_space->split_fixed.type = EditorSpace::SplitFixed::Type::VALUE;
+    m_left_panel_other_space->split_fixed.value = UpCoordinate::Ref()->height;
+    m_left_panel_other_space->split_fixed.enable();
+    m_left_panel_other_space->split_resizer.disable();
+
+    m_left_panel_other_space->split();
+
+    m_up_coordinate_space = m_left_panel_other_space->get_children().first;
+    m_up_coordinate_other_space = m_left_panel_other_space->get_children().second;
+
+    m_up_coordinate_other_space->from = EditorSpace::From::START;
+    m_up_coordinate_other_space->set_type(EditorSpace::SplitType::HORIZONTAL);
+
+    m_up_coordinate_other_space->split_fixed.type = EditorSpace::SplitFixed::Type::VALUE;
+    m_up_coordinate_other_space->split_fixed.value = LeftCoordinate::Ref()->width;
+    m_up_coordinate_other_space->split_fixed.enable();
+    m_up_coordinate_other_space->split_resizer.disable();
+
+    m_up_coordinate_other_space->split();
+
+    m_left_coordinate_space = m_up_coordinate_other_space->get_children().first;
+    m_left_coordinate_other_space = m_up_coordinate_other_space->get_children().second;
 }
 
 void EditorLayout::m_main_space_update(){
@@ -96,6 +124,9 @@ void EditorLayout::m_main_space_draw(){
     }
     */
 }
+void EditorLayout::m_left_coordinate_space_width_update(){
+    m_up_coordinate_other_space->split_fixed.value = LeftCoordinate::Ref()->width;
+}
 
 void EditorLayout::m_init_objs(){
     m_menu_bar = ObjectServer::Ref()->queue_create<EditorMenuBar>(ObjectServer::Layer::UI_LAYER);
@@ -115,6 +146,7 @@ void EditorLayout::ui_init(){
 
 void EditorLayout::ui_update(){
     m_main_space_update();
+    m_left_coordinate_space_width_update();
 
     int i = 0;
     for(EditorSpace* s : m_main_space.get_spaces_ptr()){
@@ -134,8 +166,14 @@ vec2 EditorLayout::get_menu_bar_size(){
     return m_menu_bar->get_shape<Rect2>().get_size();
 }
 
+EditorSpace* EditorLayout::get_up_coordinate_space(){
+    return m_up_coordinate_space;
+}
+EditorSpace* EditorLayout::get_left_coordinate_space(){
+    return m_left_coordinate_space;
+}
 EditorSpace* EditorLayout::get_world_space(){
-    return m_left_panel_other_space;
+    return m_left_coordinate_other_space;
 }
 void EditorLayout::restore_layout(){
     for(EditorSpace* s : m_main_space.get_spaces_ptr()){

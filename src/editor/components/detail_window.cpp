@@ -3,19 +3,19 @@
 #include "engine/renderer.h"
 #include "engine/window.h"
 #include "glm/geometric.hpp"
-#include "graph/camera.h"
+#include "system/graph/camera.h"
 #include "glm/ext/vector_float2.hpp"
-#include "graph/selection.h"
-#include "graph/viewport.h"
+#include "system/graph/selection.h"
+#include "system/graph/viewport.h"
 #include "imgui/imgui.h"
-#include "obj/abstract/movable.h"
-#include "obj/graph/manager.h"
+#include "system/obj/abstract/movable.h"
+#include "system/obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_server.h"
 #include "struct/shape/rect2.h"
-#include "obj/graph/base.h"
+#include "system/obj/graph/base.h"
 #include "theme/theme_loader.h"
 #include <cstddef>
 #include <cstring>
@@ -221,8 +221,8 @@ void EditorDetailsWindow::m_draw_fields(){
         f.raw_value = no_lb;
         f.raw_value.resize(std::strlen(f.raw_value.c_str()));
 
-        if(ImGui::IsItemHovered() && !this->is_dragging()){
-            EventServer::Ref()->block<EventLockedAll>();
+        if(ImGui::IsItemHovered()){
+            EventServer::Ref()->emit(EventLockedAll());
         }
     }
 

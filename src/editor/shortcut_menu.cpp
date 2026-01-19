@@ -1,7 +1,7 @@
 #include "editor/shortcut_menu.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "imgui/imgui.h"
-#include "obj/graph/manager.h"
+#include "system/obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"

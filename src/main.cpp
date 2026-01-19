@@ -1,6 +1,9 @@
 #include "DecToolsBox/container/ordered_map.h"
 #include "core/random_server.h"
 #include "editor/components/detail_window.h"
+#include "editor/components/left_coordinate.h"
+#include "editor/components/quick_text_display.h"
+#include "editor/components/up_coordinate.h"
 #include "editor/layout.h"
 #include "editor/shortcut_menu.h"
 #include "editor/space.h"
@@ -9,13 +12,13 @@
 #include "engine/renderer.h"
 #include "engine/texture_loader.h"
 #include "engine/window_resizer.h"
-#include "graph/background.h"
-#include "graph/camera.h"
-#include "graph/connection.h"
-#include "graph/grid.h"
-#include "graph/selection.h"
-#include "graph/viewport.h"
-#include "obj/graph/manager.h"
+#include "system/graph/background.h"
+#include "system/graph/camera.h"
+#include "system/graph/connection.h"
+#include "system/graph/grid.h"
+#include "system/graph/selection.h"
+#include "system/graph/viewport.h"
+#include "system/obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -83,6 +86,8 @@ int main(int argc, char* argv[]) {
         
         double delta = EngineWindow::Ref()->get_delta();
 
+        QuickTextDisplay::Ref()->pre_process();
+        
         GraphCamera::Ref()->update();
         TimerServer::Ref()->update(delta);
         ObjectServer::Ref()->clear_garbage();
@@ -113,6 +118,9 @@ int main(int argc, char* argv[]) {
         MouseServer::Ref()->update();
         EditorLayout::Ref()->ui_draw();
         EditorShortcutMenu::Ref()->update();
+        UpCoordinate::Ref()->process();
+        LeftCoordinate::Ref()->process();
+        QuickTextDisplay::Ref()->process();
 
         if(is_first_frame){
             GraphCamera::Ref()->refresh_left_top_buffer();

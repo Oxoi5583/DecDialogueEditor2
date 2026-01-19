@@ -33,6 +33,12 @@ private:
     EditorSpace* m_left_panel_space;
     EditorSpace* m_left_panel_other_space;
 
+    EditorSpace* m_up_coordinate_space;
+    EditorSpace* m_up_coordinate_other_space;
+    EditorSpace* m_left_coordinate_space;
+    EditorSpace* m_left_coordinate_other_space;
+    void m_left_coordinate_space_width_update();
+
     void m_init_objs();
 
     EditorMenuBar* m_menu_bar;
@@ -51,6 +57,8 @@ public:
     const double menu_bar_size = 30;
     const double tools_bar_size = 45;
 
+    EditorSpace* get_up_coordinate_space();
+    EditorSpace* get_left_coordinate_space();
     EditorSpace* get_world_space();
     void restore_layout();
 

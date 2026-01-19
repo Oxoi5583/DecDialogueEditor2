@@ -7,11 +7,11 @@
 #include "ext/debug/messenger_ext.h"
 #include "engine/input_key.h"
 #include "glm/common.hpp"
-#include "graph/camera.h"
+#include "system/graph/camera.h"
 
 #include "SDL3/SDL_events.h"
 #include "glm/ext/vector_float2.hpp"
-#include "graph/viewport.h"
+#include "system/graph/viewport.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "struct/shape/rect2.h"

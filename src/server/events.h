@@ -2,7 +2,7 @@
 
 #include "editor/layout.h"
 #include "glm/ext/vector_float2.hpp"
-#include "obj/graph/manager.h"
+#include "system/obj/graph/manager.h"
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"

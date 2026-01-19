@@ -3,12 +3,12 @@
 #include "SDL3/SDL_mouse.h"
 #include "engine/window.h"
 #include "engine/input_hub.h"
-#include "graph/viewport.h"
+#include "system/graph/viewport.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/object_server.h"
-#include "obj/abstract/hoverable.h"
-#include "obj/abstract/clickable.h"
+#include "system/obj/abstract/hoverable.h"
+#include "system/obj/abstract/clickable.h"
 
 MouseServer::MouseServer() {
     load_cursor();

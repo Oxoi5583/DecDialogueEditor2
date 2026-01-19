@@ -1,8 +1,10 @@
 #include "editor/components/tools_bar.h"
+#include "editor/components/popup_window.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "server/event_server.h"
 #include "server/events.h"
+#include "server/object_base.h"
 #include "server/object_server.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "ext/debug/messenger_ext.h"
@@ -10,6 +12,8 @@
 #include "engine/window.h"
 #include "imgui/imgui.h"
 #include "struct/shape/rect2.h"
+#include "system/graph/camera.h"
+#include "system/obj/graph/manager.h"
 
 EditorToolsBar::EditorToolsBar(){
     BIND_CLASS(EditorToolsBar);
@@ -34,8 +38,17 @@ void EditorToolsBar::pre_process(){
 
     ImGui::Begin("EditorToolsBar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
 
-    if(ImGui::Button("Test")){
-        DEBUG_MSG("TEST");
+    if(ImGui::Button("Back To Center")){
+        GraphCamera::Ref()->set_zoom(1.0f);
+        vec2 center_pos = vec2(0.0f,0.0f) + (GraphCamera::Ref()->get_zoomed_size() / 2.0f);
+        GraphCamera::Ref()->set_target(center_pos);
+    }
+
+    ImGui::SameLine();
+
+    if(ImGui::Button("Go To...")){
+        PopupWindow* window = ObjectServer::Ref()->queue_create<PopupWindow>();
+        window->add_option("test", [](){ DEBUG_MSG("TEST"); });
     }
 
     ImGui::End();

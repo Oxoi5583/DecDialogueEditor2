@@ -136,7 +136,6 @@ public:
     template<typename T>
     T* get_instance(OID p_id){
         if(!is_id_valid(p_id)){
-            ERROR_MSG("OID (" << p_id << ") is not valid.");
             return nullptr;
         }
         T* ret = dynamic_cast<T*>(m_id_to_instances[p_id]);

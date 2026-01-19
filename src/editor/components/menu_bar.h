@@ -3,7 +3,7 @@
 #include "core/timer_server.h"
 #include "editor/components/base.h"
 #include "editor/space.h"
-#include "obj/abstract/clickable.h"
+#include "system/obj/abstract/clickable.h"
 #include "struct/shape/rect2.h"
 
 class EditorMenuBar : public EditorComponentBase{
