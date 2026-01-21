@@ -16,7 +16,9 @@
 #include "ext/debug/messenger_ext.h"
 
 void UpCoordinate::m_draw_background(){
-    m_space = EditorLayout::Ref()->get_up_coordinate_space();
+    if(!m_is_freeze_mode){
+        return;
+    }
 
     ImVec4 bg_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
@@ -27,9 +29,6 @@ void UpCoordinate::m_draw_background(){
 
     vec2 window_size = EngineWindow::Ref()->get_window_size();
 
-    m_bg_left_top = m_space->get_left_top() + (window_size / 2.0f);
-    vec2 right_down = m_space->get_right_down() + (window_size / 2.0f);
-    m_bg_size = right_down - m_bg_left_top;
 
     ImGui::SetNextWindowPos({m_bg_left_top.x, m_bg_left_top.y});
     ImGui::SetNextWindowSize({m_bg_size.x ,m_bg_size.y});
@@ -43,11 +42,13 @@ void UpCoordinate::m_draw_background(){
 }
 #include <math.h>
 void UpCoordinate::m_draw_blocks(){
-    if(m_restore_time_fm_dragging_resizer_dlt < m_restore_time_fm_dragging_resizer){
+    if(m_is_freeze_mode){
         return;
     }
 
     vec2 cam_left_top = GraphCamera::Ref()->get_left_top_buffer();
+
+    vec2 leftest_pos = vec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 
     ImVec4 bg_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     ImVec4 text_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
@@ -89,12 +90,17 @@ void UpCoordinate::m_draw_blocks(){
             vec2 end_screen_pos = GraphViewport::Ref()->viewport_to_screen(end_viewport_pos);
 
             vec2 size = {end_screen_pos.x - start_screen_pos.x, height};
+            vec2 pos = {start_screen_pos.x,start_screen_pos.y - height};
             float line_len = (fmod((float)line.id, 5.0f) != 0) ? height * 0.4f : height * 0.8f;
             float line_width = (fmod((float)line.id, 5.0f) != 0) ? 2.0f : 2.5f;
 
-            ImGui::SetNextWindowSize(ImVec2(size.x, size.y)); 
-            ImGui::SetNextWindowPos({start_screen_pos.x,start_screen_pos.y - height});
-            ImGui::Begin(name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
+            if(pos.x < leftest_pos.x){
+                leftest_pos = pos;
+            }
+
+            ImGui::SetNextWindowSize({size.x, size.y}); 
+            ImGui::SetNextWindowPos({pos.x,pos.y});
+            ImGui::Begin(name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBringToFrontOnFocus);
             
                 ImVec2 window_pos = ImGui::GetWindowPos();
                 ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, window_pos.y + (height - line_len)), 
@@ -112,25 +118,57 @@ void UpCoordinate::m_draw_blocks(){
                 ImGui::SetCursorPos(ImVec2(5.0f, 0.0f));
                 ImGui::TextUnformatted(line.code.c_str());
             ImGui::End();
-            
-
 
             ImGui::PopStyleColor(3);
             ImGui::PopStyleVar();
         }
     }
+
+    ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 0.8f);
+    ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
+    ImGuiStyle& style = ImGui::GetStyle();
+    float original_item_spacing_y = style.ItemSpacing.y;
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, original_item_spacing_y));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, bg_color);
+    ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+    ImGui::PushStyleColor(ImGuiCol_Text, applied_text_color);
+    vec2 pos = {m_bg_left_top.x, m_bg_left_top.y};
+    vec2 size = {leftest_pos.x - m_bg_left_top.x, m_bg_size.y};
+    ImGui::SetNextWindowSize({size.x, size.y});
+    ImGui::SetNextWindowPos({pos.x, pos.y});
+    ImGui::Begin("##UP_COORDINATE_OTHER_SPACE", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::End();
+    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar();
+
+
     io.FontGlobalScale = 1.0f;
 }
 
 void UpCoordinate::process(){
+    vec2 window_size = EngineWindow::Ref()->get_window_size();
+    m_space = EditorLayout::Ref()->get_up_coordinate_space();
+    vec2 right_down = m_space->get_right_down() + (window_size / 2.0f);
     m_mouse_pos = MouseServer::Ref()->get_mouse_screen_position();
+    m_bg_left_top = m_space->get_left_top() + (window_size / 2.0f);
+    m_bg_size = right_down - m_bg_left_top;
+
+    if(m_restore_time_fm_dragging_resizer_dlt < m_restore_time_fm_dragging_resizer){
+        m_is_freeze_mode = true;
+    }else{
+        m_is_freeze_mode = false;
+    }
 
     if(EventServer::Ref()->has<EventEditorSpaceResizerDragging>()){
-        m_restore_time_fm_dragging_resizer_dlt = 0.0f;
+        freeze();
     }else{
         m_restore_time_fm_dragging_resizer_dlt += EngineWindow::Ref()->get_delta();
     }
 
-    m_draw_background();
     m_draw_blocks();
+    m_draw_background();
+}
+
+void UpCoordinate::freeze(){
+    m_restore_time_fm_dragging_resizer_dlt = 0.0f;
 }

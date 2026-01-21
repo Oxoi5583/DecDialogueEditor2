@@ -20,11 +20,13 @@ private:
     double m_restore_time_fm_dragging_resizer = TimeUnit(TimeUnit::Type::SECOND, 0.5f).get_delta();
     double m_restore_time_fm_dragging_resizer_dlt = TimeUnit(TimeUnit::Type::SECOND, 0.5f).get_delta();
 
+    bool m_is_freeze_mode = false;
 public:
     LeftCoordinate() = default;
     ~LeftCoordinate() = default;
 
     void process();
+    void freeze();
 
     float width = 15;
 };

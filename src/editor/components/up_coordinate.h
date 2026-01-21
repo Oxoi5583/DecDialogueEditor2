@@ -16,6 +16,8 @@ private:
     void m_draw_background();
     void m_draw_blocks();
 
+    bool m_is_freeze_mode = false;
+
     double m_restore_time_fm_dragging_resizer = TimeUnit(TimeUnit::Type::SECOND, 0.5f).get_delta();
     double m_restore_time_fm_dragging_resizer_dlt = TimeUnit(TimeUnit::Type::SECOND, 0.5f).get_delta();
 public:
@@ -23,6 +25,7 @@ public:
     ~UpCoordinate() = default;
 
     void process();
+    void freeze();
 
     const float height = 15;
 };

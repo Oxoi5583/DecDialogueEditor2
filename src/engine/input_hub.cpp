@@ -1,6 +1,8 @@
 #include "engine/input_hub.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "SDL3/SDL_oldnames.h"
+#include "editor/components/left_coordinate.h"
+#include "editor/components/up_coordinate.h"
 #include "editor/layout.h"
 #include "engine/renderer.h"
 #include "engine/window.h"
@@ -18,6 +20,8 @@
 
 #include "imgui/backends/imgui_impl_sdl3.h"
 #include <unordered_set>
+
+#include "editor/components/popup_window.h"
 
 void EngineInputHub::init(){
     SDL_CaptureMouse(true);
@@ -54,6 +58,11 @@ void EngineInputHub::polling_sdl_event(){
                 GraphViewport::Ref()->update();
                 EngineRenderer::Ref()->refresh_buffer();
                 
+                PopupWindowManager::Ref()->restore_all_pos();
+
+                UpCoordinate::Ref()->freeze();
+                LeftCoordinate::Ref()->freeze();
+
                 EventWindowResized event;
                 event.new_size = EngineWindow::Ref()->get_window_size();
                 EventServer::Ref()->emit(event);

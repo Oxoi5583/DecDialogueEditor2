@@ -1,5 +1,5 @@
 #include "system/graph/connection.h"
-#include "DecToolsBox/struct/condition.h"
+#include "DecToolsBox/core/condition.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "system/obj/abstract/movable.h"
 #include "system/obj/graph/connection_line.h"

@@ -37,6 +37,9 @@ private:
     std::map<float,GraphGridLine> m_horizontal_lines;
     void m_create_grid();
 
+    std::map<std::string, float> m_vertical_pos;
+    std::map<std::string, float> m_horizontal_pos;
+
     std::vector<GraphGridLine> m_shown_lines_buf;
 public:
     GraphGrid();
@@ -50,4 +53,7 @@ public:
     const double grid_interval = 25;
     const uint32_t grid_columns = 5000;
     const uint32_t grid_rows = 5000;
+
+    bool is_id_exists(std::string p_x, std::string p_y);
+    vec2 get_pos(std::string p_x, std::string p_y);
 };

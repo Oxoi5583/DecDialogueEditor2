@@ -1,7 +1,7 @@
 #include "DecToolsBox/container/ordered_map.h"
-#include "core/random_server.h"
 #include "editor/components/detail_window.h"
 #include "editor/components/left_coordinate.h"
+#include "editor/components/messager.h"
 #include "editor/components/quick_text_display.h"
 #include "editor/components/up_coordinate.h"
 #include "editor/layout.h"
@@ -48,7 +48,7 @@
 #include "config/config_loader.h"
 #include "core/timer_server.h"
 
-#include "DecToolsBox/struct/condition.h"
+#include "DecToolsBox/core/condition.h"
 
 
 
@@ -121,6 +121,8 @@ int main(int argc, char* argv[]) {
         UpCoordinate::Ref()->process();
         LeftCoordinate::Ref()->process();
         QuickTextDisplay::Ref()->process();
+        EditorMessager::Ref()->process();
+        EditorMessager::Ref()->draw();
 
         if(is_first_frame){
             GraphCamera::Ref()->refresh_left_top_buffer();

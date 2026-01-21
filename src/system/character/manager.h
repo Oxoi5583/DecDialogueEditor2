@@ -1,7 +1,7 @@
 #pragma once
 #include "system/character/character.h"
 #include "DecToolsBox/abstract./singleton.h"
-#include "DecToolsBox/struct/random_code.h"
+#include "DecToolsBox/core/random_code.h"
 #include <map>
 
 class CharacterManager : public Singleton<CharacterManager> {

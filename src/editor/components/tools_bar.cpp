@@ -1,4 +1,5 @@
 #include "editor/components/tools_bar.h"
+#include "editor/components/messager.h"
 #include "editor/components/popup_window.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
@@ -13,7 +14,10 @@
 #include "imgui/imgui.h"
 #include "struct/shape/rect2.h"
 #include "system/graph/camera.h"
+#include "system/graph/grid.h"
 #include "system/obj/graph/manager.h"
+#include <sstream>
+#include <string>
 
 EditorToolsBar::EditorToolsBar(){
     BIND_CLASS(EditorToolsBar);
@@ -36,7 +40,7 @@ void EditorToolsBar::pre_process(){
     ImGui::SetNextWindowSize({window_rect.get_size().x, window_rect.get_size().y});
     ImGui::SetNextWindowPos({window_rect.get_left_top().x, window_rect.get_left_top().y});
 
-    ImGui::Begin("EditorToolsBar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+    ImGui::Begin("EditorToolsBar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
     if(ImGui::Button("Back To Center")){
         GraphCamera::Ref()->set_zoom(1.0f);
@@ -46,9 +50,42 @@ void EditorToolsBar::pre_process(){
 
     ImGui::SameLine();
 
-    if(ImGui::Button("Go To...")){
+    ImGui::Button("Go To...");
+    if(ImGui::IsItemClicked()){
+        if(PopupWindowManager::Ref()->is_window_exists(m_go_to_window.uid)){
+            m_go_to_window.ptr->close();
+        }
+
         PopupWindow* window = ObjectServer::Ref()->queue_create<PopupWindow>();
-        window->add_option("test", [](){ DEBUG_MSG("TEST"); });
+        
+        m_go_to_window.ptr = window;
+        m_go_to_window.uid = window->get_uid();
+
+        window->set_content("Please enter the target block id :\nExample : #AA, 10");
+
+        window->add_input("X :", PopupWindow::InputType::STRING);
+        window->add_input("Y :", PopupWindow::InputType::STRING);
+
+        window->add_option("Go", [window](){
+            std::string x = window->get_input_string(0);
+            std::string y = window->get_input_string(1);
+            if(GraphGrid::Ref()->is_id_exists(x, y)){
+                GraphCamera::Ref()->set_zoom(1.0f);
+                vec2 go_to_pos = GraphGrid::Ref()->get_pos(x, y) + (GraphCamera::Ref()->get_zoomed_size() / 2.0f);
+                GraphCamera::Ref()->set_target(go_to_pos);
+                window->close();
+            }else{
+                std::string msg = "Entered Id was not exists. ";
+                if(x.size() > 0 && y.size() > 0){
+                    msg += "(";
+                    msg += x.c_str();
+                    msg += ", ";
+                    msg += y.c_str();
+                    msg += ")";
+                }
+                EditorMessager::Ref()->add_message(msg);
+            }
+        });
     }
 
     ImGui::End();

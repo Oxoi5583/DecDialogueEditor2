@@ -1,5 +1,5 @@
 #include "editor/components/left_panel.h"
-#include "DecToolsBox/struct/roman_numeral.h"
+#include "DecToolsBox/core/roman_numeral.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "engine/input_hub.h"
@@ -51,7 +51,7 @@ void EditorLeftPanel::pre_process(){
 
         //ImGui::SetNextWindowFocus();
 
-        ImGui::Begin("EditorLeftPanel", &m_is_displaying, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
+        ImGui::Begin("EditorLeftPanel", &m_is_displaying, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
         
         if (ImGui::BeginTabBar("TabBar")){
             m_update_inpector();

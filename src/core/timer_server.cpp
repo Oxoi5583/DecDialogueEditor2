@@ -1,7 +1,9 @@
 #include "core/timer_server.h"
 
+#include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "core/random_server.h"
+#include "DecToolsBox/server/random_server.h"
+#include <cstring>
 #include <vector>
 #include <math.h>
 #include <algorithm>
@@ -106,10 +108,8 @@ bool TimerId::operator ==(const std::string& other) const{
 }
 
 TimerId::TimerId(){
-    for (size_t i = 0; i < 12; i++){
-        id[i] = RandomServer::Ref()->new_random_char();
-    }
-    id[12] = '\0';
+    std::string new_id = RandomCode(12).get() + '\0';
+    memcpy(id, new_id.c_str(), new_id.size());
 }
 
 TimeUnit::TimeUnit(const TimeUnit& other)

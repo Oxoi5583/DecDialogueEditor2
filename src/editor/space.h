@@ -3,7 +3,7 @@
 #include "glm/ext/vector_float2.hpp"
 #include "core/timer_server.h"
 #include "struct/shape/rect2.h"
-#include "DecToolsBox/struct/range.h"
+#include "DecToolsBox/core/range.h"
 #include <array>
 #include <cstddef>
 #include <queue>

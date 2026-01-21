@@ -12,12 +12,15 @@
 #include "ext/debug/messenger_ext.h"
 #include "system/graph/viewport.h"
 #include "theme/theme_loader.h"
+#include <limits>
 #include <string>
 
 #include "ext/debug/messenger_ext.h"
 
 void LeftCoordinate::m_draw_background(){
-    m_space = EditorLayout::Ref()->get_left_coordinate_space();
+    if(!m_is_freeze_mode){
+        return;
+    }
 
     ImVec4 bg_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
@@ -25,12 +28,6 @@ void LeftCoordinate::m_draw_background(){
     ImGui::PushStyleColor(ImGuiCol_Border, border_color);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-
-    vec2 window_size = EngineWindow::Ref()->get_window_size();
-
-    m_bg_left_top = m_space->get_left_top() + (window_size / 2.0f);
-    vec2 right_down = m_space->get_right_down() + (window_size / 2.0f);
-    m_bg_size = right_down - m_bg_left_top;
 
     ImGui::SetNextWindowPos({m_bg_left_top.x, m_bg_left_top.y});
     ImGui::SetNextWindowSize({m_bg_size.x ,m_bg_size.y});
@@ -44,9 +41,11 @@ void LeftCoordinate::m_draw_background(){
 }
 #include <math.h>
 void LeftCoordinate::m_draw_blocks(){
-    if(m_restore_time_fm_dragging_resizer_dlt < m_restore_time_fm_dragging_resizer){
+    if(m_is_freeze_mode){
         return;
     }
+
+    vec2 highest_pos = vec2(std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
 
     float max_width = 0.0f;
 
@@ -61,8 +60,7 @@ void LeftCoordinate::m_draw_blocks(){
 
     for(auto line : lines){
         if(line.type == GraphGridLine::HORIZONTAL){
-            float applied_width = m_bg_size.x
-            ;
+            float applied_width = m_bg_size.x;
             ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 0.8f);
             ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
             if(fmod((float)line.id, 5.0f) != 0){
@@ -92,13 +90,21 @@ void LeftCoordinate::m_draw_blocks(){
             vec2 end_world_pos = start_world_pos + vec2(0.0f, GraphGrid::Ref()->grid_interval);
             vec2 end_viewport_pos = GraphCamera::Ref()->world_to_viewport(end_world_pos);
             vec2 end_screen_pos = GraphViewport::Ref()->viewport_to_screen(end_viewport_pos);
+            
+            vec2 block_size = {m_bg_size.x, end_screen_pos.y - start_screen_pos.y};
+            vec2 block_pos = {m_bg_left_top.x,start_screen_pos.y};
+            if(block_pos.y <= highest_pos.y){
+                highest_pos = block_pos;
+            }
 
             float line_len = (fmod((float)line.id, 5.0f) != 0) ? applied_width * 0.4f : applied_width * 0.8f;
             float line_width = (fmod((float)line.id, 5.0f) != 0) ? 2.0f : 2.5f;
 
-            ImGui::SetNextWindowSize({m_bg_size.x, end_screen_pos.y - start_screen_pos.y}); 
-            ImGui::SetNextWindowPos({m_bg_left_top.x,start_screen_pos.y});
-            ImGui::Begin(name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs);
+            ImGui::SetNextWindowSize({block_size.x, block_size.y}); 
+            ImGui::SetNextWindowPos({block_pos.x,block_pos.y});
+
+
+            ImGui::Begin(name.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBringToFrontOnFocus);
                 ImVec2 window_pos = ImGui::GetWindowPos();
                 ImGui::SetCursorPos(ImVec2(5.0f, 0.0f));
                 ImGui::TextUnformatted(line.code.c_str());
@@ -131,19 +137,52 @@ void LeftCoordinate::m_draw_blocks(){
         }
     }
 
+    ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 0.8f);
+    ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
+    ImGuiStyle& style = ImGui::GetStyle();
+    float original_item_spacing_y = style.ItemSpacing.y;
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, original_item_spacing_y));
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, bg_color);
+    ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+    ImGui::PushStyleColor(ImGuiCol_Text, applied_text_color);
+    vec2 pos = {m_bg_left_top.x, m_bg_left_top.y};
+    vec2 size = {m_bg_size.x,highest_pos.y - m_bg_left_top.y};
+    ImGui::SetNextWindowSize({size.x, size.y});
+    ImGui::SetNextWindowPos({pos.x, pos.y});
+    ImGui::Begin("##LEFT_COORDINATE_OTHER_SPACE", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoBringToFrontOnFocus);
+    ImGui::End();
+    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar();
+
+
     width = (max_width <= 20) ? 20.0f : max_width + 7.0f;
     io.FontGlobalScale = 1.0f;
 }
 
 void LeftCoordinate::process(){
     m_mouse_pos = MouseServer::Ref()->get_mouse_screen_position();
+    vec2 window_size = EngineWindow::Ref()->get_window_size();
+    m_space = EditorLayout::Ref()->get_left_coordinate_space();
+    m_bg_left_top = m_space->get_left_top() + (window_size / 2.0f);
+    vec2 right_down = m_space->get_right_down() + (window_size / 2.0f);
+    m_bg_size = right_down - m_bg_left_top;
+
+    if(m_restore_time_fm_dragging_resizer_dlt < m_restore_time_fm_dragging_resizer){
+        m_is_freeze_mode = true;
+    }else{
+        m_is_freeze_mode = false;
+    }
 
     if(EventServer::Ref()->has<EventEditorSpaceResizerDragging>()){
-        m_restore_time_fm_dragging_resizer_dlt = 0.0f;
+        freeze();
     }else{
         m_restore_time_fm_dragging_resizer_dlt += EngineWindow::Ref()->get_delta();
     }
 
-    m_draw_background();
     m_draw_blocks();
+    m_draw_background();
+}
+
+void LeftCoordinate::freeze(){
+    m_restore_time_fm_dragging_resizer_dlt = 0.0f;
 }
