@@ -5,6 +5,7 @@
 #include "engine/window.h"
 #include "server/object_server.h"
 #include "theme/theme_loader.h"
+#include <string>
 
 GraphNode::GraphNode(){
     BIND_CLASS(GraphNode);

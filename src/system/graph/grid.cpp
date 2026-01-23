@@ -124,6 +124,10 @@ void GraphGrid::m_create_grid(){
         vec2 start = {round(fm_line_x),round(fm_line_y)};
         vec2 end = {round(to_line_x),round(to_line_y)};
 
+        if(line_id == "0"){
+            width *= 2.5f;
+        }
+
         GraphGridLine line = {GraphGridLine::Type::HORIZONTAL, line_id, y, is_skippable, width, start, end,is_negative};
         m_horizontal_pos.emplace(line_id, start.y);
         m_horizontal_lines.emplace(fm_line_y,line);
@@ -151,8 +155,8 @@ void GraphGrid::m_create_grid(){
         vec2 start = {round(fm_line_x),round(fm_line_y)};
         vec2 end = {round(to_line_x),round(to_line_y)};
 
-        if(line_id.ends_with("ZZ")){
-            DEBUG_MSG("line_id : " << line_id);
+        if(line_id == "A"){
+            width *= 2.5f;
         }
 
         GraphGridLine line = {GraphGridLine::Type::VERTICLE, line_id, x, is_skippable, width, start, end,is_negative};

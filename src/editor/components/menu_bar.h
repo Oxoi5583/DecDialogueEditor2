@@ -19,6 +19,7 @@ private:
     void m_update_menu_file();
     void m_update_menu_edit();
     void m_update_menu_themes();
+    void m_update_menu_language();
     void m_update_maximize_button();
     void m_update_minimize_button();
     void m_update_close_button();

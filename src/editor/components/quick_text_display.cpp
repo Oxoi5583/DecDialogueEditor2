@@ -22,7 +22,7 @@ void QuickTextDisplay::process(){
         pos += vec2(5.0f, 5.0f);
         ImGui::SetNextWindowPos({pos.x,pos.y});
 
-        ImGui::Begin("Quick Text Display", &m_is_shown, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+        ImGui::Begin("Quick Text Display", &m_is_shown, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoInputs);
 
 
         std::string display_text = "";

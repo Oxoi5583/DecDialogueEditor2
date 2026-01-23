@@ -1,4 +1,5 @@
 #include "DecToolsBox/container/ordered_map.h"
+#include "core/ui_text_bank.h"
 #include "editor/components/detail_window.h"
 #include "editor/components/left_coordinate.h"
 #include "editor/components/messager.h"
@@ -53,16 +54,17 @@
 
 
 int main(int argc, char* argv[]) {
+    GraphGrid::Ref()->init();
+    
     ThemeLoader::Ref()->load();
     ConfigLoader::Ref()->load();
 
     EngineWindow::Ref()->init();
     EngineRenderer::Ref()->init();
     EngineTextureLoader::Ref()->init();
-    EngineFontLoader::Ref()->init();
     EngineInputHub::Ref()->init();
+    EngineFontLoader::Ref()->init();
 
-    GraphGrid::Ref()->init();
     GraphCamera::Ref()->init();
     GraphViewport::Ref()->init();
     GraphBackground::Ref()->init();
@@ -76,13 +78,19 @@ int main(int argc, char* argv[]) {
     
     EditorLayout::Ref()->ui_init();
 
-    bool is_first_frame = true;
+    UiTextBank::Ref()->init();
+
+    unsigned long long frame = 0;
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
 
         EngineWindow::Ref()->begin();
         EngineRenderer::Ref()->clear_draw_list();
+        
+        if(frame == 0){
+            EditorMessager::Ref()->init();
+        }
         
         double delta = EngineWindow::Ref()->get_delta();
 
@@ -98,6 +106,7 @@ int main(int argc, char* argv[]) {
         GraphManager::Ref()->update();
         EditorLayout::Ref()->ui_update();
         EngineWindowResizer::Ref()->update();
+        EditorMessager::Ref()->process();
 
         GraphGrid::Ref()->draw();
 
@@ -121,18 +130,18 @@ int main(int argc, char* argv[]) {
         UpCoordinate::Ref()->process();
         LeftCoordinate::Ref()->process();
         QuickTextDisplay::Ref()->process();
-        EditorMessager::Ref()->process();
         EditorMessager::Ref()->draw();
 
-        if(is_first_frame){
+        if(frame == 0){
             GraphCamera::Ref()->refresh_left_top_buffer();
-            is_first_frame = false;
         }
 
         EventServer::Ref()->flush();
 
         EngineRenderer::Ref()->render();
         EngineWindow::Ref()->end();
+        
+        frame++;
     }
 
     EngineRenderer::Ref()->destory_all();

@@ -1,5 +1,7 @@
 #include "menu_bar.h"
 #include "config/config_loader.h"
+#include "core/ui_icon_unicode.h"
+#include "core/ui_text_bank.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "server/event_server.h"
@@ -32,6 +34,7 @@ void EditorMenuBar::pre_process(){
     m_update_menu_file();
     //m_update_menu_edit();
     m_update_menu_themes();
+    m_update_menu_language();
     m_update_maximize_button();
     m_update_minimize_button();
     m_update_close_button();
@@ -72,9 +75,27 @@ void EditorMenuBar::m_begin_main_bar(){
     ImGui::BeginMainMenuBar();
 }
 void EditorMenuBar::m_update_menu_file(){
-    if (ImGui::BeginMenu("File")){
-        ImGui::MenuItem("New");
-        ImGui::MenuItem("Open");
+    if (ImGui::BeginMenu(UiTextBank::Ref()->File)){
+        ImGui::MenuItem(UiTextBank::Ref()->New);
+        ImGui::MenuItem(UiTextBank::Ref()->Open);
+        ImGui::EndMenu();
+    }
+    if (ImGui::IsItemHovered()) {
+        is_hover_any = true;
+    }
+}
+void EditorMenuBar::m_update_menu_language(){
+    if (ImGui::BeginMenu(UiTextBank::Ref()->Language)){
+        for(auto locale : UiTextBank::Ref()->all_locales){
+            ImGui::PushFont(EngineFontLoader::Ref()->get(locale->get_font_id().middle));
+
+            ImGui::MenuItem(locale->get_name());
+            if(ImGui::IsItemClicked()){
+                UiTextBank::Ref()->set_locale(locale->get_id());
+            }
+
+            ImGui::PopFont();
+        }
         ImGui::EndMenu();
     }
     if (ImGui::IsItemHovered()) {
@@ -82,9 +103,9 @@ void EditorMenuBar::m_update_menu_file(){
     }
 }
 void EditorMenuBar::m_update_menu_edit(){
-    if (ImGui::BeginMenu("Edit")){
-        ImGui::MenuItem("Cut");
-        ImGui::MenuItem("Copy");
+    if (ImGui::BeginMenu(UiTextBank::Ref()->Edit)){
+        ImGui::MenuItem(UiTextBank::Ref()->Cut);
+        ImGui::MenuItem(UiTextBank::Ref()->Copy);
         ImGui::EndMenu();
     }
     if (ImGui::IsItemHovered()) {
@@ -95,7 +116,7 @@ void EditorMenuBar::m_update_menu_themes(){
     std::string current_theme;
     ConfigLoader::Ref()->get_config("UsingTheme", current_theme);
 
-    if (ImGui::BeginMenu("Themes")){
+    if (ImGui::BeginMenu(UiTextBank::Ref()->Themes)){
         auto themes = ThemeLoader::Ref()->get_themes();
         for(auto theme : themes){
             if(current_theme == theme){
@@ -127,7 +148,7 @@ void EditorMenuBar::m_update_menu_themes(){
     }
 }
 void EditorMenuBar::m_update_minimize_button(){
-    std::string name = "-";
+    std::string name = ICON_WIN_MINIMIZE;
 
     ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
@@ -159,10 +180,10 @@ void EditorMenuBar::m_update_minimize_button(){
     ImGui::PopFont();
 }
 void EditorMenuBar::m_update_maximize_button(){
-    std::string name = "+";
+    std::string name = ICON_WIN_MAXIMIZE;
 
     if(EngineWindow::Ref()->is_maximized()){
-        name = "=";
+        name = ICON_WIN_RESTORE;
     }
 
     ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
@@ -200,7 +221,7 @@ void EditorMenuBar::m_update_maximize_button(){
     ImGui::PopFont();
 }
 void EditorMenuBar::m_update_close_button(){
-    std::string name = "x";
+    std::string name = ICON_WIN_CLOSE;
 
     ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;

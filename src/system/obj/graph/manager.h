@@ -29,6 +29,7 @@ public:
         NodeType type;
         std::string name;
         bool is_selected;
+        bool is_expanded;
         std::vector<std::string> signals;
         std::vector<OID> direct_children;
     };

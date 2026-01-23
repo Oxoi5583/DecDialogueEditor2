@@ -370,6 +370,14 @@ std::set<OID> GraphBase::get_parent_set(bool is_pass_repeater, bool is_all){
     return ret;
 }
 
+std::vector<OID> GraphBase::get_children_direct(){
+    std::vector<OID> ret;
+    for(auto id : m_children){
+        ret.push_back(id);
+    }
+    return ret;
+}
+
 void GraphBase::set_name(std::string p_name){
     p_name = GraphManager::Ref()->new_name_if_duplicated(get_id(),p_name);
     m_properties["Unique Id"].value = p_name;
@@ -556,4 +564,14 @@ std::string GraphBase::get_property(std::string p_name){
         return "";
     }
     return m_properties[p_name].value;
+}
+
+bool GraphBase::is_expanded(){
+    return m_is_expanded;
+}
+void GraphBase::expand_on_list(){
+    m_is_expanded = true;
+}
+void GraphBase::collapse_on_list(){
+    m_is_expanded = false;
 }

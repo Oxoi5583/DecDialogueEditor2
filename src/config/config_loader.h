@@ -14,7 +14,8 @@ private:
     const char* m_setting_path = "config/setting.json";
     json m_setting_data;
     std::vector<std::string> m_setting_keys = {
-        "UsingTheme"
+        "UsingTheme",
+        "UsingLocale",
     };
 
     bool m_is_first_load = true;

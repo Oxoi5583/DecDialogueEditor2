@@ -1,4 +1,5 @@
 #include "editor/components/tools_bar.h"
+#include "core/ui_text_bank.h"
 #include "editor/components/messager.h"
 #include "editor/components/popup_window.h"
 #include "editor/layout.h"
@@ -31,6 +32,7 @@ EditorToolsBar::~EditorToolsBar(){
 void EditorToolsBar::ready(){
     this->disable_cursor_change();
     this->set_hovering_type(Type::SCREEN);
+
 }
 void EditorToolsBar::pre_process(){
     m_update_shape();
@@ -42,7 +44,7 @@ void EditorToolsBar::pre_process(){
 
     ImGui::Begin("EditorToolsBar", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-    if(ImGui::Button("Back To Center")){
+    if(ImGui::Button(UiTextBank::Ref()->BackToCenter)){
         GraphCamera::Ref()->set_zoom(1.0f);
         vec2 center_pos = vec2(0.0f,0.0f) + (GraphCamera::Ref()->get_zoomed_size() / 2.0f);
         GraphCamera::Ref()->set_target(center_pos);
@@ -50,7 +52,7 @@ void EditorToolsBar::pre_process(){
 
     ImGui::SameLine();
 
-    ImGui::Button("Go To...");
+    ImGui::Button(UiTextBank::Ref()->GoTo);
     if(ImGui::IsItemClicked()){
         if(PopupWindowManager::Ref()->is_window_exists(m_go_to_window.uid)){
             m_go_to_window.ptr->close();
@@ -61,12 +63,12 @@ void EditorToolsBar::pre_process(){
         m_go_to_window.ptr = window;
         m_go_to_window.uid = window->get_uid();
 
-        window->set_content("Please enter the target block id :\nExample : #AA, 10");
+        window->set_content(UiTextBank::Ref()->GoToContent);
 
         window->add_input("X :", PopupWindow::InputType::STRING);
         window->add_input("Y :", PopupWindow::InputType::STRING);
 
-        window->add_option("Go", [window](){
+        window->add_option(UiTextBank::Ref()->Go, [window](){
             std::string x = window->get_input_string(0);
             std::string y = window->get_input_string(1);
             if(GraphGrid::Ref()->is_id_exists(x, y)){
@@ -75,7 +77,7 @@ void EditorToolsBar::pre_process(){
                 GraphCamera::Ref()->set_target(go_to_pos);
                 window->close();
             }else{
-                std::string msg = "Entered Id was not exists. ";
+                std::string msg = UiTextBank::Ref()->GoToNotExistsError;
                 if(x.size() > 0 && y.size() > 0){
                     msg += "(";
                     msg += x.c_str();

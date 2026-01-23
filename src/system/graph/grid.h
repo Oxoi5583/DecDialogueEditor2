@@ -51,8 +51,8 @@ public:
     void draw();
 
     const double grid_interval = 25;
-    const uint32_t grid_columns = 5000;
-    const uint32_t grid_rows = 5000;
+    const uint32_t grid_columns = 50000;
+    const uint32_t grid_rows = 50000;
 
     bool is_id_exists(std::string p_x, std::string p_y);
     vec2 get_pos(std::string p_x, std::string p_y);

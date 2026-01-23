@@ -74,8 +74,9 @@ GraphManager::NodeInfo GraphManager::m_create_info(GraphBase* m_ptr){
     info.type = m_ptr->get_type();
     info.name = m_ptr->get_name();
     info.is_selected = m_ptr->is_selected();
+    info.is_expanded = m_ptr->is_expanded();
     info.signals = m_ptr->get_signals();
-    info.direct_children = m_ptr->get_children();
+    info.direct_children = m_ptr->get_children_direct();
 
     return info;
 }
@@ -258,22 +259,22 @@ std::string GraphManager::get_default_name(NodeType p_type){
     std::string new_name;
     switch (p_type) {
         case BASE:
-            new_name = "Base";
+            new_name = "New Base";
             break;
         case ENTRY:
-            new_name = "Entry";
+            new_name = "New Entry";
             break;
         case NODE:
-            new_name = "Node";
+            new_name = "New Node";
             break;
         case OPTION:
-            new_name = "Option";
+            new_name = "New Option";
             break;
         case REPEATER:
-            new_name = "Repeater";
+            new_name = "New Repeater";
             break;
         default:
-            new_name = "Unknown";
+            new_name = "New Unknown";
             break;
     }
 
@@ -285,6 +286,7 @@ void GraphManager::notify_name_removed(std::string p_name){
         m_exists_names.erase(p_name);
     }
 }
+
 void GraphManager::notify_name_added(OID p_id, std::string p_name){
     if(!m_exists_names.contains(p_name)){
         m_exists_names.emplace(p_name, p_id);

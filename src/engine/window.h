@@ -31,6 +31,8 @@ private:
     const char* m_main_window_title;
     const char* m_glsl_version = "#version 420 core";
 
+    unsigned long long m_frame = 0;
+
     vec4 m_clear_color = ThemeLoader::Ref()->get_color("BrandColour");
 
     bool m_is_running = true;
@@ -147,4 +149,6 @@ public:
     void move_down(double p_y);
 
     void refresh();
+
+    unsigned long long get_frame();
 };

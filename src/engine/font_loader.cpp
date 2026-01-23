@@ -1,6 +1,7 @@
 #include "engine/font_loader.h"
 
 #include "DecToolsBox/debug/messenger.h"
+#include "core/ui_text_bank.h"
 #include "imgui/imgui.h"
 
 
@@ -26,14 +27,39 @@ void EngineFontLoader::init(){
 }
 
 bool EngineFontLoader::m_load_fonts(){
+    ImGuiIO& io = ImGui::GetIO();
+    ImFontGlyphRangesBuilder builder;
+    static const ImWchar ranges[] = {
+        0x25A0, 0x25FF,
+    };
+    builder.AddRanges(io.Fonts->GetGlyphRangesDefault());
+    builder.AddRanges(io.Fonts->GetGlyphRangesChineseFull());
+    builder.AddRanges(io.Fonts->GetGlyphRangesJapanese());
+    builder.AddRanges(io.Fonts->GetGlyphRangesKorean());
+    builder.AddRanges(io.Fonts->GetGlyphRangesCyrillic());
+    builder.AddRanges(io.Fonts->GetGlyphRangesThai());
+    builder.AddRanges(io.Fonts->GetGlyphRangesVietnamese());
+    builder.AddRanges(ranges);
+    ImVector<ImWchar> unified_ranges;
+    builder.BuildRanges(&unified_ranges);
+
     auto buffer = std::move(m_fonts);
 
     int error_found = 0;
-
-    ImGuiIO& io = ImGui::GetIO();
-    io.Fonts->AddFontDefault();
+    
     for(auto font : m_fonts_data){
-        ImFont* ptr = io.Fonts->AddFontFromFileTTF(font.file_name.c_str(), font.size);
+        ImFontConfig cfg;
+        cfg.RasterizerMultiply = 1.8f;
+        cfg.OversampleH = 2;
+        cfg.OversampleV = 2;
+        cfg.SizePixels = font.size;
+        ImFont* ptr = io.Fonts->AddFontFromFileTTF(font.file_name.c_str(), font.size, &cfg, unified_ranges.Data);
+        const void * address = static_cast<const void*>(ptr);
+        std::stringstream ss;
+        ss << address;  
+        std::string name = ss.str(); 
+
+        INFO_MSG("Loading " << font.font_id << " : " << font.file_name << " (" << font.size << ") to " << name);
         if(!ptr){
             error_found++;
             continue;
@@ -41,6 +67,7 @@ bool EngineFontLoader::m_load_fonts(){
 
         m_fonts.emplace(font.font_id, ptr);
     }
+    io.Fonts->Build();
 
     if(error_found > 0){
         for(auto font : m_fonts){
@@ -54,6 +81,7 @@ bool EngineFontLoader::m_load_fonts(){
         }
         return true;
     }
+
 }
 
 ImFont* EngineFontLoader::get(FontId p_id){

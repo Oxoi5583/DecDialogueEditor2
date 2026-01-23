@@ -167,6 +167,7 @@ void UpCoordinate::process(){
 
     m_draw_blocks();
     m_draw_background();
+    ImGui::GetIO().FontGlobalScale = 1.0f;
 }
 
 void UpCoordinate::freeze(){

@@ -89,6 +89,7 @@ PopupWindow::~PopupWindow(){
 void PopupWindow::ready(){
 }
 void PopupWindow::pre_process(){
+    ObjectServer::Ref()->move_to_front(this->get_id());
     m_pop_window_process();
 }
 void PopupWindow::process(){
@@ -205,6 +206,19 @@ void PopupWindow::m_inputs_process(){
             }
         }
 
+        if(ImGui::IsItemHovered()){
+            {
+                EventMouseHoverObj event;
+                event.hovering_pos = MouseServer::Ref()->get_mouse_screen_position();
+                event.is_pointer_cursor = false;
+                event.obj_id = this->get_id();
+                EventServer::Ref()->emit(event);
+            }
+            {
+                EventLockedAll event;
+                EventServer::Ref()->emit(event);
+            }
+        }
         one_input_height = ImGui::GetItemRectSize().y;
 
         i++;
@@ -226,6 +240,19 @@ void PopupWindow::m_buttons_process(){
         if(ImGui::IsItemClicked()){
             it.action();
         }
+        if(ImGui::IsItemHovered()){
+            {
+                EventMouseHoverObj event;
+                event.hovering_pos = MouseServer::Ref()->get_mouse_screen_position();
+                event.is_pointer_cursor = false;
+                event.obj_id = this->get_id();
+                EventServer::Ref()->emit(event);
+            }
+            {
+                EventLockedAll event;
+                EventServer::Ref()->emit(event);
+            }
+        }
 
         i++;
     }
@@ -239,9 +266,21 @@ void PopupWindow::m_close_button_process(){
     if(ImGui::Button("X", ImVec2(button_width, button_height))){
         this->queue_free();
     }
+    if(ImGui::IsItemHovered()){
+        {
+            EventMouseHoverObj event;
+            event.hovering_pos = MouseServer::Ref()->get_mouse_screen_position();
+            event.is_pointer_cursor = false;
+            event.obj_id = this->get_id();
+            EventServer::Ref()->emit(event);
+        }
+        {
+            EventLockedAll event;
+            EventServer::Ref()->emit(event);
+        }
+    }
 }
 void PopupWindow::post_process(){
-    ObjectServer::Ref()->move_to_front(this->get_id());
 }
 void PopupWindow::draw(){
 }

@@ -4,6 +4,9 @@
 #include "core/timer_server.h"
 #include "engine/window.h"
 #include "imgui/imgui.h"
+#include "server/event_server.h"
+#include "server/events.h"
+#include "server/mouse_server.h"
 #include "theme/theme_loader.h"
 #include <algorithm>
 
@@ -28,6 +31,7 @@ void EditorMessager::draw(){
             bg_color.w = aph;
             text_color.w = aph;
             if(aph < break_aph){
+                msg.delta = std::numeric_limits<double>::max();
                 break;
             }
         }else{
@@ -46,9 +50,11 @@ void EditorMessager::draw(){
         ImGui::Begin(msg.uid.c_str(), NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
         {
             std::string text = "[INFO] " + msg.content;
+
+            
             ImGui::Text("%s", text.c_str());
 
-            ImVec2 button_size = {15.0f, 15.0f};
+            ImVec2 button_size = {15.0f, 17.0f};
             float button_spacing = 10.0f;
             ImGui::SetCursorPos({block_size.x - button_size.x - button_spacing, block_size.y / 2.0f - button_size.y / 2.0f});
             std::string button_id = "X##MSG_BUTTON_" + msg.uid;
@@ -57,6 +63,7 @@ void EditorMessager::draw(){
                 msg.delta = std::numeric_limits<double>::max();
             }
         }
+        m_is_messager_hovered = ImGui::IsWindowHovered();
         ImGui::End();
         
         pos.y -= (spacing.y + block_size.y);
@@ -71,6 +78,14 @@ void EditorMessager::draw(){
 void EditorMessager::process(){
     m_update_msg_dlt();
     m_clear_msg();
+    if(m_is_messager_hovered){
+        EventLockedAll event1;
+        EventMouseHoverObj event2;
+        event2.hovering_pos = MouseServer::Ref()->get_mouse_world_position();
+
+        EventServer::Ref()->emit(event1);
+        EventServer::Ref()->emit(event2);
+    }
 }
 
 void EditorMessager::m_update_msg_dlt(){
@@ -98,4 +113,11 @@ void EditorMessager::add_message(std::string p_cnt){
 
     msg.delta = 0;
     m_messages.push_back(msg);
+}
+
+void EditorMessager::init(){
+    DEBUG_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
+    INFO_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
+    ERROR_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
+    SUCCESS_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
 }

@@ -46,6 +46,8 @@ private:
 
     double m_mouse_on_time = 0.0f;
     void m_update_mouse_on_time();
+
+    bool m_is_expanded = false;
 public:
     GraphBase();
     ~GraphBase();
@@ -94,7 +96,13 @@ public:
     std::set<OID> get_children_set(bool is_pass_repeater = false, bool is_all = false);
     std::set<OID> get_parent_set(bool is_pass_repeater = false, bool is_all = false);
 
+    std::vector<OID> get_children_direct();
+
     std::vector<Property> get_properties();
 
     void open_details_window();
+
+    bool is_expanded();
+    void expand_on_list();
+    void collapse_on_list();
 };

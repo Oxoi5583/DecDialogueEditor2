@@ -1,5 +1,7 @@
 #include "editor/components/left_panel.h"
 #include "DecToolsBox/core/roman_numeral.h"
+#include "core/ui_icon_unicode.h"
+#include "core/ui_text_bank.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "engine/input_hub.h"
@@ -9,6 +11,7 @@
 #include "nlohmann/json.hpp"
 #include "system/obj/abstract/movable.h"
 #include "system/obj/abstract/selectable.h"
+#include "system/obj/graph/entry.h"
 #include "system/obj/graph/manager.h"
 #include "server/event_server.h"
 #include "server/events.h"
@@ -88,7 +91,10 @@ void EditorLeftPanel::m_update_inpector(){
     m_index = 0;
     std::vector<OID>().swap(m_iterated_ids);
 
-    if (ImGui::BeginTabItem("Inspector")){
+    if (ImGui::BeginTabItem(UiTextBank::Ref()->Inspector)){
+        ImGui::PushFont(EngineFontLoader::Ref()->get(UiTextBank::Ref()->get_locale()->get_font_id().small));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 0.0f));
         ImGuiStyle& style = ImGui::GetStyle();
         if (ImGui::BeginListBox("##InspectorPriListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
             m_update_inpector_primary_list();
@@ -100,14 +106,19 @@ void EditorLeftPanel::m_update_inpector(){
             ImGui::EndListBox();
         }
         ImGui::EndTabItem();
+        ImGui::PopFont();
+        ImGui::PopStyleVar(2);
     }
     
-    if (ImGui::BeginTabItem("Explorer")){
+    if (ImGui::BeginTabItem(UiTextBank::Ref()->Explorer)){
+        ImGui::PushFont(EngineFontLoader::Ref()->get(UiTextBank::Ref()->get_locale()->get_font_id().small));
         if (ImGui::BeginListBox("##ExplorerListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
             ImGui::EndListBox();
         }
         ImGui::EndTabItem();
+        ImGui::PopFont();
     }
+    
 }
 
 void EditorLeftPanel::m_update_inpector_primary_list(){
@@ -122,7 +133,7 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
         const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(pri_id)) ? true : pri_item_list[p].is_selected;
 
         auto pri_type = pri_item_list[p].type;
-        std::string padding = (is_selected) ? " " : "";
+        std::string padding = (is_selected) ? "    " : "";
         auto pri_name = padding + std::to_string(p + 1) + " - " + pri_item_list[p].name;
 
         const ImVec4 pri_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
@@ -132,12 +143,35 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
 
         ImGui::PushStyleColor(ImGuiCol_FrameBg, pri_list_box_color);
         ImGui::PushStyleColor(ImGuiCol_Header, pri_list_box_selected_color);
-        ImGui::PushStyleColor(ImGuiCol_Text, pri_list_box_text_color);
+        bool is_expanded = pri_item_list[p].is_expanded;
 
-        ImGui::Selectable((pri_name).c_str(), is_selected);
+        std::string button_name = (is_expanded) ? std::string(ICON_EXPAND_OPEN) + "##BUTTON_" + pri_name : std::string(ICON_EXPAND_CLOSE) + "##BUTTON_" + pri_name;
+
+        ImVec2 size = {0.0f, 18.0f};
+
+        ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.0f, 0.0f, 0.0f, 0.0f});
+        
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
+        ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_SMALL));
+        ImGui::Button(button_name.c_str());
+        ImGui::PopFont();
+        
+        if(ImGui::IsItemClicked()){
+            if(is_expanded){
+                ObjectServer::Ref()->get_instance<GraphBase>(pri_id)->collapse_on_list();
+            }else{
+                ObjectServer::Ref()->get_instance<GraphBase>(pri_id)->expand_on_list();
+            }
+        }
+        //ImGui::PopFont();
+        ImGui::SameLine(0.0f, 0.0f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
+
+        ImGui::Selectable((pri_name).c_str(), is_selected, 0, size);
 
         m_update_item_status(pri_id);
-
 
         if (is_selected){
             ImVec2 p_min = ImGui::GetItemRectMin();
@@ -150,8 +184,17 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
                 0
             );
         }
+        ImVec2 break_line_min = {ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y - 1.0f};
+        ImVec2 break_line_max = {ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y};
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            break_line_min, break_line_max,
+            ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"),
+            0.5f,
+            0
+        );
 
-        ImGui::PopStyleColor(3);
+
+        ImGui::PopStyleColor(5);
         
         m_iterated_ids.push_back(pri_id);
         m_index++;
@@ -161,13 +204,14 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
 }
 
 void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
+    auto pri_item_list = m_panel_data.primary_info_list;
     auto& sec_item_list = m_panel_data.secondary_info_list[p_parent_index];
     const int sec_item_size = sec_item_list.size();
-    if (sec_item_size > 0){
+    if (sec_item_size > 0 && pri_item_list[p_parent_index].is_expanded){
         const std::string sec_list_box_name = "##InspectorSecListBox";
 
-        const double sec_item_height = ImGui::GetTextLineHeightWithSpacing();
-        const double sec_list_area_height = (sec_item_size == 0) ? 0.0f : sec_item_height * sec_item_size + 5;
+        const double sec_item_height = ImGui::GetTextLineHeightWithSpacing() + 3;
+        const double sec_list_area_height = (sec_item_size == 0) ? 0.0f : sec_item_height * sec_item_size;
         const ImVec2 sec_list_area = ImVec2(-FLT_MIN, sec_list_area_height);
                                                                 
         if (ImGui::BeginListBox((sec_list_box_name + std::to_string(p_parent_index)).c_str(), sec_list_area)){
@@ -177,20 +221,24 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                 const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(sec_id)) ? true :  sec_item_list[s].is_selected;
 
                 auto sec_type = sec_item_list[s].type;
-                std::string padding = (is_selected) ? " " : "";
+                std::string padding = (is_selected) ? "    " : "";
                 auto sec_name = padding + int_to_roman(s + 1) + " - " + sec_item_list[s].name;
 
-                const ImVec4 sec_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
+                ImVec4 sec_list_box_color_org = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
+                const ImVec4 sec_list_box_color = {sec_list_box_color_org.x - 0.02f, sec_list_box_color_org.y - 0.02f, sec_list_box_color_org.z - 0.02f, sec_list_box_color_org.w};
                 const ImVec4 sec_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
                 const ImVec4 sec_list_box_text_color = (is_selected) ? ThemeLoader::Ref()->get_imgui_color("HighlightTextColour") 
-                                                                        : ThemeLoader::Ref()->get_imgui_color("TextColour");
+                                                                        : ThemeLoader::Ref()->get_imgui_color("TextColour")
+                ;
+            
 
                 ImGui::PushStyleColor(ImGuiCol_FrameBg, sec_list_box_color);
                 ImGui::PushStyleColor(ImGuiCol_Header, sec_list_box_selected_color);
                 ImGui::PushStyleColor(ImGuiCol_Text, sec_list_box_text_color);
 
+                ImVec2 size = {0.0f, 18.0f};
 
-                ImGui::Selectable(("  "+sec_name).c_str(), is_selected);
+                ImGui::Selectable(("  "+sec_name).c_str(), is_selected,0 ,size);
 
                 m_update_item_status(sec_id);
 
@@ -206,6 +254,15 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                         0
                     );
                 }
+                ImVec2 break_line_min = {ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y - 1.0f};
+                ImVec2 break_line_max = {ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y};
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    break_line_min, break_line_max,
+                    ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"),
+                    0.5f,
+                    0
+                );
+
 
                 ImGui::PopStyleColor(3);
 
@@ -227,8 +284,8 @@ void EditorLeftPanel::m_update_inpector_other_list(){
     const int other_item_size = other_item_list.size();
     if (other_item_size > 0){
         const char* other_list_box_name = "##InspectorOtherListBox";
-        const double other_item_height = ImGui::GetTextLineHeightWithSpacing();
-        const double other_list_area_height = (other_item_size == 0) ? 0.0f : other_item_height * other_item_size + 2;
+        const double other_item_height = ImGui::GetTextLineHeightWithSpacing() + 3;
+        const double other_list_area_height = (other_item_size == 0) ? 0.0f : other_item_height * other_item_size;
         const ImVec2 other_list_area = ImVec2(-FLT_MIN, other_list_area_height);
 
         if (ImGui::BeginListBox(other_list_box_name, other_list_area)){
@@ -238,7 +295,7 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                 const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(other_id)) ? true :  other_item_list[o].is_selected;
 
                 auto other_type = other_item_list[o].type;
-                std::string padding = (is_selected) ? " " : "";
+                std::string padding = (is_selected) ? "    " : "";
                 auto other_name = padding + "*" + std::to_string(o + 1) + " - " + other_item_list[o].name;
 
 
@@ -251,15 +308,16 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                 ImGui::PushStyleColor(ImGuiCol_Header, other_list_box_selected_color);
                 ImGui::PushStyleColor(ImGuiCol_Text, other_list_box_text_color);
 
+                ImVec2 size = {0.0f, 18.0f};
 
-                ImGui::Selectable((other_name).c_str(), is_selected);
+                ImGui::Selectable((other_name).c_str(), is_selected, 0, size);
+                
 
                 m_update_item_status(other_id);
 
                 if (is_selected){
                     ImVec2 p_min = ImGui::GetItemRectMin();
                     ImVec2 p_max = {ImGui::GetItemRectMin().x + m_hint_width, ImGui::GetItemRectMax().y};
-
                     ImGui::GetWindowDrawList()->AddRectFilled(
                         p_min, p_max,
                         ThemeLoader::Ref()->get_imgui_color_int("AccentColour1"),
@@ -267,6 +325,15 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                         0
                     );
                 }
+                ImVec2 break_line_min = {ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y - 1.0f};
+                ImVec2 break_line_max = {ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y};
+                ImGui::GetWindowDrawList()->AddRectFilled(
+                    break_line_min, break_line_max,
+                    ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"),
+                    0.5f,
+                    0
+                );
+
 
                 ImGui::PopStyleColor(3);
 

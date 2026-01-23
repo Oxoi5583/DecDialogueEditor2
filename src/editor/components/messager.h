@@ -17,14 +17,18 @@ private:
 
     const double m_max_dlt = TimeUnit(TimeUnit::Type::SECOND, 15.0f).get_delta();
 
+    bool m_is_messager_hovered = false;
+
     void m_update_msg_dlt();
     void m_clear_msg();
 public:
     EditorMessager() = default;
     ~EditorMessager() = default;
 
+    
     void add_message(std::string p_cnt);
 
+    void init();
     void process();
     void draw();
 };

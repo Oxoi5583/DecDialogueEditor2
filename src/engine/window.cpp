@@ -85,6 +85,8 @@ void EngineWindow::m_init_create_sdl_renderer(){
     const int step = ENGINE_INIT_STEP;
     m_init_check_step(step);
 
+    m_frame++;
+
     /*
     m_sdl_renderer = SDL_CreateRenderer(m_sdl_window, NULL);
     if (!m_sdl_renderer) {
@@ -580,4 +582,8 @@ void EngineWindow::refresh() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     SDL_GL_SwapWindow(m_sdl_window);
+}
+
+unsigned long long EngineWindow::get_frame(){
+    return m_frame;
 }

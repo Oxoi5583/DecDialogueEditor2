@@ -53,7 +53,7 @@ void LeftCoordinate::m_draw_blocks(){
 
     ImVec4 bg_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     ImVec4 text_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
-    text_color = ImVec4(text_color.x + 0.3f, text_color.y + 0.3f, text_color.z + 0.3f, text_color.w);
+    text_color = ImVec4(text_color.x + 0.2f, text_color.y + 0.2f, text_color.z + 0.2f, text_color.w);
     auto lines = GraphGrid::Ref()->get_shown_lines();
 
     ImGuiIO& io = ImGui::GetIO();
@@ -61,10 +61,10 @@ void LeftCoordinate::m_draw_blocks(){
     for(auto line : lines){
         if(line.type == GraphGridLine::HORIZONTAL){
             float applied_width = m_bg_size.x;
-            ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 0.8f);
+            ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 1.0f);
             ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
             if(fmod((float)line.id, 5.0f) != 0){
-                applied_text_color.w -= 0.3f;
+                applied_text_color.w -= 0.2f;
                 io.FontGlobalScale = 0.85f;
             }else{
                 io.FontGlobalScale = 1.0f;
@@ -137,7 +137,7 @@ void LeftCoordinate::m_draw_blocks(){
         }
     }
 
-    ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 0.8f);
+    ImVec4  applied_text_color = ImVec4(text_color.x, text_color.y, text_color.z, 1.0f);
     ImVec4 border_color = ImVec4(0.0f , 0.0f , 0.0f , 0.0f);
     ImGuiStyle& style = ImGui::GetStyle();
     float original_item_spacing_y = style.ItemSpacing.y;
@@ -181,6 +181,7 @@ void LeftCoordinate::process(){
 
     m_draw_blocks();
     m_draw_background();
+    ImGui::GetIO().FontGlobalScale = 1.0f;
 }
 
 void LeftCoordinate::freeze(){
