@@ -1,4 +1,5 @@
 #include "editor/components/left_panel.h"
+#include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/core/roman_numeral.h"
 #include "core/ui_icon_unicode.h"
 #include "core/ui_text_bank.h"
@@ -6,6 +7,7 @@
 #include "engine/font_loader.h"
 #include "engine/input_hub.h"
 #include "engine/input_key.h"
+#include "glm/ext/vector_float2.hpp"
 #include "system/graph/camera.h"
 #include "system/graph/selection.h"
 #include "nlohmann/json.hpp"
@@ -25,7 +27,10 @@
 #include "struct/shape/rect2.h"
 #include "theme/theme_loader.h"
 #include <cfloat>
+#include <cstdint>
+#include <sstream>
 #include <string>
+#include "editor/components/quick_text_display.h"
 
 EditorLeftPanel::EditorLeftPanel(){
     BIND_CLASS(EditorLeftPanel);
@@ -113,12 +118,86 @@ void EditorLeftPanel::m_update_inpector(){
     if (ImGui::BeginTabItem(UiTextBank::Ref()->Explorer)){
         ImGui::PushFont(EngineFontLoader::Ref()->get(UiTextBank::Ref()->get_locale()->get_font_id().small));
         if (ImGui::BeginListBox("##ExplorerListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
+            m_update_explorer_list();
+
             ImGui::EndListBox();
         }
         ImGui::EndTabItem();
         ImGui::PopFont();
     }
     
+}
+
+#include "server/file_server.h"
+#include "server/project_server.h"
+
+void EditorLeftPanel::m_update_explorer_list(){
+    FPathWrapper& root = FileServer::Ref()->get_root();
+    FPathWrapper& projects = root["projects"];
+    std::string project_name = ProjectServer::Ref()->get_project().get_name();
+    if(!projects.contains(project_name)){
+        ProjectServer::Ref()->set_project("temp");
+        return;
+    }
+
+    FPathWrapper& cur_proj = projects[project_name];
+
+
+    ImVec2 imgui_area = ImGui::GetWindowSize();
+    vec2 button_start = {imgui_area.x, 0.0f};
+    button_start += vec2(-20.0f, 0.0f);
+    vec2 button_size = {20.0f, 20.0f};
+
+    std::string button_id = ICON_FILE_ADD;
+    button_id += "##ADD_NEW_FILE_BUTTON";
+
+    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_SMALL));
+    ImGui::PushStyleColor(ImGuiCol_Button, ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour1"));
+    ImGui::SetCursorPos({button_start.x, button_start.y});
+    ImGui::Button(button_id.c_str(), {button_size.x, button_size.y});
+    if(ImGui::IsItemClicked()){
+        ProjectServer::Ref()->create_file();
+    }
+    ImGui::PopStyleColor();
+    ImGui::PopFont();
+
+    struct Row{
+        std::string name;
+        std::string path;
+        uintmax_t size;
+    };
+
+    std::vector<Row> rows;
+    for(auto& it : cur_proj.children){
+        if(!it.second.is_json()){
+            continue;
+        }
+
+        nlohmann::json data = it.second.get_json();
+        if(!ProjectServer::Ref()->is_project_file_valid(data)){
+            continue;
+        }
+
+        Row r;
+        r.name = data["name"];
+        r.path = it.second.path.string();
+        r.size = it.second.get_size();
+        rows.push_back(r);
+    }
+
+    ImVec2 each_size = {ImGui::GetWindowContentRegionMax().x, ImGui::CalcTextSize("@").y};
+    for(auto& r : rows){
+        ImGui::Selectable(r.name.c_str(), false, 0, each_size);
+        if(ImGui::IsItemHovered()){
+            std::stringstream ss;
+            ss << "[" << r.name << "]" << std::endl;
+            ss << "Path : " << r.path << std::endl;
+            ss << "Size : " << r.size;
+
+            QuickTextDisplay::Ref()->set_text(ss.str());
+            QuickTextDisplay::Ref()->show();
+        }
+    }
 }
 
 void EditorLeftPanel::m_update_inpector_primary_list(){

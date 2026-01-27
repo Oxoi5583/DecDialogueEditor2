@@ -59,7 +59,7 @@ bool EngineFontLoader::m_load_fonts(){
         ss << address;  
         std::string name = ss.str(); 
 
-        INFO_MSG("Loading " << font.font_id << " : " << font.file_name << " (" << font.size << ") to " << name);
+        INFO_MSG("Loading Font [" << font.font_id << "] : " << font.file_name << " (" << font.size << ") to address " << name);
         if(!ptr){
             error_found++;
             continue;

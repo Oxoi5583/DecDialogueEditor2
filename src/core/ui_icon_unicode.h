@@ -28,5 +28,7 @@
 #define ICON_ERROR         "\xEE\xA0\xA4"  // error         (U+E000)
 #define ICON_CHECK         "\xEE\x97\x8A"  // check         (U+E5CA)
 
+#define ICON_FILE_ADD      "\xEE\xA2\x9C"
+
 #define ICON_EXPAND_OPEN    ""  // expand_more (展開)
 #define ICON_EXPAND_CLOSE   ""  // expand_less (收起)

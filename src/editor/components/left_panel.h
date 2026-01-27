@@ -32,6 +32,9 @@ private:
     void m_update_inpector_secondary_list(int p_parent_index);
     void m_update_inpector_other_list();
 
+    
+    void m_update_explorer_list();
+
     void m_emit_event();
 
     int m_index = 0;

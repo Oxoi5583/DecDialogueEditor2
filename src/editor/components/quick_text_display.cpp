@@ -49,7 +49,7 @@ void QuickTextDisplay::process(){
         ImGui::TextUnformatted(display_text.c_str());
 
         ImGui::End();      
-        ImGui::PopStyleColor();  
+        ImGui::PopStyleColor();
     }
 }
 

@@ -13,6 +13,7 @@
 #include "engine/renderer.h"
 #include "engine/texture_loader.h"
 #include "engine/window_resizer.h"
+#include "server/file_server.h"
 #include "system/graph/background.h"
 #include "system/graph/camera.h"
 #include "system/graph/connection.h"
@@ -54,6 +55,8 @@
 
 
 int main(int argc, char* argv[]) {
+    FileServer::Ref()->init();
+    
     GraphGrid::Ref()->init();
     
     ThemeLoader::Ref()->load();
@@ -79,7 +82,6 @@ int main(int argc, char* argv[]) {
     EditorLayout::Ref()->ui_init();
 
     UiTextBank::Ref()->init();
-
     unsigned long long frame = 0;
 
     while (EngineWindow::Ref()->is_running()){
