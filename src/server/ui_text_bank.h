@@ -7,8 +7,6 @@
 #include <cstddef>
 #include <string>
 
-typedef EngineFontLoader::FontId FontId;
-
 /* ============================================================
  * UiText
  * ============================================================ */
@@ -55,18 +53,10 @@ struct UiLocale {
 private:
     size_t id;
     const char* name;
-
-    FontId big_font_id;
-    FontId middle_font_id;
-    FontId small_font_id;
-
 public:
     UiLocale(
         size_t p_id,
-        const char* p_name,
-        FontId p_font_id1,
-        FontId p_font_id2,
-        FontId p_font_id3
+        const char* p_name
     );
 
     UiLocale(const UiLocale& other);
@@ -75,15 +65,7 @@ public:
 
     operator size_t() const;
 
-    struct FontIds{
-        FontId big;
-        FontId middle;
-        FontId small;
-    };
-
-    FontIds get_font_id() const;
-
-    size_t get_id() const;
+    size_t get_locale_id() const;
     const char* get_name() const;
 };
 
@@ -105,65 +87,38 @@ public:
  * ============================================================ */
 const UiLocale UI_LOCALE_EN = {
     UI_LOCALE_ID_EN, "English",
-    EngineFontLoader::UI_FONT_BIG_EN,
-    EngineFontLoader::UI_FONT_MIDDLE_EN,
-    EngineFontLoader::UI_FONT_SMALL_EN
 };
 
 const UiLocale UI_LOCALE_ZH = {
     UI_LOCALE_ID_ZH, "繁體中文",
-    EngineFontLoader::UI_FONT_BIG_ZH,
-    EngineFontLoader::UI_FONT_MIDDLE_ZH,
-    EngineFontLoader::UI_FONT_SMALL_ZH
 };
 
 const UiLocale UI_LOCALE_JP = {
     UI_LOCALE_ID_JP, "日本語",
-    EngineFontLoader::UI_FONT_BIG_JP,
-    EngineFontLoader::UI_FONT_MIDDLE_JP,
-    EngineFontLoader::UI_FONT_SMALL_JP
 };
 
 const UiLocale UI_LOCALE_CN = {
     UI_LOCALE_ID_CN, "简体中文",
-    EngineFontLoader::UI_FONT_BIG_CN,
-    EngineFontLoader::UI_FONT_MIDDLE_CN,
-    EngineFontLoader::UI_FONT_SMALL_CN
 };
 
 const UiLocale UI_LOCALE_KO = {
     UI_LOCALE_ID_KO, "한국어",
-    EngineFontLoader::UI_FONT_BIG_KO,
-    EngineFontLoader::UI_FONT_MIDDLE_KO,
-    EngineFontLoader::UI_FONT_SMALL_KO
 };
 
 const UiLocale UI_LOCALE_FR = {
     UI_LOCALE_ID_FR, "Français",
-    EngineFontLoader::UI_FONT_BIG_EN,
-    EngineFontLoader::UI_FONT_MIDDLE_EN,
-    EngineFontLoader::UI_FONT_SMALL_EN
 };
 
 const UiLocale UI_LOCALE_DE = {
     UI_LOCALE_ID_DE, "Deutsch",
-    EngineFontLoader::UI_FONT_BIG_EN,
-    EngineFontLoader::UI_FONT_MIDDLE_EN,
-    EngineFontLoader::UI_FONT_SMALL_EN
 };
 
 const UiLocale UI_LOCALE_ES = {
     UI_LOCALE_ID_ES, "Español",
-    EngineFontLoader::UI_FONT_BIG_EN,
-    EngineFontLoader::UI_FONT_MIDDLE_EN,
-    EngineFontLoader::UI_FONT_SMALL_EN
 };
 
 const UiLocale UI_LOCALE_ID = {
     UI_LOCALE_ID_ID, "Bahasa Indonesia",
-    EngineFontLoader::UI_FONT_BIG_EN,
-    EngineFontLoader::UI_FONT_MIDDLE_EN,
-    EngineFontLoader::UI_FONT_SMALL_EN
 };
 
 /* ============================================================
@@ -179,7 +134,7 @@ public:
 
     const UiLocale* get_locale();
     void set_locale(size_t p_id);
-    void refresh_locale();
+    void refresh_locale_setting();
     void init();
 
     std::array<const UiLocale*, 9> all_locales = {
@@ -195,6 +150,11 @@ public:
     };
 
     /* ---------------- UI Texts ---------------- */
+
+    UiText GotIt = {
+        "Got it.", "了解。", "了解", "了解。", "알겠습니다.",
+        "Compris.", "Verstanden.", "Entendido.", "Mengerti."
+    };
 
     UiText File = {
         "File", "檔案", "ファイル", "档案", "파일",
@@ -290,4 +250,18 @@ public:
         "Explorateur", "Explorer", "Explorador",
         "Penjelajah"
     };
+
+
+    UiText WorkspaceTitle = {
+        "Workspace :", "工作區：", "ワークスペース：", "工作区：",
+        "작업 공간:",
+        "Espace de travail :", "Arbeitsbereich:", "Espacio de trabajo:",
+        "Ruang kerja:"
+    };
+
 };
+
+
+#define FONT_SIZE_BIG 32.0f
+#define FONT_SIZE_MIDDLE 18.0f
+#define FONT_SIZE_SMALL 12.0f

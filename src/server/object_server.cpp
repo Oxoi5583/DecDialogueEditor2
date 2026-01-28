@@ -13,7 +13,7 @@ void ObjectServer::ready(){
     for(auto it = m_ui_process_list.begin(); it != m_ui_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (ready) : " << id);
-        if(it->is_alive() && !it->is_ready()){
+        if(it->is_alive() && !it->is_ready() && !it->is_freeze()){
             auto& functions = m_ready_functions[id];
             for(auto function : functions){
                 function();
@@ -25,7 +25,7 @@ void ObjectServer::ready(){
     for(auto it = m_graph_process_list.begin(); it != m_graph_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (ready) : " << id);
-        if(it->is_alive() && !it->is_ready()){
+        if(it->is_alive() && !it->is_ready() && !it->is_freeze()){
             auto& functions = m_ready_functions[id];
             for(auto function : functions){
                 function();
@@ -39,7 +39,7 @@ void ObjectServer::pre_process(){
     for(auto it = m_ui_process_list.begin(); it != m_ui_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (pre_process) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_pre_process_functions[id];
             for(auto function : functions){
                 function();
@@ -49,7 +49,7 @@ void ObjectServer::pre_process(){
     for(auto it = m_graph_process_list.begin(); it != m_graph_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (pre_process) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_pre_process_functions[id];
             for(auto function : functions){
                 function();
@@ -61,7 +61,7 @@ void ObjectServer::process(){
     for(auto it = m_ui_process_list.begin(); it != m_ui_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (process) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_process_functions[id];
             for(auto function : functions){
                 function();
@@ -71,7 +71,7 @@ void ObjectServer::process(){
     for(auto it = m_graph_process_list.begin(); it != m_graph_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (process) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_process_functions[id];
             for(auto function : functions){
                 function();
@@ -83,7 +83,7 @@ void ObjectServer::post_process(){
     for(auto it = m_ui_process_list.begin(); it != m_ui_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (post_process) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_post_process_functions[id];
             for(auto function : functions){
                 function();
@@ -93,7 +93,7 @@ void ObjectServer::post_process(){
     for(auto it = m_graph_process_list.begin(); it != m_graph_process_list.end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (post_process) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_post_process_functions[id];
             for(auto function : functions){
                 function();
@@ -104,7 +104,7 @@ void ObjectServer::post_process(){
 void ObjectServer::draw(){
     for(auto it = m_ui_process_list.rev_begin(); it != m_ui_process_list.rev_end(); ++it){
         OID id = it->get_id();
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_draw_functions[id];
             for(auto function : functions){
                 function();
@@ -114,7 +114,7 @@ void ObjectServer::draw(){
     for(auto it = m_graph_process_list.rev_begin(); it != m_graph_process_list.rev_end(); ++it){
         OID id = it->get_id();
         //DEBUG_MSG("OID (draw) : " << id);
-        if(it->is_alive() && it->is_ready()){
+        if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_draw_functions[id];
             for(auto function : functions){
                 function();
@@ -286,4 +286,12 @@ ObjectServer::Layer ObjectServer::get_layer(OID p_id){
 
 std::vector<OID> ObjectServer::get_all_ids(){
     return m_ids;
+}
+
+bool ObjectServer::is_obj_freeze(OID p_id){
+    ObjectBase* ptr = this->get_instance<ObjectBase>(p_id);
+    if(ptr){
+        return ptr->is_freeze();
+    }
+    return false;
 }

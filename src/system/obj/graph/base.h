@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "editor/components/detail_window.h"
 #include "engine/renderer.h"
 #include "glm/ext/vector_float2.hpp"
@@ -36,6 +36,8 @@ private:
     std::string m_name;
     std::string m_content;
 
+    std::string m_workspace_id;
+
     OrderedMap<std::string,Property> m_properties = {
         {"Unique Id", {"Unique Id","", 50}},
     };
@@ -70,6 +72,7 @@ public:
     void draw();
 
     virtual GraphManager::NodeType get_type();
+    virtual std::string get_type_name();
 
     std::string get_name();
     std::vector<std::string> get_signals();
@@ -101,6 +104,8 @@ public:
     std::vector<Property> get_properties();
 
     void open_details_window();
+
+    std::string get_workspace_id();
 
     bool is_expanded();
     void expand_on_list();

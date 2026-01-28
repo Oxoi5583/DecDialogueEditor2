@@ -152,6 +152,8 @@ public:
     Layer get_layer(OID p_id);
 
     std::vector<OID> get_all_ids();
+
+    bool is_obj_freeze(OID p_id);
 };
 
 

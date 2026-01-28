@@ -1,0 +1,12 @@
+Dev Node :
+Should Add Module Entry and Exit and Module Node
+If Connected to Module Entry, It will Transit to Module Dialogue.
+When Exited the Module Part, It will Connected Back to Module Node
+
+e.g.
+Moudle Node : ID -> AFS235GE953
+Module Entry Node : ID -> AFS235GE953
+Module Exit Node
+
+Node -> Module Node -> Node
+Module Entry Node -> Node -> Node -> Module Exit Node

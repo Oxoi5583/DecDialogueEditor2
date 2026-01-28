@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "editor/components/base.h"
 #include "editor/space.h"
 #include "system/obj/abstract/clickable.h"

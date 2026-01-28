@@ -296,6 +296,30 @@ bool GraphConnection::m_test_connection__all_connect_type_is_option(GraphBase* p
 
     return true;
 }
+bool GraphConnection::m_test_connection__target_not_module_entry(GraphBase* p_fm, GraphBase* p_to){
+    return p_to->get_type() != GraphManager::MODULE_ENTRY;
+}
+bool GraphConnection::m_test_connection__target_not_parent_proxy_module_node(GraphBase* p_fm, GraphBase* p_to){
+    std::set<OID> ancestor_ids = p_fm->get_parent_set(true, false);
+    if(ancestor_ids.contains(p_to->get_id()) && p_fm->get_type() == GraphManager::MODULE_NODE){
+        return false;
+    }else{
+        return true;
+    }
+}
+bool GraphConnection::m_test_connection__not_connect_to_module_normal_node_yet(GraphBase* p_fm, GraphBase* p_to){
+    std::vector<OID> check_list;
+
+    auto set = p_fm->get_children(true);
+    for(OID id : set){
+        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+        if(obj->get_type() == GraphManager::MODULE_NODE){
+            return false;
+        }
+    }
+
+    return true;
+}
 
 
 bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
@@ -308,6 +332,7 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
     Condition c_1 = Condition()
             .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_self(fm_node, to_node); })
             .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_entry(fm_node, to_node); })
+            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_module_entry(fm_node, to_node); })
             .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_connected(fm_node, to_node); })
             .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_parent_directly(fm_node, to_node); });
 
@@ -351,6 +376,8 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
                 .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_parent_proxy(fm_sub_node, to_node_2); })
                 .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__not_connect_to_normal_node_yet(fm_sub_node, to_node_2); })
                 .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__all_connect_type_is_option(fm_sub_node, to_node_2); })
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__not_connect_to_module_normal_node_yet(fm_sub_node, to_node_2); })
+                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_parent_proxy_module_node(fm_sub_node, to_node_2); })
                 .add_alternative(1, [this, fm_sub_node, to_node_2](){ return this->m_test_connection__fm_repeater_not_have_children(fm_sub_node, to_node_2); });
 
             bool c_2_ret = c_2.result();

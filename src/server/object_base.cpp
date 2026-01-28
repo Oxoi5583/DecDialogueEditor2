@@ -31,3 +31,11 @@ void ObjectBase::set_layer(int p_layer){
 int ObjectBase::get_layer(){
     return m_layer;
 }
+
+bool ObjectBase::is_freeze() const{
+    return m_is_freeze;
+}
+
+void ObjectBase::set_freeze(bool p_value){
+    m_is_freeze = p_value;
+}

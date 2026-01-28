@@ -1,6 +1,6 @@
 #include "system/obj/graph/node.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "editor/components/quick_text_display.h"
 #include "engine/window.h"
 #include "server/object_server.h"
@@ -28,4 +28,7 @@ void GraphNode::draw(){}
 
 GraphManager::NodeType GraphNode::get_type(){
     return GraphManager::NodeType::NODE;
+}
+std::string GraphNode::get_type_name(){
+    return "Node";
 }

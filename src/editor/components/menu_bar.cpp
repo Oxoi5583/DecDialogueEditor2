@@ -1,7 +1,7 @@
 #include "menu_bar.h"
 #include "config/config_loader.h"
-#include "core/ui_icon_unicode.h"
-#include "core/ui_text_bank.h"
+#include "server/ui_icon_unicode.h"
+#include "server/ui_text_bank.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "server/event_server.h"
@@ -87,11 +87,11 @@ void EditorMenuBar::m_update_menu_file(){
 void EditorMenuBar::m_update_menu_language(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->Language)){
         for(auto locale : UiTextBank::Ref()->all_locales){
-            ImGui::PushFont(EngineFontLoader::Ref()->get(locale->get_font_id().middle));
+            ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
 
             ImGui::MenuItem(locale->get_name());
             if(ImGui::IsItemClicked()){
-                UiTextBank::Ref()->set_locale(locale->get_id());
+                UiTextBank::Ref()->set_locale(locale->get_locale_id());
             }
 
             ImGui::PopFont();
@@ -150,7 +150,7 @@ void EditorMenuBar::m_update_menu_themes(){
 void EditorMenuBar::m_update_minimize_button(){
     std::string name = ICON_WIN_MINIMIZE;
 
-    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
+    ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
     float full_height = ImGui::GetContentRegionAvail().y;
     float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
@@ -186,7 +186,7 @@ void EditorMenuBar::m_update_maximize_button(){
         name = ICON_WIN_RESTORE;
     }
 
-    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
+    ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
     float full_height = ImGui::GetContentRegionAvail().y;
     float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
@@ -223,7 +223,7 @@ void EditorMenuBar::m_update_maximize_button(){
 void EditorMenuBar::m_update_close_button(){
     std::string name = ICON_WIN_CLOSE;
 
-    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_MIDDLE));
+    ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
     float full_height = ImGui::GetContentRegionAvail().y;
     float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);

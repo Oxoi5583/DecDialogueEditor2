@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DecToolsBox/abstract./singleton.h"
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "glm/ext/vector_float2.hpp"
 #include "server/object_base.h"
 #include <set>
@@ -22,6 +22,8 @@ public:
         NODE,
         OPTION,
         REPEATER,
+        MODULE_ENTRY,
+        MODULE_NODE,
     };
 
     struct NodeInfo{
@@ -67,6 +69,8 @@ private:
     void m_spawn_node(vec2 p_pos);
     void m_spawn_option(vec2 p_pos);
     void m_spawn_repeater(vec2 p_pos);
+    void m_spawn_module_entry(vec2 p_pos);
+    void m_spawn_module_node(vec2 p_pos);
 public:
     GraphManager();
     ~GraphManager();

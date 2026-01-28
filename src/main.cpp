@@ -1,5 +1,7 @@
 #include "DecToolsBox/container/ordered_map.h"
-#include "core/ui_text_bank.h"
+#include "editor/components/start_up_popup.h"
+#include "server/project_server.h"
+#include "server/ui_text_bank.h"
 #include "editor/components/detail_window.h"
 #include "editor/components/left_coordinate.h"
 #include "editor/components/messager.h"
@@ -48,7 +50,7 @@
 #include "engine/window.h"
 #include "theme/theme_loader.h"
 #include "config/config_loader.h"
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 
 #include "DecToolsBox/core/condition.h"
 
@@ -96,6 +98,8 @@ int main(int argc, char* argv[]) {
         
         double delta = EngineWindow::Ref()->get_delta();
 
+        ProjectServer::Ref()->process();
+        StartupPopup::Ref()->process();
         QuickTextDisplay::Ref()->pre_process();
         
         GraphCamera::Ref()->update();

@@ -38,6 +38,8 @@ private:
         "EntryColour",
         "NodeColour",
         "OptionColour",
+        "ModuleEntryColour",
+        "ModuleNodeColour",
     };
 
     std::set<char> m_acceptable_char = {

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/timer_server.h"
+#include "imgui/imgui.h"
+#include "server/timer_server.h"
 #include "editor/components/base.h"
 #include "editor/space.h"
 #include "system/obj/abstract/clickable.h"
@@ -24,6 +25,8 @@ private:
     GraphManager::PanelData m_panel_data;
 
     void m_go_to_item(OID p_id);
+
+    ImVec2 inpector_item_size;
 
     void m_update_penel_properties();
     void m_update_shape();

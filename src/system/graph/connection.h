@@ -55,6 +55,9 @@ private:
     bool m_test_connection__fm_repeater_not_have_children(GraphBase* p_fm, GraphBase* p_to);
     bool m_test_connection__not_connect_to_normal_node_yet(GraphBase* p_fm, GraphBase* p_to);
     bool m_test_connection__all_connect_type_is_option(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__target_not_module_entry(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__target_not_parent_proxy_module_node(GraphBase* p_fm, GraphBase* p_to);
+    bool m_test_connection__not_connect_to_module_normal_node_yet(GraphBase* p_fm, GraphBase* p_to);
 public:
     void init();
     void pre_update();

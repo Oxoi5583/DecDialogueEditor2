@@ -1,8 +1,10 @@
 #include "system/obj/graph/manager.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "ext/debug/messenger_ext.h"
 #include "glm/ext/vector_float2.hpp"
+#include "system/obj/graph/module_entry.h"
+#include "system/obj/graph/module_node.h"
 #include "system/obj/graph/repeater.h"
 #include "server/event_server.h"
 #include "server/events.h"
@@ -57,6 +59,28 @@ void GraphManager::m_spawn_option(vec2 p_pos){
 }
 void GraphManager::m_spawn_repeater(vec2 p_pos){
     GraphRepeater* new_node = ObjectServer::Ref()->queue_create<GraphRepeater>();
+    
+    NodeInfo info = m_create_info(new_node);
+
+    m_all_node_ids.push_back(info.id);
+    m_non_entry_node_ids.push_back(info.id);
+    m_infos.emplace(info.id, info);
+
+    new_node->set_position(p_pos);
+}
+void GraphManager::m_spawn_module_entry(vec2 p_pos){
+    GraphModuleEntry* new_node = ObjectServer::Ref()->queue_create<GraphModuleEntry>();
+    
+    NodeInfo info = m_create_info(new_node);
+
+    m_all_node_ids.push_back(info.id);
+    m_entry_node_ids.push_back(info.id);
+    m_infos.emplace(info.id, info);
+
+    new_node->set_position(p_pos);
+}
+void GraphManager::m_spawn_module_node(vec2 p_pos){
+    GraphModuleNode* new_node = ObjectServer::Ref()->queue_create<GraphModuleNode>();
     
     NodeInfo info = m_create_info(new_node);
 
@@ -134,11 +158,21 @@ void GraphManager::m_poll_spawn_event(){
                 m_spawn_option(spawn_pos);
                 break;
             }
-            case REPEATER:
+            case REPEATER:{
                 m_spawn_repeater(spawn_pos);
                 break;
-            case BASE:
+            }
+            case MODULE_ENTRY:{
+                m_spawn_module_entry(spawn_pos);
                 break;
+            }
+            case MODULE_NODE:{
+                m_spawn_module_node(spawn_pos);
+                break;
+            }
+            case BASE:{
+                break;
+            }
         }
     }
 }
@@ -193,6 +227,10 @@ void GraphManager::m_regenerate_panel_data(){
 
     m_panel_data = PanelData();
     for(OID& id : m_entry_node_ids){
+        if(ObjectServer::Ref()->is_obj_freeze(id)){
+            continue;
+        }
+
         used_ids.emplace(id);
 
         NodeInfo& info = m_infos[id];
@@ -201,6 +239,10 @@ void GraphManager::m_regenerate_panel_data(){
 
         std::vector<OID> children = m_get_all_children(id, false);
         for(OID& s_id : children){
+            if(ObjectServer::Ref()->is_obj_freeze(s_id)){
+                continue;
+            }
+
             used_ids.emplace(s_id);
 
             NodeInfo s_info = m_infos[s_id];
@@ -211,6 +253,10 @@ void GraphManager::m_regenerate_panel_data(){
     }
     
     for(OID& id : m_all_node_ids){
+        if(ObjectServer::Ref()->is_obj_freeze(id)){
+            continue;
+        }
+
         if(used_ids.contains(id)){
             continue;
         }
@@ -259,22 +305,28 @@ std::string GraphManager::get_default_name(NodeType p_type){
     std::string new_name;
     switch (p_type) {
         case BASE:
-            new_name = "New Base";
+            new_name = "B_NewBase";
             break;
         case ENTRY:
-            new_name = "New Entry";
+            new_name = "E_NewEntry";
             break;
         case NODE:
-            new_name = "New Node";
+            new_name = "N_NewNode";
             break;
         case OPTION:
-            new_name = "New Option";
+            new_name = "O_NewOption";
             break;
         case REPEATER:
-            new_name = "New Repeater";
+            new_name = "R_NewRepeater";
+            break;
+        case MODULE_ENTRY:
+            new_name = "ME_NewModuleEntry";
+            break;
+        case MODULE_NODE:
+            new_name = "MN_NewModuleNode";
             break;
         default:
-            new_name = "New Unknown";
+            new_name = "U_NewUnknown";
             break;
     }
 

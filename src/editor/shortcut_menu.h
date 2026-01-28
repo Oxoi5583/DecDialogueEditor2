@@ -86,14 +86,36 @@ private:
             EventServer::Ref()->emit(event);
         }
     };
+    Option m_option_create_node__module_entry = {
+        "Module Entry",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = this->m_menu_pos;
+            event.type = GraphManager::NodeType::MODULE_ENTRY;
+            EventServer::Ref()->emit(event);
+        }
+    };
+    Option m_option_create_node__module_node = {
+        "Module Node",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = this->m_menu_pos;
+            event.type = GraphManager::NodeType::MODULE_NODE;
+            EventServer::Ref()->emit(event);
+        }
+    };
 
     Option m_option_create_node = {
-        "Create node",
+        "Create Node",
         {
             m_option_create_node__entry,
             m_option_create_node__node,
             m_option_create_node__option,
             m_option_create_node__repeater,
+            m_option_create_node__module_entry,
+            m_option_create_node__module_node,
         },
         std::function<void()>()
     };
@@ -147,13 +169,46 @@ private:
             EventServer::Ref()->emit(event);
         }
     };
+    Option m_option_create_node_at_cam__repeater = {
+        "Repeater",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = GraphCamera::Ref()->get_target();
+            event.type = GraphManager::NodeType::REPEATER;
+            EventServer::Ref()->emit(event);
+        }
+    };
+    Option m_option_create_node_at_cam__module_entry = {
+        "Module Entry",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = GraphCamera::Ref()->get_target();
+            event.type = GraphManager::NodeType::MODULE_ENTRY;
+            EventServer::Ref()->emit(event);
+        }
+    };
+    Option m_option_create_node_at_cam__module_node = {
+        "Module Node",
+        {},
+        [this](){
+            EventSpawnNode event;
+            event.spawn_pos = GraphCamera::Ref()->get_target();
+            event.type = GraphManager::NodeType::MODULE_NODE;
+            EventServer::Ref()->emit(event);
+        }
+    };
 
     Option m_option_create_node_at_cam = {
-        "Create node",
+        "Create Node",
         {
             m_option_create_node_at_cam__entry,
             m_option_create_node_at_cam__node,
             m_option_create_node_at_cam__option,
+            m_option_create_node_at_cam__repeater,
+            m_option_create_node_at_cam__module_entry,
+            m_option_create_node_at_cam__module_node,
         },
         std::function<void()>()
     };
@@ -425,6 +480,7 @@ private:
 
     std::map<ModeFlag, Option> m_menu = {
         {ModeFlag::MODE_NULL, m_null},
+
         /*   Mode Graph   */
         {ModeFlag::MODE_GRAPH_ON_WORLD, m_graph_on_world},
         {ModeFlag::MODE_GRAPH_ON_NODE , m_graph_on_node},

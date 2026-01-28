@@ -1,6 +1,6 @@
 #include "system/obj/graph/entry.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "server/object_server.h"
 #include "theme/theme_loader.h"
 
@@ -17,4 +17,7 @@ void GraphEntry::draw(){}
 
 GraphManager::NodeType GraphEntry::get_type(){
     return GraphManager::NodeType::ENTRY;
+}
+std::string GraphEntry::get_type_name(){
+    return "Entry";
 }

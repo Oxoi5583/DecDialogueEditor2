@@ -1,6 +1,7 @@
 #include "system/obj/graph/base.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "core/timer_server.h"
+#include "server/project_server.h"
+#include "server/timer_server.h"
 #include "editor/components/detail_window.h"
 #include "engine/window.h"
 #include "system/graph/camera.h"
@@ -34,6 +35,7 @@ void GraphBase::m_update_mouse_on_time(){
 GraphBase::GraphBase(){
     m_init_shape();
     BIND_CLASS(GraphBase);
+    m_workspace_id = ProjectServer::Ref()->get_workspace_uid();
 }
 GraphBase::~GraphBase(){
     GraphManager::Ref()->notify_name_removed(m_properties["Unique Id"].value);
@@ -96,6 +98,12 @@ void GraphBase::draw(){
         case GraphManager::REPEATER:
             rect_colour = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
             break;
+        case GraphManager::MODULE_ENTRY:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("ModuleEntryColour");
+            break;
+        case GraphManager::MODULE_NODE:
+            rect_colour = ThemeLoader::Ref()->get_imgui_color("ModuleNodeColour");
+            break;
         default:
             rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
             break;
@@ -153,6 +161,9 @@ void GraphBase::draw(){
 
 GraphManager::NodeType GraphBase::get_type(){
     return GraphManager::NodeType::BASE;
+}
+std::string GraphBase::get_type_name(){
+    return "Base";
 }
 
 std::string GraphBase::get_name(){
@@ -574,4 +585,7 @@ void GraphBase::expand_on_list(){
 }
 void GraphBase::collapse_on_list(){
     m_is_expanded = false;
+}
+std::string GraphBase::get_workspace_id(){
+    return m_workspace_id;
 }

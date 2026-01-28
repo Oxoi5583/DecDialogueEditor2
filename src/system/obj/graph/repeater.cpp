@@ -1,6 +1,6 @@
 #include "system/obj/graph/repeater.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "engine/renderer.h"
 #include "system/obj/abstract/movable.h"
 #include "system/obj/abstract/selectable.h"
@@ -45,4 +45,7 @@ std::vector<OID> GraphRepeater::get_repeater_from(){
 }
 std::vector<OID> GraphRepeater::get_repeater_to(){
     return m_to_ids;
+}
+std::string GraphRepeater::get_type_name(){
+    return "Repeater";
 }

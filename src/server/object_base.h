@@ -16,6 +16,7 @@ private:
     const OID m_id;
     bool m_is_alive = true;
     bool m_is_ready = false;
+    bool m_is_freeze = false;
 
     virtual void _(){}
 protected:
@@ -28,6 +29,9 @@ public:
     OID get_id() const;
     bool is_alive() const;
     bool is_ready() const;
+    bool is_freeze() const;
+
+    void set_freeze(bool p_value);
 
     void queue_free();
 

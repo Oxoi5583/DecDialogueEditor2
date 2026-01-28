@@ -7,30 +7,81 @@
 #include <fstream>
 #include <ios>
 #include <memory>
+#include <string>
 #include <vector>
 
+namespace std {
+    string to_string(FSizeUnit p_size){
+        return p_size.to_string();
+    }
+}
 
+void FSizeUnit::update_type(){
+    if((value / BYTES_PER_PETABYTE) >= 0.1){
+        type = PETABYTE;
+        return;
+    }
+    if((value / BYTES_PER_TERABYTE) >= 0.1){
+        type = TERABYTE;
+        return;
+    }
+    if((value / BYTES_PER_GIGABYTE) >= 0.1){
+        type = GIGABYTE;
+        return;
+    }
+    if((value / BYTES_PER_MEGABYTE) >= 0.1){
+        type = MEGABYTE;
+        return;
+    }
+    if((value / BYTES_PER_KILOBYTE) >= 0.1){
+        type = KILOBYTE;
+        return;
+    }
+    type = BYTE;
+}
 double FSizeUnit::get(){
+    update_type();
     switch (type) {
         case PETABYTE:{
-            const long double BYTES_PER_PETABYTE = 1125899906842624.0L;
             return value / BYTES_PER_PETABYTE;
         }
         case TERABYTE:{
-            const long double BYTES_PER_TERABYTE = 1000000000000;
             return value / BYTES_PER_TERABYTE;
         }
         case GIGABYTE:{
-            const long double BYTES_PER_GIGABYTE = 1000000000;
             return value / BYTES_PER_GIGABYTE;
         }
         case MEGABYTE:{
-            const long double BYTES_PER_MEGABYTE = 1000000;
             return value / BYTES_PER_MEGABYTE;
         }
         case KILOBYTE:{
-            const long double BYTES_PER_KILOBYTE = 1000;
             return value / BYTES_PER_KILOBYTE;
+        }
+        case BYTE:{
+            return value;
+        }
+    }
+}
+std::string FSizeUnit::to_string(){
+    update_type();
+    switch (type) {
+        case PETABYTE:{
+            return std::to_string(value) + " PB";
+        }
+        case TERABYTE:{
+            return std::to_string(value) + " TB";
+        }
+        case GIGABYTE:{
+            return std::to_string(value) + " GB";
+        }
+        case MEGABYTE:{
+            return std::to_string(value) + " MB";
+        }
+        case KILOBYTE:{
+            return std::to_string(value) + " KB";
+        }
+        case BYTE:{
+            return std::to_string(value) + " B";
         }
     }
 }
@@ -46,12 +97,17 @@ FPathWrapper& FPathWrapper::operator[](FString p_index) {
     return children[p_index];
 }
 
+void FPathWrapper::update_last_write_epoch(){
+    long long last_write_time_epoch = std::filesystem::last_write_time(this->path).time_since_epoch().count();
+    this->last_write_time = last_write_time_epoch;
+}
 
 void FPathWrapper::build_tree(){
     this->children.clear();
 
     for(auto& f : std::filesystem::directory_iterator(path)){
-        FPathWrapper wrapper = {f.path(), this, {}};
+        long long last_write_time_epoch = std::filesystem::last_write_time(f.path()).time_since_epoch().count();
+        FPathWrapper wrapper = {f.path(), this, last_write_time_epoch, {}, {}};
         FString name = wrapper.get_name();
         this->children.emplace(name, wrapper);
         if(std::filesystem::is_directory(f.path())){
@@ -136,6 +192,8 @@ void FPathWrapper::remove(FString p_target){
     }
 
     this->build_tree();
+    this->run_modified_callback();
+    this->update_last_write_epoch();
 }
 void FPathWrapper::clear(){
     if(std::filesystem::is_directory(this->path)){
@@ -161,6 +219,8 @@ void FPathWrapper::clear(){
     }else{
         this->truncate_text();
     }
+    this->run_modified_callback();
+    this->update_last_write_epoch();
 }
 
 bool FPathWrapper::contains(FString p_path){
@@ -176,6 +236,8 @@ void FPathWrapper::create_dir(FString p_dir){
     }
     
     this->build_tree();
+    this->run_modified_callback();
+    this->update_last_write_epoch();
 }
 void FPathWrapper::create_file(FString p_name){
     FPath new_file_path = this->path;
@@ -190,6 +252,8 @@ void FPathWrapper::create_file(FString p_name){
     }
 
     this->build_tree();
+    this->run_modified_callback();
+    this->update_last_write_epoch();
 }
 
 void FPathWrapper::append_text(FString p_text){
@@ -201,6 +265,8 @@ void FPathWrapper::append_text(FString p_text){
             file.close();
         }
     }
+    this->run_modified_callback();
+    this->update_last_write_epoch();
 }
 void FPathWrapper::truncate_text(){
     if(std::filesystem::is_regular_file(this->path)){
@@ -210,6 +276,18 @@ void FPathWrapper::truncate_text(){
             file.close();
         }
     }
+    this->run_modified_callback();
+}
+void FPathWrapper::run_modified_callback(){
+    for(auto& callback : modified_callback){
+        callback();
+    }
+    if(parent){
+        parent->run_modified_callback();
+    }
+}
+void FPathWrapper::add_modified_callback(std::function<void()> p_callback){
+    modified_callback.push_back(p_callback);
 }
 #include <nlohmann/json.hpp>
 bool FPathWrapper::is_directory(){

@@ -1,5 +1,5 @@
 #include "editor/components/tools_bar.h"
-#include "core/ui_text_bank.h"
+#include "server/ui_text_bank.h"
 #include "editor/components/messager.h"
 #include "editor/components/popup_window.h"
 #include "editor/layout.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/timer_server.h"
+#include "server/timer_server.h"
 #include "engine/renderer.h"
 #include "system/obj/graph/base.h"
 #include "system/obj/graph/manager.h"
@@ -28,6 +28,7 @@ public:
     void draw();
 
     GraphManager::NodeType get_type() override;
+    std::string get_type_name() override;
 
     std::vector<OID> get_repeater_from();
     std::vector<OID> get_repeater_to();

@@ -1,8 +1,8 @@
 #include "editor/components/left_panel.h"
 #include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/core/roman_numeral.h"
-#include "core/ui_icon_unicode.h"
-#include "core/ui_text_bank.h"
+#include "server/ui_icon_unicode.h"
+#include "server/ui_text_bank.h"
 #include "editor/layout.h"
 #include "engine/font_loader.h"
 #include "engine/input_hub.h"
@@ -26,11 +26,30 @@
 #include "imgui/imgui.h"
 #include "struct/shape/rect2.h"
 #include "theme/theme_loader.h"
+#include <algorithm>
 #include <cfloat>
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <sstream>
 #include <string>
+#include <vector>
 #include "editor/components/quick_text_display.h"
+
+struct MsgGenerator{
+    std::stringstream msg;
+    void add_row(std::string p_field, std::string p_content){
+        const int spacing = 10;
+        msg << p_field;
+        for(size_t i = 0; i < (spacing - p_field.size()); i++){
+            msg << " ";
+        }
+        msg << " : " << p_content << std::endl;
+    }
+    std::string get(){
+        return msg.str();
+    }
+};
 
 EditorLeftPanel::EditorLeftPanel(){
     BIND_CLASS(EditorLeftPanel);
@@ -65,6 +84,7 @@ void EditorLeftPanel::pre_process(){
             m_update_inpector();
             ImGui::EndTabBar();
         }
+
         ImGui::End();
     }
 }
@@ -97,9 +117,12 @@ void EditorLeftPanel::m_update_inpector(){
     std::vector<OID>().swap(m_iterated_ids);
 
     if (ImGui::BeginTabItem(UiTextBank::Ref()->Inspector)){
-        ImGui::PushFont(EngineFontLoader::Ref()->get(UiTextBank::Ref()->get_locale()->get_font_id().small));
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+        ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
+        ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+        ImGui::PushStyleVar(ImGuiStyleVar_SelectableTextAlign, ImVec2(0.0f, 0.5f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 3.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 0.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f,0.0f));
         ImGuiStyle& style = ImGui::GetStyle();
         if (ImGui::BeginListBox("##InspectorPriListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
             m_update_inpector_primary_list();
@@ -112,16 +135,14 @@ void EditorLeftPanel::m_update_inpector(){
         }
         ImGui::EndTabItem();
         ImGui::PopFont();
-        ImGui::PopStyleVar(2);
+        ImGui::PopStyleVar(5);
     }
     
     if (ImGui::BeginTabItem(UiTextBank::Ref()->Explorer)){
-        ImGui::PushFont(EngineFontLoader::Ref()->get(UiTextBank::Ref()->get_locale()->get_font_id().small));
-        if (ImGui::BeginListBox("##ExplorerListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
-            m_update_explorer_list();
+        ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
+        m_update_explorer_list();
+            
 
-            ImGui::EndListBox();
-        }
         ImGui::EndTabItem();
         ImGui::PopFont();
     }
@@ -132,78 +153,95 @@ void EditorLeftPanel::m_update_inpector(){
 #include "server/project_server.h"
 
 void EditorLeftPanel::m_update_explorer_list(){
-    FPathWrapper& root = FileServer::Ref()->get_root();
-    FPathWrapper& projects = root["projects"];
-    std::string project_name = ProjectServer::Ref()->get_project().get_name();
-    if(!projects.contains(project_name)){
-        ProjectServer::Ref()->set_project("temp");
-        return;
-    }
-
-    FPathWrapper& cur_proj = projects[project_name];
-
-
     ImVec2 imgui_area = ImGui::GetWindowSize();
-    vec2 button_start = {imgui_area.x, 0.0f};
-    button_start += vec2(-20.0f, 0.0f);
+    vec2 button_start = {imgui_area.x, 40.0f};
+    button_start += vec2(-25.0f, 0.0f);
     vec2 button_size = {20.0f, 20.0f};
 
     std::string button_id = ICON_FILE_ADD;
     button_id += "##ADD_NEW_FILE_BUTTON";
 
-    ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_SMALL));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f,0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f,0.0f));
+    ImGui::SetCursorPos({10.0f, button_start.y});
+    ImGui::TextUnformatted(UiTextBank::Ref()->WorkspaceTitle);
+    ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_SMALL));
     ImGui::PushStyleColor(ImGuiCol_Button, ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour1"));
-    ImGui::SetCursorPos({button_start.x, button_start.y});
+    ImGui::SameLine(button_start.x);
     ImGui::Button(button_id.c_str(), {button_size.x, button_size.y});
     if(ImGui::IsItemClicked()){
         ProjectServer::Ref()->create_file();
     }
     ImGui::PopStyleColor();
     ImGui::PopFont();
+    ImGui::PopStyleVar(2);
 
-    struct Row{
-        std::string name;
-        std::string path;
-        uintmax_t size;
-    };
+    if (ImGui::BeginListBox("##ExplorerListBox", ImVec2(-FLT_MIN, -FLT_MIN))){
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        vec2 min =  vec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y);
+        vec2 max = min + vec2(ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+        draw_list->AddRectFilled({min.x, min.y}, {max.x, max.y}, ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"));
 
-    std::vector<Row> rows;
-    for(auto& it : cur_proj.children){
-        if(!it.second.is_json()){
-            continue;
+        ImVec2 each_size = {ImGui::GetWindowContentRegionMax().x, ImGui::CalcTextSize("@").y};
+
+        auto proj_data = ProjectServer::Ref()->get_project_data();
+        std::vector<ProjectWorkSpace> proj_data_v;
+        
+        std::transform(proj_data.begin(), proj_data.end(), std::back_inserter(proj_data_v),
+        [](const std::pair<std::string, ProjectWorkSpace>& a){
+            return a.second;
+        });
+
+        std::sort(proj_data_v.begin(), proj_data_v.end(),
+        [](const ProjectWorkSpace& a, const ProjectWorkSpace& b){
+            return a.load_pri < b.load_pri;
+        });
+
+
+        for(auto& space : proj_data_v){
+            std::string obj_id = space.name + "##" + space.path;
+            
+            int pop_times;
+            if(space.is_selected){
+                ImVec4 colour = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
+                colour.w *= 0.65;
+                ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ThemeLoader::Ref()->ImVec4_to_int(colour));
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, ThemeLoader::Ref()->ImVec4_to_int(colour));
+                ImGui::PushStyleColor(ImGuiCol_Header, ThemeLoader::Ref()->ImVec4_to_int(colour));
+                pop_times = 3;
+            }else{
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.0f,0.0f,0.0f,0.0f});
+                ImGui::PushStyleColor(ImGuiCol_Header, {0.0f,0.0f,0.0f,0.0f});
+                pop_times = 2;
+            }
+            ImGui::Selectable(obj_id.c_str(), space.is_selected, 0, each_size);
+            ImGui::PopStyleColor(pop_times);
+
+            if(ImGui::IsItemHovered()){
+                MsgGenerator gen;
+                gen.add_row("Name", space.name);
+                gen.add_row("Path", space.path);
+                gen.add_row("Size", space.size.to_string());
+
+                QuickTextDisplay::Ref()->set_text(gen.get());
+                QuickTextDisplay::Ref()->set_font_size(13.0f);
+                QuickTextDisplay::Ref()->show();
+            }
+
+            if(ImGui::IsItemClicked()){
+                ProjectServer::Ref()->set_workspace(space.uid);
+            }
         }
-
-        nlohmann::json data = it.second.get_json();
-        if(!ProjectServer::Ref()->is_project_file_valid(data)){
-            continue;
-        }
-
-        Row r;
-        r.name = data["name"];
-        r.path = it.second.path.string();
-        r.size = it.second.get_size();
-        rows.push_back(r);
-    }
-
-    ImVec2 each_size = {ImGui::GetWindowContentRegionMax().x, ImGui::CalcTextSize("@").y};
-    for(auto& r : rows){
-        ImGui::Selectable(r.name.c_str(), false, 0, each_size);
-        if(ImGui::IsItemHovered()){
-            std::stringstream ss;
-            ss << "[" << r.name << "]" << std::endl;
-            ss << "Path : " << r.path << std::endl;
-            ss << "Size : " << r.size;
-
-            QuickTextDisplay::Ref()->set_text(ss.str());
-            QuickTextDisplay::Ref()->show();
-        }
+        ImGui::EndListBox();
     }
 }
 
 void EditorLeftPanel::m_update_inpector_primary_list(){
     ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-    const double pri_item_height = ImGui::GetTextLineHeightWithSpacing();
+    const float item_height = ImGui::CalcTextSize("@").y + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
+    inpector_item_size = {0.0f, item_height};
+
     auto pri_item_list = m_panel_data.primary_info_list;
     int pri_item_size = pri_item_list.size();
     for (int p = 0; p < pri_item_list.size(); ++p){
@@ -226,14 +264,12 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
 
         std::string button_name = (is_expanded) ? std::string(ICON_EXPAND_OPEN) + "##BUTTON_" + pri_name : std::string(ICON_EXPAND_CLOSE) + "##BUTTON_" + pri_name;
 
-        ImVec2 size = {0.0f, 18.0f};
-
         ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.0f, 0.0f, 0.0f, 0.0f});
         
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.0f);
-        ImGui::PushFont(EngineFontLoader::Ref()->get(EngineFontLoader::UI_ICON_SMALL));
+        ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_SMALL));
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().ItemSpacing.y);
         ImGui::Button(button_name.c_str());
         ImGui::PopFont();
         
@@ -246,9 +282,17 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
         }
         //ImGui::PopFont();
         ImGui::SameLine(0.0f, 0.0f);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - 3.0f);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetItemRectSize().y / 2.0f);
 
-        ImGui::Selectable((pri_name).c_str(), is_selected, 0, size);
+        ImGui::Selectable((pri_name).c_str(), is_selected, 0, inpector_item_size);
+        if(ImGui::IsItemHovered()){
+            MsgGenerator gen;
+            gen.add_row("Type", ObjectServer::Ref()->get_instance<GraphBase>(pri_id)->get_type_name());
+
+            QuickTextDisplay::Ref()->set_text(gen.get());
+            QuickTextDisplay::Ref()->set_font_size(18.0f);
+            QuickTextDisplay::Ref()->show();
+        }
 
         m_update_item_status(pri_id);
 
@@ -289,7 +333,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
     if (sec_item_size > 0 && pri_item_list[p_parent_index].is_expanded){
         const std::string sec_list_box_name = "##InspectorSecListBox";
 
-        const double sec_item_height = ImGui::GetTextLineHeightWithSpacing() + 3;
+        const double sec_item_height = inpector_item_size.y + 3;
         const double sec_list_area_height = (sec_item_size == 0) ? 0.0f : sec_item_height * sec_item_size;
         const ImVec2 sec_list_area = ImVec2(-FLT_MIN, sec_list_area_height);
                                                                 
@@ -315,9 +359,16 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                 ImGui::PushStyleColor(ImGuiCol_Header, sec_list_box_selected_color);
                 ImGui::PushStyleColor(ImGuiCol_Text, sec_list_box_text_color);
 
-                ImVec2 size = {0.0f, 18.0f};
 
-                ImGui::Selectable(("  "+sec_name).c_str(), is_selected,0 ,size);
+                ImGui::Selectable(("  "+sec_name).c_str(), is_selected,0 ,inpector_item_size);
+                if(ImGui::IsItemHovered()){
+                    MsgGenerator gen;
+                    gen.add_row("Type", ObjectServer::Ref()->get_instance<GraphBase>(sec_id)->get_type_name());
+
+                    QuickTextDisplay::Ref()->set_text(gen.get());
+                    QuickTextDisplay::Ref()->set_font_size(18.0f);
+                    QuickTextDisplay::Ref()->show();
+                }
 
                 m_update_item_status(sec_id);
 
@@ -363,7 +414,7 @@ void EditorLeftPanel::m_update_inpector_other_list(){
     const int other_item_size = other_item_list.size();
     if (other_item_size > 0){
         const char* other_list_box_name = "##InspectorOtherListBox";
-        const double other_item_height = ImGui::GetTextLineHeightWithSpacing() + 3;
+        const double other_item_height = inpector_item_size.y + 3.0f;
         const double other_list_area_height = (other_item_size == 0) ? 0.0f : other_item_height * other_item_size;
         const ImVec2 other_list_area = ImVec2(-FLT_MIN, other_list_area_height);
 
@@ -387,9 +438,15 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                 ImGui::PushStyleColor(ImGuiCol_Header, other_list_box_selected_color);
                 ImGui::PushStyleColor(ImGuiCol_Text, other_list_box_text_color);
 
-                ImVec2 size = {0.0f, 18.0f};
+                ImGui::Selectable((other_name).c_str(), is_selected, 0, inpector_item_size);
+                if(ImGui::IsItemHovered()){
+                    MsgGenerator gen;
+                    gen.add_row("Type", ObjectServer::Ref()->get_instance<GraphBase>(other_id)->get_type_name());
 
-                ImGui::Selectable((other_name).c_str(), is_selected, 0, size);
+                    QuickTextDisplay::Ref()->set_text(gen.get());
+                    QuickTextDisplay::Ref()->set_font_size(18.0f);
+                    QuickTextDisplay::Ref()->show();
+                }
                 
 
                 m_update_item_status(other_id);

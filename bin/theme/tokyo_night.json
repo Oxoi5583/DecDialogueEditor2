@@ -15,5 +15,7 @@
     "SelectableHighlightColour": "BDD2FF",
     "EntryColour": "E3DD91",
     "NodeColour": "6798BB",
-    "OptionColour": "DAB9ED"
+    "OptionColour": "DAB9ED",
+    "ModuleEntryColour": "F0D6AD",
+    "ModuleNodeColour": "4EB5AC"
 }

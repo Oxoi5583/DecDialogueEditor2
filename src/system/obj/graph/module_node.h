@@ -9,12 +9,11 @@
 
 using namespace glm;
 
-class GraphEntry : public GraphBase{
+class GraphModuleNode : public GraphBase{
 private:
-
 public:
-    GraphEntry();
-    ~GraphEntry();
+    GraphModuleNode();
+    ~GraphModuleNode();
 
     void ready();
     void pre_process();

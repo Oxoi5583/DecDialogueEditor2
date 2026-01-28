@@ -23,19 +23,40 @@ struct FSizeUnit{
         GIGABYTE,
         MEGABYTE,
         KILOBYTE,
+        BYTE,
     };
+
+    static constexpr const long double BYTES_PER_PETABYTE = 1125899906842624.0L;
+    static constexpr const long double BYTES_PER_TERABYTE = 1000000000000;
+    static constexpr const long double BYTES_PER_GIGABYTE = 1000000000;
+    static constexpr const long double BYTES_PER_MEGABYTE = 1000000;
+    static constexpr const long double BYTES_PER_KILOBYTE = 1000;
 
     uintmax_t value;
     Type type;
     
+    operator float(){
+        return (float)get();
+    }
+    operator double(){
+        return get();
+    }
+
     double get();
+    std::string to_string();
+    void update_type();
 };
 
+namespace std{
+    string to_string(FSizeUnit p_size);
+}
 
 struct FPathWrapper{
     FPath path;
     FPathWrapper* parent;
+    long long last_write_time;
     std::map<FString ,FPathWrapper> children;
+    std::vector<std::function<void()>> modified_callback;
 
     void build_tree();
     void remove(FString p_target = "");
@@ -46,6 +67,11 @@ struct FPathWrapper{
 
     void append_text(FString p_text);
     void truncate_text();
+
+    void run_modified_callback();
+    void add_modified_callback(std::function<void()> p_callback);
+
+    void update_last_write_epoch();
 
     FString get_name();
     FString get_extension();
