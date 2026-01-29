@@ -21,13 +21,11 @@ bool HoverableObject::m_check_hovering(){
     if(event.is_event_occurred && event.obj_id != get_id()){
         return false;
     }
-
     vec2 mouse_pos = get_mouse_pos();
     
     if(!this->is_point_intersect(mouse_pos)){
         return false;
     }
-
     EventMouseHoverObj new_event;
     new_event.hovering_pos = mouse_pos;
     new_event.obj_id = get_id();

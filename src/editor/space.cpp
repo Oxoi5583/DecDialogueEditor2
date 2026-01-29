@@ -314,6 +314,12 @@ void EditorSpace::SplitResizer::m_emit_event(){
 }
 
 void EditorSpace::update_resizer(){
+    bool not_locked = !(EventServer::Ref()->has<EventLockedAll>() || EventServer::Ref()->has<EventMouseHoverObj>());
+    if(!not_locked){
+        return;;
+    }
+
+
     if(!split_resizer.is_enabled()){
         return;
     }

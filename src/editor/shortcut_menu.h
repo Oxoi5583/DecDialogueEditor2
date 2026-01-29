@@ -4,6 +4,8 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "ext/debug/messenger_ext.h"
 #include "glm/ext/vector_float2.hpp"
+#include "server/file_server.h"
+#include "server/project_server.h"
 #include "system/graph/camera.h"
 #include "system/graph/grid.h"
 #include "system/obj/graph/base.h"
@@ -31,6 +33,8 @@ public:
         MODE_INSPECTOR_ON_LIST,
         MODE_INSPECTOR_ON_NODE,
         MODE_INSPECTOR_ON_NODES,
+
+        MODE_EXPLORER_ON_LIST,
     };
 
     struct Option{
@@ -43,15 +47,23 @@ public:
 
 private:
     const char* m_root_name = "ShortcutMenu";
-    std::vector<OID> m_related_obj_ids;
-    vec2 m_menu_pos;
+
+    struct{
+        std::vector<OID> ids;
+        std::vector<std::string> strs;
+        std::vector<vec2> vectors;
+    } datapipeline;
     
     Option m_option_create_node__entry = {
         "Entry",
         {},
         [this](){
+            if(datapipeline.vectors.empty()){
+                return;
+            }
+
             EventSpawnNode event;
-            event.spawn_pos = this->m_menu_pos;
+            event.spawn_pos = this->datapipeline.vectors[0];
             event.type = GraphManager::NodeType::ENTRY;
             EventServer::Ref()->emit(event);
         }
@@ -60,8 +72,12 @@ private:
         "Node",
         {},
         [this](){
+            if(datapipeline.vectors.empty()){
+                return;
+            }
+
             EventSpawnNode event;
-            event.spawn_pos = this->m_menu_pos;
+            event.spawn_pos = this->datapipeline.vectors[0];
             event.type = GraphManager::NodeType::NODE;
             EventServer::Ref()->emit(event);
         }
@@ -70,8 +86,12 @@ private:
         "Option",
         {},
         [this](){
+            if(datapipeline.vectors.empty()){
+                return;
+            }
+
             EventSpawnNode event;
-            event.spawn_pos = this->m_menu_pos;
+            event.spawn_pos = this->datapipeline.vectors[0];
             event.type = GraphManager::NodeType::OPTION;
             EventServer::Ref()->emit(event);
         }
@@ -80,8 +100,12 @@ private:
         "Repeater",
         {},
         [this](){
+            if(datapipeline.vectors.empty()){
+                return;
+            }
+
             EventSpawnNode event;
-            event.spawn_pos = this->m_menu_pos;
+            event.spawn_pos = this->datapipeline.vectors[0];
             event.type = GraphManager::NodeType::REPEATER;
             EventServer::Ref()->emit(event);
         }
@@ -90,8 +114,12 @@ private:
         "Module Entry",
         {},
         [this](){
+            if(datapipeline.vectors.empty()){
+                return;
+            }
+
             EventSpawnNode event;
-            event.spawn_pos = this->m_menu_pos;
+            event.spawn_pos = this->datapipeline.vectors[0];
             event.type = GraphManager::NodeType::MODULE_ENTRY;
             EventServer::Ref()->emit(event);
         }
@@ -100,8 +128,12 @@ private:
         "Module Node",
         {},
         [this](){
+            if(datapipeline.vectors.empty()){
+                return;
+            }
+
             EventSpawnNode event;
-            event.spawn_pos = this->m_menu_pos;
+            event.spawn_pos = this->datapipeline.vectors[0];
             event.type = GraphManager::NodeType::MODULE_NODE;
             EventServer::Ref()->emit(event);
         }
@@ -124,11 +156,11 @@ private:
         "Connect...",
         {},
         [this](){
-            if(this->m_related_obj_ids.empty()){
+            if(this->datapipeline.ids.empty()){
                 return;
             }
 
-            OID id = this->m_related_obj_ids[0];
+            OID id = this->datapipeline.ids[0];
             if(!ObjectServer::Ref()->is_id_valid(id)){
                 return;
             }
@@ -217,7 +249,7 @@ private:
         "Edit",
         {},
         [this](){
-            auto& ids = this->m_related_obj_ids;
+            auto& ids = this->datapipeline.ids;
             for(OID& id : ids){
                 EventOpenDetailsWindow event;
                 event.id = id;
@@ -229,7 +261,7 @@ private:
         "Delete node",
         {},
         [this](){
-            auto& ids = this->m_related_obj_ids;
+            auto& ids = this->datapipeline.ids;
             for(OID& id : ids){
                 if(ObjectServer::Ref()->is_id_valid(id)){
                     ObjectServer::Ref()->get_instance<ObjectBase>(id)->queue_free();
@@ -241,7 +273,7 @@ private:
         "Delete nodes",
         {},
         [this](){
-            auto& ids = this->m_related_obj_ids;
+            auto& ids = this->datapipeline.ids;
             for(OID& id : ids){
                 if(ObjectServer::Ref()->is_id_valid(id)){
                     ObjectServer::Ref()->get_instance<ObjectBase>(id)->queue_free();
@@ -256,7 +288,7 @@ private:
         "To rectangle",
         {},
         [this](){
-            auto& ids = this->m_related_obj_ids;
+            auto& ids = this->datapipeline.ids;
             int count = ids.size();
             int width = std::ceil(std::sqrt((float)count));
             int height = std::ceil((float)count / (float)width);
@@ -308,7 +340,7 @@ private:
         "To vertical",
         {},
         [this](){
-            auto& ids = this->m_related_obj_ids;
+            auto& ids = this->datapipeline.ids;
             int count = ids.size();
 
             m_sorting_ids_for_align(ids);
@@ -359,7 +391,7 @@ private:
         "To horizontal",
         {},
         [this](){
-            auto& ids = this->m_related_obj_ids;
+            auto& ids = this->datapipeline.ids;
             int count = ids.size();
 
             m_sorting_ids_for_align(ids);
@@ -477,19 +509,66 @@ private:
         },
         std::function<void()>()
     };
+    
+    Option m_explorer_delete_workspace = {
+        "Delete Workspace",
+        {},
+        [this](){
+            if(datapipeline.strs.empty()){
+                return;
+            }
+            if(ProjectServer::Ref()->get_project_data().size() == 1){
+                return;
+            }
+
+            std::string hovered_uid = this->datapipeline.strs[0];
+            std::string current_uid = ProjectServer::Ref()->get_workspace_uid();
+            if(hovered_uid == current_uid){
+                auto workspaces = ProjectServer::Ref()->get_project_data_sorted();
+                std::string new_ws_uid;
+                for(auto& ws : workspaces){
+                    if(ws.uid != current_uid){
+                        new_ws_uid = ws.uid;
+                        break;
+                    }
+                }
+                ProjectServer::Ref()->set_workspace(new_ws_uid);
+            }
+            
+            ProjectServer::Ref()->get_project_root().remove(hovered_uid);
+        }
+    };
+    Option m_explorer_rename_workspace = {
+        "Rename Workspace",
+        {},
+        [this](){
+            
+        }
+    };
+    Option m_explorer_on_list = {
+        "Root",
+        {
+            m_explorer_delete_workspace,
+        },
+        std::function<void()>()
+    };
+
 
     std::map<ModeFlag, Option> m_menu = {
-        {ModeFlag::MODE_NULL, m_null},
+        {ModeFlag::MODE_NULL , m_null},
 
         /*   Mode Graph   */
-        {ModeFlag::MODE_GRAPH_ON_WORLD, m_graph_on_world},
-        {ModeFlag::MODE_GRAPH_ON_NODE , m_graph_on_node},
-        {ModeFlag::MODE_GRAPH_ON_NODES , m_graph_on_nodes},
+        {ModeFlag::MODE_GRAPH_ON_WORLD      , m_graph_on_world},
+        {ModeFlag::MODE_GRAPH_ON_NODE       , m_graph_on_node},
+        {ModeFlag::MODE_GRAPH_ON_NODES      , m_graph_on_nodes},
 
         /*   Mode Inspector   */
-        {ModeFlag::MODE_INSPECTOR_ON_LIST , m_inspector_on_list},
-        {ModeFlag::MODE_INSPECTOR_ON_NODE , m_inspector_on_node},
-        {ModeFlag::MODE_INSPECTOR_ON_NODES , m_inspector_on_nodes},
+        {ModeFlag::MODE_INSPECTOR_ON_LIST   , m_inspector_on_list},
+        {ModeFlag::MODE_INSPECTOR_ON_NODE   , m_inspector_on_node},
+        {ModeFlag::MODE_INSPECTOR_ON_NODES  , m_inspector_on_nodes},
+
+        /*   Mode Explorer   */
+        {ModeFlag::MODE_EXPLORER_ON_LIST    , m_explorer_on_list},
     };
 
     ModeFlag m_current_mode = ModeFlag::MODE_GRAPH_ON_NODE;

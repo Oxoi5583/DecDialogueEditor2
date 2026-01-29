@@ -221,3 +221,26 @@ void ProjectServer::save_workspace(){
 std::string ProjectServer::get_workspace_uid(){
     return m_current_workspace;
 }
+std::vector<ProjectWorkSpace> ProjectServer::get_project_data_sorted(bool p_is_asc){
+    auto proj_data = ProjectServer::Ref()->get_project_data();
+    std::vector<ProjectWorkSpace> proj_data_v;
+
+    std::transform(proj_data.begin(), proj_data.end(), std::back_inserter(proj_data_v),
+    [](const std::pair<std::string, ProjectWorkSpace>& a){
+        return a.second;
+    });
+
+    if(p_is_asc){
+        std::sort(proj_data_v.begin(), proj_data_v.end(),
+        [](const ProjectWorkSpace& a, const ProjectWorkSpace& b){
+            return a.load_pri < b.load_pri;
+        });
+    }else{
+        std::sort(proj_data_v.begin(), proj_data_v.end(),
+        [](const ProjectWorkSpace& a, const ProjectWorkSpace& b){
+            return a.load_pri > b.load_pri;
+        });
+    }
+
+    return proj_data_v;
+}

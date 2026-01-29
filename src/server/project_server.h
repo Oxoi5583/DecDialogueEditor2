@@ -65,6 +65,7 @@ public:
     const std::string default_name = "temp";
 
     std::map<std::string, ProjectWorkSpace> get_project_data();
+    std::vector<ProjectWorkSpace> get_project_data_sorted(bool p_is_asc = true);
     ProjectWorkSpace get_workspace_data();
     std::string get_workspace_uid();
 

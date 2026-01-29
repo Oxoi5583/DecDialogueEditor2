@@ -186,3 +186,7 @@ struct EventTryConnectTo : public NonUniqueEvent{
 struct EventOpenDetailsWindow : public NonUniqueEvent{
     OID id;
 };
+
+struct EventHoveredExplorerList : public NonUniqueEvent{
+    std::string workspace_uid;
+};

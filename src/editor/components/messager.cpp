@@ -116,8 +116,10 @@ void EditorMessager::add_message(std::string p_cnt){
 }
 
 void EditorMessager::init(){
+    /*
     DEBUG_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
     INFO_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
     ERROR_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
     SUCCESS_BIND_ACTION([this](std::string p_str){ this->add_message(p_str.replace(0, 51, "")); });
+    */
 }

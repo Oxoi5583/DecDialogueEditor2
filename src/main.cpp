@@ -110,6 +110,7 @@ int main(int argc, char* argv[]) {
         GraphConnection::Ref()->pre_update();
         GraphSelection::Ref()->pre_update();
         GraphManager::Ref()->update();
+        EditorShortcutMenu::Ref()->update();
         EditorLayout::Ref()->ui_update();
         EngineWindowResizer::Ref()->update();
         EditorMessager::Ref()->process();
@@ -132,7 +133,6 @@ int main(int argc, char* argv[]) {
         EngineWindowResizer::Ref()->post_update();
         MouseServer::Ref()->update();
         EditorLayout::Ref()->ui_draw();
-        EditorShortcutMenu::Ref()->update();
         UpCoordinate::Ref()->process();
         LeftCoordinate::Ref()->process();
         QuickTextDisplay::Ref()->process();

@@ -184,19 +184,8 @@ void EditorLeftPanel::m_update_explorer_list(){
 
         ImVec2 each_size = {ImGui::GetWindowContentRegionMax().x, ImGui::CalcTextSize("@").y};
 
-        auto proj_data = ProjectServer::Ref()->get_project_data();
-        std::vector<ProjectWorkSpace> proj_data_v;
-        
-        std::transform(proj_data.begin(), proj_data.end(), std::back_inserter(proj_data_v),
-        [](const std::pair<std::string, ProjectWorkSpace>& a){
-            return a.second;
-        });
 
-        std::sort(proj_data_v.begin(), proj_data_v.end(),
-        [](const ProjectWorkSpace& a, const ProjectWorkSpace& b){
-            return a.load_pri < b.load_pri;
-        });
-
+        auto proj_data_v = ProjectServer::Ref()->get_project_data_sorted();
 
         for(auto& space : proj_data_v){
             std::string obj_id = space.name + "##" + space.path;
@@ -226,6 +215,12 @@ void EditorLeftPanel::m_update_explorer_list(){
                 QuickTextDisplay::Ref()->set_text(gen.get());
                 QuickTextDisplay::Ref()->set_font_size(13.0f);
                 QuickTextDisplay::Ref()->show();
+
+                EventHoveredExplorerList evt;
+                evt.workspace_uid = space.uid;
+                EventServer::Ref()->emit(evt);
+                EventMouseHoverObj evt2;
+                EventServer::Ref()->emit(evt2);
             }
 
             if(ImGui::IsItemClicked()){
