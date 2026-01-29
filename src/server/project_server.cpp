@@ -8,11 +8,44 @@
 #include "system/obj/graph/manager.h"
 #include <cstddef>
 #include <nlohmann/json.hpp>
+#include <string>
+
+
+void ProjectWorkSpace::save(){
+    this->path_wrapper->truncate_text();
+    std::string new_content = this->data.dump(4);
+    this->path_wrapper->append_text(new_content);
+}
+void ProjectWorkSpace::rename(std::string p_name){
+    this->edit("name", p_name);
+    save();
+}
+void ProjectWorkSpace::edit(std::string p_key, std::string p_val){
+    if(data.contains(p_key) && !data[p_key].is_string()){
+        return;
+    }
+    data[p_key] = p_val;
+}
+void ProjectWorkSpace::edit(std::string p_key, int p_val){
+    if(data.contains(p_key) && !data[p_key].is_number_integer()){
+        return;
+    }
+    data[p_key] = p_val;
+}
+void ProjectWorkSpace::edit(std::string p_key, float p_val){
+    if(data.contains(p_key) && !data[p_key].is_number_float()){
+        return;
+    }
+    data[p_key] = p_val;
+}
+void ProjectWorkSpace::edit(std::string p_key, bool p_val){
+    if(data.contains(p_key) && !data[p_key].is_boolean()){
+        return;
+    }
+    data[p_key] = p_val;
+}
 
 ProjectServer::ProjectServer(){
-    FileServer::Ref()->get_root()["projects"].add_modified_callback([this](){
-        this->m_refresh_projects_data();
-    });
     FString init_file = this->create_file();
     m_current_workspace = init_file;
 }
@@ -20,8 +53,11 @@ ProjectServer::~ProjectServer(){
     m_clear_files_if_not_saved();
 }
 
+void ProjectServer::init(){
+    m_scan_projects_folder();
+}
 void ProjectServer::process(){
-    m_refresh_projects_data();
+    //m_scan_projects_folder();
     m_free_graph_nodes_if_workspace_not_exists();
 }
 
@@ -43,7 +79,7 @@ void ProjectServer::set_project(std::string p_name){
 
     m_current_project = p_name;
 }
-void ProjectServer::m_freeze_graph_nodes_if_in_workspace(){
+void ProjectServer::m_freeze_graph_nodes_if_in_diff_workspace(){
     std::vector<OID> ids = ObjectServer::Ref()->get_all_ids();
     for(OID& id : ids){
         GraphBase* ptr1 = ObjectServer::Ref()->get_instance<GraphBase>(id);
@@ -118,14 +154,14 @@ void ProjectServer::set_workspace(std::string p_uid){
 
     m_current_workspace = p_uid;
 
-    m_freeze_graph_nodes_if_in_workspace();
+    m_freeze_graph_nodes_if_in_diff_workspace();
 }
 void ProjectServer::m_clear_files_if_not_saved(){
     if(m_current_project == default_name){
         this->get_project_root().clear();
     }
 }
-void ProjectServer::m_refresh_projects_data(){
+void ProjectServer::m_scan_projects_folder(){
     std::map<std::string, std::map<std::string, ProjectWorkSpace>>().swap(m_projects);
 
     FPathWrapper& root = FileServer::Ref()->get_root()["projects"];
@@ -201,15 +237,18 @@ bool ProjectServer::is_project_file_valid(nlohmann::json& p_data){
     }
     return true;
 }
-std::map<std::string, ProjectWorkSpace> ProjectServer::get_project_data(){
+std::map<ProjectServer::WorkspaceID, ProjectWorkSpace>& ProjectServer::get_project_data(){
     if(m_projects.contains(m_current_project)){
         return m_projects[m_current_project];
     }
     m_current_project = default_name;
     return m_projects[m_current_project];
 }
-ProjectWorkSpace ProjectServer::get_workspace_data(){
-    return get_project_data()[m_current_workspace];
+ProjectWorkSpace& ProjectServer::get_workspace_data(std::string p_uid){
+    if(p_uid == ""){
+        p_uid = m_current_workspace;
+    }
+    return get_project_data()[p_uid];
 }
 
 void ProjectServer::save_workspace(){
@@ -217,12 +256,17 @@ void ProjectServer::save_workspace(){
     workspace.path_wrapper->truncate_text();
     workspace.path_wrapper->append_text(workspace.data.dump(4));
 }
+void ProjectServer::save_as_project(){
+    
+}
 
 std::string ProjectServer::get_workspace_uid(){
     return m_current_workspace;
 }
 std::vector<ProjectWorkSpace> ProjectServer::get_project_data_sorted(bool p_is_asc){
-    auto proj_data = ProjectServer::Ref()->get_project_data();
+    auto& proj_data = ProjectServer::Ref()->get_project_data();
+
+
     std::vector<ProjectWorkSpace> proj_data_v;
 
     std::transform(proj_data.begin(), proj_data.end(), std::back_inserter(proj_data_v),
@@ -243,4 +287,9 @@ std::vector<ProjectWorkSpace> ProjectServer::get_project_data_sorted(bool p_is_a
     }
 
     return proj_data_v;
+}
+
+void ProjectServer::edit_workspace(std::string p_workspace_id, std::string p_key, std::string p_val){
+    m_projects[m_current_project][p_workspace_id].edit(p_key, p_val);
+    m_projects[m_current_project][p_workspace_id].save();
 }

@@ -1,6 +1,7 @@
 #include "editor/components/popup_window.h"
 #include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "engine/font_loader.h"
 #include "engine/window.h"
 #include "glm/ext/vector_float2.hpp"
 #include "imgui/imgui.h"
@@ -8,10 +9,13 @@
 #include "server/events.h"
 #include "server/mouse_server.h"
 #include "server/object_server.h"
+#include <algorithm>
 #include <cstddef>
+#include <iterator>
 #include <string>
 
 #include "ext/debug/messenger_ext.h"
+#include "server/ui_icon_unicode.h"
 
 
 std::string PopupWindowDataPipeline::get_string(std::string p_id){
@@ -228,12 +232,14 @@ void PopupWindow::m_inputs_process(){
 void PopupWindow::m_buttons_process(){
     ImVec2 window_size = ImGui::GetWindowSize();
     ImVec2 button_size = ImVec2(100, 30);
-    float buttonY = window_size.y - button_size.y - ImGui::GetStyle().WindowPadding.y;
-    ImVec2 cursor_pos = ImVec2(ImGui::GetStyle().WindowPadding.x, buttonY);
+    float button_y = window_size.y - button_size.y - ImGui::GetStyle().WindowPadding.y;
+    float total_button_width = (button_size.x * m_options.size());
+    float total_button_spacing = ImGui::GetStyle().ItemSpacing.x * (m_options.size() - 1);
+    float cursor_x = (window_size.x - (total_button_width + total_button_spacing)) / 2.0f;
+    ImVec2 cursor_pos = ImVec2(cursor_x, button_y);
 
     size_t i = 0;
     for(auto it : m_options){
-        cursor_pos.x = cursor_pos.x + (button_size.x + ImGui::GetStyle().ItemSpacing.x);
         ImGui::SetCursorPos(cursor_pos);
         std::string item_name = it.name + "##" + this->m_uid +  it.uid;
         ImGui::Button(item_name.c_str() , button_size);
@@ -254,6 +260,7 @@ void PopupWindow::m_buttons_process(){
             }
         }
 
+        cursor_pos.x = cursor_pos.x + (button_size.x + ImGui::GetStyle().ItemSpacing.x);
         i++;
     }
 }
@@ -263,9 +270,16 @@ void PopupWindow::m_close_button_process(){
     float button_height = 0.0f;
     float button_x = content_width - button_width;
     ImGui::SetCursorPosX(button_x);
-    if(ImGui::Button("X", ImVec2(button_width, button_height))){
+
+    std::string button_id = ICON_WIN_CLOSE;
+    button_id += "##";
+    button_id += m_uid;
+
+    ImGui::PushFont(EngineFontLoader::Ref()->get(12));
+    if(ImGui::Button(button_id.c_str(), ImVec2(button_width, button_height))){
         this->queue_free();
     }
+    ImGui::PopFont();
     if(ImGui::IsItemHovered()){
         {
             EventMouseHoverObj event;
@@ -311,7 +325,16 @@ std::string PopupWindow::get_input_string(size_t p_index){
     Input input = this->m_inputs[p_index];
     std::string data_id = m_uid + input.uid;
 
-    return PopupWindowDataPipeline::Ref()->get_string(data_id);
+    std::string str = PopupWindowDataPipeline::Ref()->get_string(data_id);
+    std::string ret;
+    std::copy_if(
+        str.begin(),
+        str.end(),
+        std::back_inserter(ret),
+        [](char c){ return c != '\0'; }
+    );
+    
+    return ret;
 }
 int PopupWindow::get_input_int(size_t p_index){
     if(p_index >= m_inputs.size()){

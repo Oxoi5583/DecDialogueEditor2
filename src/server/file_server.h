@@ -61,7 +61,7 @@ struct FPathWrapper{
     void build_tree();
     void remove(FString p_target = "");
     void clear();
-    
+
     void create_dir(FString p_dir);
     void create_file(FString p_name);
 
@@ -70,6 +70,8 @@ struct FPathWrapper{
 
     void run_modified_callback();
     void add_modified_callback(std::function<void()> p_callback);
+
+    void duplicate(std::string p_target, std::string p_name);
 
     void update_last_write_epoch();
 

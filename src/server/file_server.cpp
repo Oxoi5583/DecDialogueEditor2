@@ -278,6 +278,26 @@ void FPathWrapper::truncate_text(){
     }
     this->run_modified_callback();
 }
+void FPathWrapper::duplicate(std::string p_target, std::string p_name){
+    std::filesystem::path from = std::filesystem::path(this->path).append(p_target);
+    std::filesystem::path dist = std::filesystem::path(this->path).append(p_name);
+    if(!std::filesystem::is_directory(this->path)){
+        return;
+    }
+    if(!std::filesystem::exists(from)){
+        return;
+    }
+    if(!std::filesystem::exists(dist)){
+        std::filesystem::create_directory(dist);
+    }
+
+    try{
+        std::filesystem::copy(from, dist, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
+        this->build_tree();
+    } catch (std::filesystem::filesystem_error& e){
+        ERROR_MSG("Error copy file : " << e.what());
+    }
+}
 void FPathWrapper::run_modified_callback(){
     for(auto& callback : modified_callback){
         callback();

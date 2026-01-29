@@ -100,7 +100,12 @@ void EditorShortcutMenu::m_control_mode(){
         if(ProjectServer::Ref()->get_project_data().size() > 1){
             EventHoveredExplorerList evt = EventServer::Ref()->poll_first<EventHoveredExplorerList>();
             this->datapipeline.strs.push_back(evt.workspace_uid);
-            m_current_mode = ModeFlag::MODE_EXPLORER_ON_LIST;
+            m_current_mode = ModeFlag::MODE_EXPLORER_ON_LIST_MORE_THAN_WS;
+            return;
+        }else{
+            EventHoveredExplorerList evt = EventServer::Ref()->poll_first<EventHoveredExplorerList>();
+            this->datapipeline.strs.push_back(evt.workspace_uid);
+            m_current_mode = ModeFlag::MODE_EXPLORER_ON_LIST_ONLY_ONE_WS;
             return;
         }
     }
@@ -132,7 +137,7 @@ void EditorShortcutMenu::m_draw_menu(){
 void EditorShortcutMenu::m_draw_options(std::vector<Option>& p_options){
     for(auto &opt : p_options){
         if(opt.has_options()){
-            if(ImGui::BeginMenu(opt.name.c_str())){
+            if(ImGui::BeginMenu(opt.name->c_str())){
                 if(ImGui::IsWindowHovered()){
                     EventLockedAll evt1;
                     EventServer::Ref()->emit(evt1);
@@ -143,7 +148,7 @@ void EditorShortcutMenu::m_draw_options(std::vector<Option>& p_options){
                 ImGui::EndMenu();
             }
         }else{
-            if(ImGui::MenuItem(opt.name.c_str())){
+            if(ImGui::MenuItem(opt.name->c_str())){
                 opt.action();
             }
         }

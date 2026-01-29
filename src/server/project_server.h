@@ -18,9 +18,19 @@ struct ProjectWorkSpace{
     FSizeUnit size;
     nlohmann::json data;
     bool is_selected;
+
+    void save();
+    void rename(std::string p_name);
+    void edit(std::string p_key, std::string p_val);
+    void edit(std::string p_key, int p_val);
+    void edit(std::string p_key, float p_val);
+    void edit(std::string p_key, bool p_val);
 };
 
 class ProjectServer : public Singleton<ProjectServer>{
+public:
+    typedef std::string ProjectID;
+    typedef std::string WorkspaceID;
 private:
     std::string m_current_project = "temp";
     std::string m_current_workspace = "temp";
@@ -44,10 +54,10 @@ private:
         {"name", JSONValueType::STRING},
     };
 
-    std::map<std::string, std::map<std::string, ProjectWorkSpace>> m_projects;
-    void m_refresh_projects_data();
-
-    void m_freeze_graph_nodes_if_in_workspace();
+    std::map<ProjectID, std::map<WorkspaceID, ProjectWorkSpace>> m_projects;
+    
+    void m_scan_projects_folder();
+    void m_freeze_graph_nodes_if_in_diff_workspace();
     void m_free_graph_nodes_if_workspace_not_exists();
 public:
     ProjectServer();
@@ -64,12 +74,16 @@ public:
 
     const std::string default_name = "temp";
 
-    std::map<std::string, ProjectWorkSpace> get_project_data();
+    std::map<WorkspaceID, ProjectWorkSpace>& get_project_data();
     std::vector<ProjectWorkSpace> get_project_data_sorted(bool p_is_asc = true);
-    ProjectWorkSpace get_workspace_data();
+    ProjectWorkSpace& get_workspace_data(std::string p_uid = "");
     std::string get_workspace_uid();
 
-    void save_workspace();
+    void edit_workspace(std::string p_workspace_id, std::string p_key, std::string p_val);
 
+    void save_workspace();
+    void save_as_project();
+
+    void init();
     void process();
 };

@@ -77,6 +77,12 @@ void EditorMenuBar::m_begin_main_bar(){
 void EditorMenuBar::m_update_menu_file(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->File)){
         ImGui::MenuItem(UiTextBank::Ref()->New);
+        if(ImGui::MenuItem(UiTextBank::Ref()->Save)){
+            
+        }
+        if(ImGui::MenuItem(UiTextBank::Ref()->SaveAs)){
+
+        }
         ImGui::MenuItem(UiTextBank::Ref()->Open);
         ImGui::EndMenu();
     }

@@ -1,4 +1,4 @@
-Dev Node :
+Dev Note :
 Should Add Module Entry and Exit and Module Node
 If Connected to Module Entry, It will Transit to Module Dialogue.
 When Exited the Module Part, It will Connected Back to Module Node
@@ -10,3 +10,6 @@ Module Exit Node
 
 Node -> Module Node -> Node
 Module Entry Node -> Node -> Node -> Module Exit Node
+
+
+Should Build better workspace edit API

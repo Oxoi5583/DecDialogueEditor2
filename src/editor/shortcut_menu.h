@@ -2,10 +2,12 @@
 
 #include "DecToolsBox/abstract./singleton.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "editor/components/popup_window.h"
 #include "ext/debug/messenger_ext.h"
 #include "glm/ext/vector_float2.hpp"
 #include "server/file_server.h"
 #include "server/project_server.h"
+#include "server/ui_text_bank.h"
 #include "system/graph/camera.h"
 #include "system/graph/grid.h"
 #include "system/obj/graph/base.h"
@@ -19,6 +21,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 class EditorShortcutMenu : public Singleton<EditorShortcutMenu>{
@@ -34,11 +37,12 @@ public:
         MODE_INSPECTOR_ON_NODE,
         MODE_INSPECTOR_ON_NODES,
 
-        MODE_EXPLORER_ON_LIST,
+        MODE_EXPLORER_ON_LIST_ONLY_ONE_WS,
+        MODE_EXPLORER_ON_LIST_MORE_THAN_WS,
     };
 
     struct Option{
-        std::string name;
+        UiText* name;
         std::vector<Option> options;
         std::function<void()> action;
 
@@ -53,9 +57,9 @@ private:
         std::vector<std::string> strs;
         std::vector<vec2> vectors;
     } datapipeline;
-    
+        
     Option m_option_create_node__entry = {
-        "Entry",
+        &UiTextBank::Ref()->OptionEntry,
         {},
         [this](){
             if(datapipeline.vectors.empty()){
@@ -69,7 +73,7 @@ private:
         }
     };
     Option m_option_create_node__node = {
-        "Node",
+        &UiTextBank::Ref()->OptionNode,
         {},
         [this](){
             if(datapipeline.vectors.empty()){
@@ -83,7 +87,7 @@ private:
         }
     };
     Option m_option_create_node__option = {
-        "Option",
+        &UiTextBank::Ref()->OptionOption,
         {},
         [this](){
             if(datapipeline.vectors.empty()){
@@ -97,7 +101,7 @@ private:
         }
     };
     Option m_option_create_node__repeater = {
-        "Repeater",
+        &UiTextBank::Ref()->OptionRepeater,
         {},
         [this](){
             if(datapipeline.vectors.empty()){
@@ -111,7 +115,7 @@ private:
         }
     };
     Option m_option_create_node__module_entry = {
-        "Module Entry",
+        &UiTextBank::Ref()->OptionModuleEntry,
         {},
         [this](){
             if(datapipeline.vectors.empty()){
@@ -125,7 +129,7 @@ private:
         }
     };
     Option m_option_create_node__module_node = {
-        "Module Node",
+        &UiTextBank::Ref()->OptionModuleNode,
         {},
         [this](){
             if(datapipeline.vectors.empty()){
@@ -140,7 +144,7 @@ private:
     };
 
     Option m_option_create_node = {
-        "Create Node",
+        &UiTextBank::Ref()->OptionCreateNode,
         {
             m_option_create_node__entry,
             m_option_create_node__node,
@@ -151,9 +155,9 @@ private:
         },
         std::function<void()>()
     };
-    
+
     Option m_option_connect = {
-        "Connect...",
+        &UiTextBank::Ref()->OptionConnect,
         {},
         [this](){
             if(this->datapipeline.ids.empty()){
@@ -170,9 +174,9 @@ private:
             EventServer::Ref()->emit(event);
         }
     };
-    
+
     Option m_option_create_node_at_cam__entry = {
-        "Entry",
+        &UiTextBank::Ref()->OptionEntry,
         {},
         [this](){
             EventSpawnNode event;
@@ -182,7 +186,7 @@ private:
         }
     };
     Option m_option_create_node_at_cam__node = {
-        "Node",
+        &UiTextBank::Ref()->OptionNode,
         {},
         [this](){
             EventSpawnNode event;
@@ -192,7 +196,7 @@ private:
         }
     };
     Option m_option_create_node_at_cam__option = {
-        "Option",
+        &UiTextBank::Ref()->OptionOption,
         {},
         [this](){
             EventSpawnNode event;
@@ -202,7 +206,7 @@ private:
         }
     };
     Option m_option_create_node_at_cam__repeater = {
-        "Repeater",
+        &UiTextBank::Ref()->OptionRepeater,
         {},
         [this](){
             EventSpawnNode event;
@@ -212,7 +216,7 @@ private:
         }
     };
     Option m_option_create_node_at_cam__module_entry = {
-        "Module Entry",
+        &UiTextBank::Ref()->OptionModuleEntry,
         {},
         [this](){
             EventSpawnNode event;
@@ -222,7 +226,7 @@ private:
         }
     };
     Option m_option_create_node_at_cam__module_node = {
-        "Module Node",
+        &UiTextBank::Ref()->OptionModuleNode,
         {},
         [this](){
             EventSpawnNode event;
@@ -233,7 +237,7 @@ private:
     };
 
     Option m_option_create_node_at_cam = {
-        "Create Node",
+        &UiTextBank::Ref()->OptionCreateNode,
         {
             m_option_create_node_at_cam__entry,
             m_option_create_node_at_cam__node,
@@ -246,7 +250,7 @@ private:
     };
 
     Option m_option_edit_node = {
-        "Edit",
+        &UiTextBank::Ref()->OptionEdit,
         {},
         [this](){
             auto& ids = this->datapipeline.ids;
@@ -258,7 +262,7 @@ private:
         }
     };
     Option m_option_delete_node = {
-        "Delete node",
+        &UiTextBank::Ref()->OptionDeleteNode,
         {},
         [this](){
             auto& ids = this->datapipeline.ids;
@@ -270,7 +274,7 @@ private:
         }
     };
     Option m_option_delete_nodes = {
-        "Delete nodes",
+        &UiTextBank::Ref()->OptionDeleteNodes,
         {},
         [this](){
             auto& ids = this->datapipeline.ids;
@@ -285,7 +289,7 @@ private:
     void m_sorting_ids_for_align(std::vector<OID>& p_ids);
 
     Option m_option_align_nodes__to_rectangle = {
-        "To rectangle",
+        &UiTextBank::Ref()->OptionAlignToRectangle,
         {},
         [this](){
             auto& ids = this->datapipeline.ids;
@@ -337,7 +341,7 @@ private:
         }
     };
     Option m_option_align_nodes__to_vertical = {
-        "To vertical",
+        &UiTextBank::Ref()->OptionAlignToVertical,
         {},
         [this](){
             auto& ids = this->datapipeline.ids;
@@ -388,7 +392,7 @@ private:
         }
     };
     Option m_option_align_nodes__to_horizontal = {
-        "To horizontal",
+        &UiTextBank::Ref()->OptionAlignToHorizontal,
         {},
         [this](){
             auto& ids = this->datapipeline.ids;
@@ -440,7 +444,7 @@ private:
         }
     };
     Option m_option_align_nodes = {
-        "Align nodes",
+        &UiTextBank::Ref()->OptionAlignNodes,
         {
             m_option_align_nodes__to_rectangle,
             m_option_align_nodes__to_vertical,
@@ -449,21 +453,20 @@ private:
         [this](){}
     };
 
-
     Option m_null = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {},
         std::function<void()>()
     };
     Option m_graph_on_world = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {
             m_option_create_node,
         },
         std::function<void()>()
     };
     Option m_graph_on_node = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {
             m_option_edit_node,
             m_option_connect,
@@ -473,7 +476,7 @@ private:
         std::function<void()>()
     };
     Option m_graph_on_nodes = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {
             m_option_edit_node,
             m_option_create_node,
@@ -482,16 +485,16 @@ private:
         },
         std::function<void()>()
     };
-    
+
     Option m_inspector_on_list = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {
             m_option_create_node_at_cam,
         },
         std::function<void()>()
     };
     Option m_inspector_on_node = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {
             m_option_edit_node,
             m_option_create_node_at_cam,
@@ -500,7 +503,7 @@ private:
         std::function<void()>()
     };
     Option m_inspector_on_nodes = {
-        "Root",
+        &UiTextBank::Ref()->OptionRoot,
         {
             m_option_edit_node,
             m_option_create_node_at_cam,
@@ -509,9 +512,9 @@ private:
         },
         std::function<void()>()
     };
-    
+
     Option m_explorer_delete_workspace = {
-        "Delete Workspace",
+        &UiTextBank::Ref()->OptionDeleteWorkspace,
         {},
         [this](){
             if(datapipeline.strs.empty()){
@@ -523,6 +526,9 @@ private:
 
             std::string hovered_uid = this->datapipeline.strs[0];
             std::string current_uid = ProjectServer::Ref()->get_workspace_uid();
+
+            std::string change_to_uid = current_uid;
+
             if(hovered_uid == current_uid){
                 auto workspaces = ProjectServer::Ref()->get_project_data_sorted();
                 std::string new_ws_uid;
@@ -532,26 +538,89 @@ private:
                         break;
                     }
                 }
-                ProjectServer::Ref()->set_workspace(new_ws_uid);
+                change_to_uid = new_ws_uid;
             }
-            
-            ProjectServer::Ref()->get_project_root().remove(hovered_uid);
+
+            typedef std::string WindowUID;
+            typedef PopupWindow* WindowPtr;
+            static std::pair<WindowUID ,WindowPtr> window_wrapper;
+
+            if(PopupWindowManager::Ref()->is_window_exists(window_wrapper.first)){
+            window_wrapper.second->close();
+            }
+
+            PopupWindow* window = ObjectServer::Ref()->queue_create<PopupWindow>();
+            WindowUID window_uid = window->get_uid();
+            WindowPtr window_ptr = window;
+
+            window_wrapper.first = window_uid;
+            window_wrapper.second = window_ptr;
+
+            window->set_content(UiTextBank::Ref()->ConfirmDelete);
+            window->add_option(UiTextBank::Ref()->Yes, [window, change_to_uid, hovered_uid](){
+                ProjectServer::Ref()->set_workspace(change_to_uid);
+                ProjectServer::Ref()->get_project_root().remove(hovered_uid);
+                window->close();
+            });
+            window->add_option(UiTextBank::Ref()->No, [window, change_to_uid, hovered_uid](){
+                window->close();
+            });
+
         }
     };
     Option m_explorer_rename_workspace = {
-        "Rename Workspace",
+        &UiTextBank::Ref()->OptionRenameWorkspace,
         {},
         [this](){
-            
+            if(datapipeline.strs.empty()){
+                return;
+            }
+
+            typedef std::string WindowUID;
+            typedef PopupWindow* WindowPtr;
+            static std::pair<WindowUID ,WindowPtr> window_wrapper;
+
+            if(PopupWindowManager::Ref()->is_window_exists(window_wrapper.first)){
+            window_wrapper.second->close();
+            }
+
+            PopupWindow* window = ObjectServer::Ref()->queue_create<PopupWindow>();
+            WindowUID hovered_uid = this->datapipeline.strs[0];
+            WindowUID window_uid = window->get_uid();
+            WindowPtr window_ptr = window;
+
+            window_wrapper.first = window_uid;
+            window_wrapper.second = window_ptr;
+
+            window->set_content(UiTextBank::Ref()->RenameWorkspace);
+            window->add_input("Value :", PopupWindow::InputType::STRING);
+            window->add_option(UiTextBank::Ref()->Confirm, [window, hovered_uid](){
+                std::string value = window->get_input_string(0);
+                if(value.size() > 0){
+                    ProjectServer::Ref()->edit_workspace(hovered_uid, "name", value);
+                    window->close();
+                }
+            });
         }
     };
-    Option m_explorer_on_list = {
-        "Root",
+
+    Option m_explorer_on_list_only_one_workspace = {
+        &UiTextBank::Ref()->OptionRoot,
         {
+            m_explorer_rename_workspace,
+        },
+        std::function<void()>()
+    };
+
+    Option m_explorer_on_list_more_than_one_workspace = {
+        &UiTextBank::Ref()->OptionRoot,
+        {
+            m_explorer_rename_workspace,
             m_explorer_delete_workspace,
         },
         std::function<void()>()
     };
+
 
 
     std::map<ModeFlag, Option> m_menu = {
@@ -568,7 +637,8 @@ private:
         {ModeFlag::MODE_INSPECTOR_ON_NODES  , m_inspector_on_nodes},
 
         /*   Mode Explorer   */
-        {ModeFlag::MODE_EXPLORER_ON_LIST    , m_explorer_on_list},
+        {ModeFlag::MODE_EXPLORER_ON_LIST_ONLY_ONE_WS    , m_explorer_on_list_only_one_workspace},
+        {ModeFlag::MODE_EXPLORER_ON_LIST_MORE_THAN_WS    , m_explorer_on_list_more_than_one_workspace},
     };
 
     ModeFlag m_current_mode = ModeFlag::MODE_GRAPH_ON_NODE;

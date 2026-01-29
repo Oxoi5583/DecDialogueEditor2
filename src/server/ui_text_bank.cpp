@@ -42,6 +42,9 @@ const char* UiText::get() const{
         default:                   return en;
     }
 }
+const char* UiText::c_str() const{
+    return get();
+}
 
 UiText::operator std::string() const{
     return get();
