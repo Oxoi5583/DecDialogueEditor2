@@ -3,293 +3,573 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "server/file_server.h"
 #include "server/object_server.h"
+#include "system/obj/fstream/base.h"
+#include "system/obj/fstream/file.h"
+#include "system/obj/fstream/folder.h"
 #include "system/obj/graph/base.h"
 #include "system/obj/graph/connection_line.h"
 #include "system/obj/graph/manager.h"
+#include <chrono>
 #include <cstddef>
 #include <nlohmann/json.hpp>
 #include <string>
+#include <vector>
 
 
-void ProjectWorkSpace::save(){
-    this->path_wrapper->truncate_text();
-    std::string new_content = this->data.dump(4);
-    this->path_wrapper->append_text(new_content);
+bool ProjectPayload::is_project_exists(){
+    return ProjectServer::Ref()->m_projects.contains(this->project);
 }
-void ProjectWorkSpace::rename(std::string p_name){
-    this->edit("name", p_name);
-    save();
-}
-void ProjectWorkSpace::edit(std::string p_key, std::string p_val){
-    if(data.contains(p_key) && !data[p_key].is_string()){
-        return;
+bool ProjectPayload::is_workspace_exists(){
+    if(!is_project_exists()){
+        return false;
     }
-    data[p_key] = p_val;
+    return ProjectServer::Ref()->m_projects[this->project].spaces.contains(this->workspace);
 }
-void ProjectWorkSpace::edit(std::string p_key, int p_val){
-    if(data.contains(p_key) && !data[p_key].is_number_integer()){
-        return;
+bool ProjectPayload::is_data_exists(){
+    if(!(is_project_exists() && is_workspace_exists())){
+        return false;
     }
-    data[p_key] = p_val;
-}
-void ProjectWorkSpace::edit(std::string p_key, float p_val){
-    if(data.contains(p_key) && !data[p_key].is_number_float()){
-        return;
-    }
-    data[p_key] = p_val;
-}
-void ProjectWorkSpace::edit(std::string p_key, bool p_val){
-    if(data.contains(p_key) && !data[p_key].is_boolean()){
-        return;
-    }
-    data[p_key] = p_val;
-}
-
-ProjectServer::ProjectServer(){
-    FString init_file = this->create_file();
-    m_current_workspace = init_file;
-}
-ProjectServer::~ProjectServer(){
-    m_clear_files_if_not_saved();
-}
-
-void ProjectServer::init(){
-    m_scan_projects_folder();
-}
-void ProjectServer::process(){
-    //m_scan_projects_folder();
-    m_free_graph_nodes_if_workspace_not_exists();
-}
-
-FPathWrapper& ProjectServer::get_project_root(){
-    FPathWrapper& path = FileServer::Ref()->get_root()["projects"];
-    if(path.contains(m_current_project)){
-        return path[m_current_project.c_str()];
-    }else{
-        m_current_project = default_name;
-        return path[m_current_project.c_str()];
-    }
-}
-void ProjectServer::set_project(std::string p_name){
-    FPathWrapper& p = this->get_project_root();
-    if(!p.contains(p_name)){
-        p.create_dir(p_name);
-        INFO_MSG("Project folder created : " << p_name);
-    }
-
-    m_current_project = p_name;
-}
-void ProjectServer::m_freeze_graph_nodes_if_in_diff_workspace(){
-    std::vector<OID> ids = ObjectServer::Ref()->get_all_ids();
-    for(OID& id : ids){
-        GraphBase* ptr1 = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(ptr1){
-            if(ptr1->get_workspace_id() == ProjectServer::Ref()->get_workspace_uid()){
-                ptr1->set_freeze(false);
-            }else{
-                ptr1->set_freeze(true);
-            }
-        }
-        GraphConnectionLine* ptr2 = ObjectServer::Ref()->get_instance<GraphConnectionLine>(id);
-        if(ptr2){
-            OID from_id = ptr2->get_from_id();
-            OID to_id = ptr2->get_to_id();
-            
-            GraphBase* from_ptr = ObjectServer::Ref()->get_instance<GraphBase>(from_id);
-            if(from_ptr){
-                if(from_ptr->get_workspace_id() == ProjectServer::Ref()->get_workspace_uid()){
-                    ptr2->set_freeze(false);
-                }else{
-                    ptr2->set_freeze(true);
-                }
-            }
-            GraphBase* to_ptr = ObjectServer::Ref()->get_instance<GraphBase>(to_id);
-            if(to_ptr){
-                if(to_ptr->get_workspace_id() == ProjectServer::Ref()->get_workspace_uid()){
-                    ptr2->set_freeze(false);
-                }else{
-                    ptr2->set_freeze(true);
-                }
-            }
-        }
-    }
-}
-void ProjectServer::m_free_graph_nodes_if_workspace_not_exists(){
-    std::vector<OID> ids = ObjectServer::Ref()->get_all_ids();
-    for(OID& id : ids){
-        GraphBase* ptr1 = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(ptr1){
-            std::string workspace_uid = ptr1->get_workspace_id();
-            if(!get_project_data().contains(workspace_uid)){
-                ptr1->queue_free();
-            }
-        }
-        GraphConnectionLine* ptr2 = ObjectServer::Ref()->get_instance<GraphConnectionLine>(id);
-        if(ptr2){
-            OID from_id = ptr2->get_from_id();
-            OID to_id = ptr2->get_to_id();
-            
-            GraphBase* from_ptr = ObjectServer::Ref()->get_instance<GraphBase>(from_id);
-            if(from_ptr){
-                std::string workspace_uid = from_ptr->get_workspace_id();
-                if(!get_project_data().contains(workspace_uid)){
-                    ptr2->queue_free();
-                }
-            }
-            GraphBase* to_ptr = ObjectServer::Ref()->get_instance<GraphBase>(to_id);
-            if(to_ptr){
-                std::string workspace_uid = to_ptr->get_workspace_id();
-                if(!get_project_data().contains(workspace_uid)){
-                    ptr2->queue_free();
-                }
-            }
-        }
-    }
-}
-void ProjectServer::set_workspace(std::string p_uid){
-    auto proj_data = this->get_project_data();
-    if(!proj_data.contains(p_uid)){
-        return;
-    }
-
-    m_current_workspace = p_uid;
-
-    m_freeze_graph_nodes_if_in_diff_workspace();
-}
-void ProjectServer::m_clear_files_if_not_saved(){
-    if(m_current_project == default_name){
-        this->get_project_root().clear();
-    }
-}
-void ProjectServer::m_scan_projects_folder(){
-    std::map<std::string, std::map<std::string, ProjectWorkSpace>>().swap(m_projects);
-
-    FPathWrapper& root = FileServer::Ref()->get_root()["projects"];
-
-    for(auto& p : root.children){
-        m_projects.emplace(p.second.get_name(), std::map<std::string, ProjectWorkSpace>());
-        auto& proj = m_projects[p.second.get_name().c_str()];
-
-        size_t i = 0;
-        for(auto& f : p.second.children){
-            FPathWrapper& file = f.second;
-            if(file.is_json()){
-                nlohmann::json data = file.get_json();
-                if(is_project_file_valid(data)){
-                    ProjectWorkSpace pd;
-                    pd.load_pri = file.last_write_time;
-                    pd.name = data["name"];
-                    pd.path = file.path.string();
-                    pd.path_wrapper = &file;
-                    pd.uid = f.first;
-                    pd.data = data;
-                    pd.size = {file.get_size()};
-                    pd.is_selected = (pd.uid == m_current_workspace);
-
-                    proj.emplace(pd.uid, pd);
-                    i++;
-                }
-            }
-        }
-    }
-}
-
-FString ProjectServer::create_file(){
-    auto& proj = get_project_root();
-
-    FString new_file_name = RandomCode(25).get();
-    proj.create_file(new_file_name);
-
-    nlohmann::json j;
-    j["name"] = "New Project";
-    proj[new_file_name].append_text(j.dump(4));
-    
-    return new_file_name;
-}
-
-bool ProjectServer::is_project_file_valid(nlohmann::json& p_data){
-    for(auto& cl : m_json_checklist){
-        if(!p_data.contains(cl.field)){
+    nlohmann::json& root = ProjectServer::Ref()->m_projects[this->project].spaces[this->workspace].data;
+    for(PString key : this->keys){
+        if(root.contains(key)){
+            root = root[key];
+        }else{
             return false;
-        }
-        switch (cl.type) {
-            case STRING:{
-                if(!p_data[cl.field].is_string()) return false;
-                break;
-            }
-            case NUMERIC:{
-                if(!p_data[cl.field].is_number()) return false;
-                break;
-            }
-            case BOOLEAN:{
-                if(!p_data[cl.field].is_boolean()) return false;
-                break;
-            }
-            case ARRAY:{
-                if(!p_data[cl.field].is_array()) return false;
-                break;
-            }
-            case DICTIONARY:{
-                if(!p_data[cl.field].is_object()) return false;
-                break;
-            }
         }
     }
     return true;
 }
-std::map<ProjectServer::WorkspaceID, ProjectWorkSpace>& ProjectServer::get_project_data(){
-    if(m_projects.contains(m_current_project)){
-        return m_projects[m_current_project];
+
+
+void ProjectServer::process(){
+    m_freeze_non_workspace_obj();
+    m_update_workspace_selection();
+    m_refresh_display_data();
+}
+void ProjectServer::init(){
+    Project proj;
+    proj.code = "temp";
+
+    FStreamLink link;
+    link.push_back("projects");
+    link.push_back("temp");
+    proj.folder_id = FileServer::Ref()->get_fstream_obj(link);
+    m_projects.emplace("temp", proj);
+
+    PString ws_code = this->create_workspace();
+    this->go_to_workspace(ws_code);
+}
+void ProjectServer::save(){
+
+}
+
+ProjectServer::~ProjectServer(){
+    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_projects["temp"].folder_id);
+    folder->clear();
+}
+
+void ProjectServer::m_update_workspace_selection(){
+    for(auto& it : m_projects[m_project_uid].spaces){
+        Workspace& space = it.second;
+        if(space.code == m_workspace_uid){
+            space.is_selected = true;
+        }else{
+            space.is_selected = false;
+        }
     }
-    m_current_project = default_name;
-    return m_projects[m_current_project];
 }
-ProjectWorkSpace& ProjectServer::get_workspace_data(std::string p_uid){
-    if(p_uid == ""){
-        p_uid = m_current_workspace;
+void ProjectServer::m_freeze_non_workspace_obj(){
+    for(OID id :ObjectServer::Ref()->get_all_ids()){
+        GraphBase* base = ObjectServer::Ref()->get_instance<GraphBase>(id);
+        if(base){
+            if(base->get_workspace_id() == m_workspace_uid){
+                base->set_freeze(false);
+            }else{
+                base->set_freeze(true);
+            }
+            continue;
+        }
+        
+        GraphConnectionLine* line = ObjectServer::Ref()->get_instance<GraphConnectionLine>(id);
+        if(line){
+            OID fm_id = line->get_from_id();
+            OID to_id = line->get_to_id();
+            GraphBase* fm_base = ObjectServer::Ref()->get_instance<GraphBase>(fm_id);
+            if(fm_base){
+                if(fm_base->get_workspace_id() == m_workspace_uid){
+                    line->set_freeze(false);
+                }else{
+                    line->set_freeze(true);
+                }
+                continue;
+            }
+
+            GraphBase* to_base = ObjectServer::Ref()->get_instance<GraphBase>(to_id);
+            if(to_base){
+                if(to_base->get_workspace_id() == m_workspace_uid){
+                    line->set_freeze(false);
+                }else{
+                    line->set_freeze(true);
+                }
+                continue;
+            }
+        }
+        
     }
-    return get_project_data()[p_uid];
 }
 
-void ProjectServer::save_workspace(){
-    auto workspace = get_workspace_data();
-    workspace.path_wrapper->truncate_text();
-    workspace.path_wrapper->append_text(workspace.data.dump(4));
-}
-void ProjectServer::save_as_project(){
-    
-}
-
-std::string ProjectServer::get_workspace_uid(){
-    return m_current_workspace;
-}
-std::vector<ProjectWorkSpace> ProjectServer::get_project_data_sorted(bool p_is_asc){
-    auto& proj_data = ProjectServer::Ref()->get_project_data();
-
-
-    std::vector<ProjectWorkSpace> proj_data_v;
-
-    std::transform(proj_data.begin(), proj_data.end(), std::back_inserter(proj_data_v),
-    [](const std::pair<std::string, ProjectWorkSpace>& a){
-        return a.second;
-    });
-
-    if(p_is_asc){
-        std::sort(proj_data_v.begin(), proj_data_v.end(),
-        [](const ProjectWorkSpace& a, const ProjectWorkSpace& b){
-            return a.load_pri < b.load_pri;
-        });
-    }else{
-        std::sort(proj_data_v.begin(), proj_data_v.end(),
-        [](const ProjectWorkSpace& a, const ProjectWorkSpace& b){
-            return a.load_pri > b.load_pri;
-        });
+nlohmann::json& ProjectServer::m_route_to_data(nlohmann::json& p_data, std::vector<PString>& p_keys, DefaultType p_type){
+    nlohmann::json& data = p_data;
+    size_t size = data.size();
+    size_t index = 1;
+    for (FString key : p_keys) {
+        if(!data.contains(key)){
+            data.emplace(key, nlohmann::json());
+            data = data[key];
+        }else{
+            if(index != size){
+                if(!data[key].is_object()){
+                    ERROR_MSG("Project Data Path is not correct.");
+                    return p_data;
+                }else{
+                    data = data[key];
+                }
+            }else{
+                switch (p_type) {
+                    case STRING:
+                        data[key] = "";
+                        break;
+                    case INT:
+                        data[key] = (int)0;
+                        break;
+                    case FLOAT:
+                        data[key] = 0.0f;
+                        break;
+                    case BOOL:
+                        data[key] = false;
+                        break;
+                }
+                data = data[key];
+            }
+        }
+        index++;
     }
 
-    return proj_data_v;
+    return data;
+}
+void ProjectServer::m_refresh_display_data(){
+    std::vector<WorkspaceInfo>().swap(m_display_data);
+    Project& project = m_projects[m_project_uid];
+    for(auto& workspace : project.spaces){
+        PString uid = workspace.first;
+        Workspace& space = workspace.second;
+
+        WorkspaceInfo info;
+        info.uid = space.code;
+        info.name = space.data["name"];
+        info.path = ObjectServer::Ref()->get_instance<FStreamBase>(space.file_id)->get_path().string();
+        info.size = ObjectServer::Ref()->get_instance<FStreamBase>(space.file_id)->get_size();
+        info.sort_id = space.data["created_at"];
+        info.is_selected = space.is_selected;
+        info.is_saved = space.is_saved;
+
+        m_display_data.push_back(info);
+    }
 }
 
-void ProjectServer::edit_workspace(std::string p_workspace_id, std::string p_key, std::string p_val){
-    m_projects[m_current_project][p_workspace_id].edit(p_key, p_val);
-    m_projects[m_current_project][p_workspace_id].save();
+void ProjectServer::set(PString p_project, PString p_workspace, std::vector<PString> p_keys, PString p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::STRING);
+    if(!data.is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(PString p_project, PString p_workspace, std::vector<PString> p_keys, int p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::INT);
+    if(!data.is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(PString p_project, PString p_workspace, std::vector<PString> p_keys, float p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::FLOAT);
+    if(!data.is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(PString p_project, PString p_workspace, PString p_key, bool p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::BOOL);
+    if(!data.is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+
+void ProjectServer::set(PString p_project, PString p_workspace, PString p_key, PString p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::STRING);
+    if(!data.is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(PString p_project, PString p_workspace, PString p_key, int p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::INT);
+    if(!data.is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(PString p_project, PString p_workspace, PString p_key, float p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::FLOAT);
+    if(!data.is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(PString p_project, PString p_workspace, std::vector<PString> p_keys, bool p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::BOOL);
+    if(!data.is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+
+void ProjectServer::set(ProjectPayload p_key, PString p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::STRING);
+    if(!data.is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(ProjectPayload p_key, int p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::INT);
+    if(!data.is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(ProjectPayload p_key, float p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::FLOAT);
+    if(!data.is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+void ProjectServer::set(ProjectPayload p_key, bool p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::BOOL);
+    if(!data.is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    data = p_val;
+}
+
+void ProjectServer::get(PString p_project, PString p_workspace, PString p_key, PString& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::STRING);
+    if(!data.is_string()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, PString p_key, int& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::INT);
+    if(!data.is_number_integer()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, PString p_key, float& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::FLOAT);
+    if(!data.is_number_float()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, PString p_key, bool& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::BOOL);
+    if(!data.is_boolean()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, std::vector<PString> p_keys, PString& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::STRING);
+    if(!data.is_string()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, std::vector<PString> p_keys, int& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::INT);
+    if(!data.is_number_integer()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, std::vector<PString> p_keys, float& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::FLOAT);
+    if(!data.is_number_float()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(PString p_project, PString p_workspace, std::vector<PString> p_keys, bool& p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[p_project].spaces[p_workspace].data;
+    nlohmann::json& data = m_route_to_data(root, p_keys, DefaultType::BOOL);
+    if(!data.is_boolean()){
+        ERROR_MSG("Project Data get with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+
+void ProjectServer::get(ProjectPayload p_key, PString& p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::STRING);
+    if(!data.is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(ProjectPayload p_key, int& p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::INT);
+    if(!data.is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(ProjectPayload p_key, float& p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::FLOAT);
+    if(!data.is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+void ProjectServer::get(ProjectPayload p_key, bool& p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[p_key.workspace].data;
+    nlohmann::json& data = m_route_to_data(root, data_key.keys, DefaultType::BOOL);
+    if(!data.is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    p_val = data;
+}
+
+PString ProjectServer::current_project_uid(){
+    return m_project_uid;
+}
+PString ProjectServer::current_workspace_uid(){
+    return m_workspace_uid;
+}
+void ProjectServer::go_to_workspace(PString p_workspace){
+    ProjectPayload key;
+    key.project = m_project_uid;
+    key.workspace = p_workspace;
+    if(!key.is_workspace_exists()){
+        return;
+    }
+
+    m_workspace_uid = p_workspace;
+}
+
+PString ProjectServer::create_workspace(){
+    FString new_ws_uid = RandomCode(25).get();
+    Workspace workspace;
+    workspace.code = new_ws_uid;
+    workspace.data["name"] = "New Project";
+    workspace.data["created_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
+    workspace.data["updated_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
+
+    FStreamLink link;
+    link.push_back("projects");
+    link.push_back(m_project_uid);
+    OID folder_id = FileServer::Ref()->get_fstream_obj(link);
+    FStreamFolder* folder_ptr = ObjectServer::Ref()->get_instance<FStreamFolder>(folder_id);
+    if(folder_ptr){
+        workspace.file_id = folder_ptr->create_file(new_ws_uid);
+        FStreamFile* file_ptr = ObjectServer::Ref()->get_instance<FStreamFile>(workspace.file_id);
+        file_ptr->append(workspace.data.dump(4));
+    }
+
+    m_projects[m_project_uid].spaces.emplace(new_ws_uid, workspace);
+    return new_ws_uid;
+}
+void ProjectServer::remove_workspace(PString p_workspace){
+    ProjectPayload key;
+    key.project = m_project_uid;
+    key.workspace = p_workspace;
+    if(!key.is_workspace_exists()){
+        return;
+    }
+
+    m_projects[m_project_uid].spaces.erase(p_workspace);
+}
+size_t ProjectServer::get_workspace_count(){
+    return m_projects[m_project_uid].spaces.size();
+}
+std::vector<ProjectServer::WorkspaceInfo> ProjectServer::get_display_data(){
+    return m_display_data;
 }

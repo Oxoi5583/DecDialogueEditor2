@@ -520,17 +520,17 @@ private:
             if(datapipeline.strs.empty()){
                 return;
             }
-            if(ProjectServer::Ref()->get_project_data().size() == 1){
+            if(ProjectServer::Ref()->get_workspace_count() == 1){
                 return;
             }
 
             std::string hovered_uid = this->datapipeline.strs[0];
-            std::string current_uid = ProjectServer::Ref()->get_workspace_uid();
+            std::string current_uid = ProjectServer::Ref()->current_workspace_uid();
 
             std::string change_to_uid = current_uid;
 
             if(hovered_uid == current_uid){
-                auto workspaces = ProjectServer::Ref()->get_project_data_sorted();
+                auto workspaces = ProjectServer::Ref()->get_display_data();
                 std::string new_ws_uid;
                 for(auto& ws : workspaces){
                     if(ws.uid != current_uid){
@@ -558,8 +558,8 @@ private:
 
             window->set_content(UiTextBank::Ref()->ConfirmDelete);
             window->add_option(UiTextBank::Ref()->Yes, [window, change_to_uid, hovered_uid](){
-                ProjectServer::Ref()->set_workspace(change_to_uid);
-                ProjectServer::Ref()->get_project_root().remove(hovered_uid);
+                ProjectServer::Ref()->go_to_workspace(change_to_uid);
+                ProjectServer::Ref()->remove_workspace(hovered_uid);
                 window->close();
             });
             window->add_option(UiTextBank::Ref()->No, [window, change_to_uid, hovered_uid](){
@@ -597,7 +597,11 @@ private:
             window->add_option(UiTextBank::Ref()->Confirm, [window, hovered_uid](){
                 std::string value = window->get_input_string(0);
                 if(value.size() > 0){
-                    ProjectServer::Ref()->edit_workspace(hovered_uid, "name", value);
+                    ProjectPayload payload;
+                    payload.project = ProjectServer::Ref()->current_project_uid();
+                    payload.workspace = hovered_uid;
+                    payload.keys.push_back("name");
+                    ProjectServer::Ref()->set(payload, value);
                     window->close();
                 }
             });

@@ -2,6 +2,8 @@
 
 #include "DecToolsBox/abstract./singleton.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "server/object_base.h"
+#include "system/obj/fstream/folder.h"
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
@@ -9,7 +11,9 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <nlohmann/json.hpp>
 
@@ -51,62 +55,33 @@ namespace std{
     string to_string(FSizeUnit p_size);
 }
 
-struct FPathWrapper{
-    FPath path;
-    FPathWrapper* parent;
-    long long last_write_time;
-    std::map<FString ,FPathWrapper> children;
-    std::vector<std::function<void()>> modified_callback;
-
-    void build_tree();
-    void remove(FString p_target = "");
-    void clear();
-
-    void create_dir(FString p_dir);
-    void create_file(FString p_name);
-
-    void append_text(FString p_text);
-    void truncate_text();
-
-    void run_modified_callback();
-    void add_modified_callback(std::function<void()> p_callback);
-
-    void duplicate(std::string p_target, std::string p_name);
-
-    void update_last_write_epoch();
-
-    FString get_name();
-    FString get_extension();
-    FString get_content();
-    nlohmann::json get_json();
-    uintmax_t get_size();
-
-    bool is_directory();
-    bool is_file();
-    bool is_json();
-
-    bool has_child();
+struct FStreamNode{
+    OID id;
+    std::map<FString, FStreamNode> children;
     
-    bool contains(FString p_path);
-    FPathWrapper& operator[](FString p_index);
+    void build_tree();
 };
+
+typedef std::vector<FString> FStreamLink;
 
 class FileServer : public Singleton<FileServer>{
 private:
-    FPathWrapper m_root = {std::filesystem::absolute("./"), nullptr, {}};
-
-    std::vector<FString> m_needed_folder = {
-        "assets",
-        "config",
-        "fonts",
-        "theme",
-        "projects",
-        "projects/temp"
+    std::vector<FStreamLink> m_needed_folder = {
+        {"assets"},
+        {"config"},
+        {"fonts"},
+        {"theme"},
+        {"projects"},
+        {"projects" ,"temp"}
     };
-    void m_folder_checking();
+
+    FStreamFolder* m_root_ptr;
+    FStreamNode m_root;
+    void m_rebuild_tree();
+
 public:
     void init();
-    void refresh_tree();
+    void process();
 
-    FPathWrapper& get_root();
+    OID get_fstream_obj(FStreamLink p_link);
 };

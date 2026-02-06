@@ -86,7 +86,6 @@ int main(int argc, char* argv[]) {
     UiTextBank::Ref()->init();
     unsigned long long frame = 0;
 
-    FileServer::Ref()->get_root()["projects"].duplicate("temp", "test_dup");
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();

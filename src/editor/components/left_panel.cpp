@@ -170,7 +170,7 @@ void EditorLeftPanel::m_update_explorer_list(){
     ImGui::SameLine(button_start.x);
     ImGui::Button(button_id.c_str(), {button_size.x, button_size.y});
     if(ImGui::IsItemClicked()){
-        ProjectServer::Ref()->create_file();
+        ProjectServer::Ref()->create_workspace();
     }
     ImGui::PopStyleColor();
     ImGui::PopFont();
@@ -185,10 +185,10 @@ void EditorLeftPanel::m_update_explorer_list(){
         ImVec2 each_size = {ImGui::GetWindowContentRegionMax().x, ImGui::CalcTextSize("@").y};
 
 
-        auto proj_data_v = ProjectServer::Ref()->get_project_data_sorted();
+        auto proj_data_v = ProjectServer::Ref()->get_display_data();
 
         for(auto& space : proj_data_v){
-            std::string obj_id = space.name + "##" + space.path;
+            std::string obj_id = space.name + "##" + space.uid;
             
             int pop_times;
             if(space.is_selected){
@@ -224,7 +224,7 @@ void EditorLeftPanel::m_update_explorer_list(){
             }
 
             if(ImGui::IsItemClicked()){
-                ProjectServer::Ref()->set_workspace(space.uid);
+                ProjectServer::Ref()->go_to_workspace(space.uid);
             }
         }
         ImGui::EndListBox();

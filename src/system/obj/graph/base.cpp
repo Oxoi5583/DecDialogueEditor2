@@ -35,7 +35,7 @@ void GraphBase::m_update_mouse_on_time(){
 GraphBase::GraphBase(){
     m_init_shape();
     BIND_CLASS(GraphBase);
-    m_workspace_id = ProjectServer::Ref()->get_workspace_uid();
+    m_workspace_id = ProjectServer::Ref()->current_workspace_uid();
 }
 GraphBase::~GraphBase(){
     GraphManager::Ref()->notify_name_removed(m_properties["Unique Id"].value);

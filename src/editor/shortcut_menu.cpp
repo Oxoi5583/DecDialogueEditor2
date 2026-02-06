@@ -97,7 +97,7 @@ void EditorShortcutMenu::m_control_mode(){
     }
 
     if(EventServer::Ref()->has<EventHoveredExplorerList>()){
-        if(ProjectServer::Ref()->get_project_data().size() > 1){
+        if(ProjectServer::Ref()->get_workspace_count() > 1){
             EventHoveredExplorerList evt = EventServer::Ref()->poll_first<EventHoveredExplorerList>();
             this->datapipeline.strs.push_back(evt.workspace_uid);
             m_current_mode = ModeFlag::MODE_EXPLORER_ON_LIST_MORE_THAN_WS;
