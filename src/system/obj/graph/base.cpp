@@ -1,4 +1,5 @@
 #include "system/obj/graph/base.h"
+#include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "server/project_server.h"
 #include "server/timer_server.h"
@@ -32,13 +33,23 @@ void GraphBase::m_update_mouse_on_time(){
     }
 }
 
+std::string GraphBase::get_uid(){
+    return m_uid;
+}
+void GraphBase::set_uid(std::string p_uid){
+    m_uid = p_uid;
+}
+
 GraphBase::GraphBase(){
     m_init_shape();
     BIND_CLASS(GraphBase);
+    m_project_id = ProjectServer::Ref()->current_project_uid();
     m_workspace_id = ProjectServer::Ref()->current_workspace_uid();
+    m_uid = RandomCode(25).get();
 }
 GraphBase::~GraphBase(){
     GraphManager::Ref()->notify_name_removed(m_properties["Unique Id"].value);
+    m_remove_project_data();
 }
 
 vec2 GraphBase::get_position() const{
@@ -58,10 +69,69 @@ bool GraphBase::is_point_intersect(vec2& p_point){
     return this->get_shape<Rect2>().is_point_intersect(p_point);
 }
 
+void GraphBase::m_update_project_data(){
+    {
+        ProjectPayload payload;
+        payload.project = m_project_id;
+        payload.workspace = m_workspace_id;
+        payload.keys.push_back("objects");
+        payload.keys.push_back(m_uid);
+        payload.keys.push_back("position");
+        payload.keys.push_back("x");
+        ProjectServer::Ref()->set(payload, this->get_position().x);
+    }
+    {
+        ProjectPayload payload;
+        payload.project = m_project_id;
+        payload.workspace = m_workspace_id;
+        payload.keys.push_back("objects");
+        payload.keys.push_back(m_uid);
+        payload.keys.push_back("position");
+        payload.keys.push_back("y");
+        ProjectServer::Ref()->set(payload, this->get_position().y);
+    }
+    {
+        ProjectPayload payload;
+        payload.project = m_project_id;
+        payload.workspace = m_workspace_id;
+        payload.keys.push_back("objects");
+        payload.keys.push_back(m_uid);
+        payload.keys.push_back("type");
+        ProjectServer::Ref()->set(payload, this->get_type_name());
+    }
+    {
+        ProjectPayload payload;
+        payload.project = m_project_id;
+        payload.workspace = m_workspace_id;
+        payload.keys.push_back("objects");
+        payload.keys.push_back(m_uid);
+        payload.keys.push_back("name");
+        ProjectServer::Ref()->set(payload, this->get_name());
+    }
+}
+
+void GraphBase::m_remove_project_data(){
+    {
+        ProjectPayload payload;
+        payload.project = m_project_id;
+        payload.workspace = m_workspace_id;
+        payload.keys.push_back("objects");
+        payload.keys.push_back(m_uid);
+        ProjectServer::Ref()->remove_key(payload);
+    }
+}
+
+void GraphBase::m_check_if_upload_project_data_needed(){
+    if(this->is_placed()){
+        m_update_project_data();
+    }
+}
+
 void GraphBase::ready(){
     GraphManager::NodeType type = this->get_type();
     std::string default_name = GraphManager::Ref()->get_default_name(type);
     set_name(default_name);
+    m_update_project_data();
 }
 void GraphBase::pre_process(){
     m_handle_event_connect();
@@ -69,6 +139,7 @@ void GraphBase::pre_process(){
 void GraphBase::process(){}
 void GraphBase::post_process(){
     m_update_mouse_on_time();
+    m_check_if_upload_project_data_needed();
 }
 void GraphBase::draw(){
     if(!is_on_camera()){

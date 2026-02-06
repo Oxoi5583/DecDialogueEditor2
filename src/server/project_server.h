@@ -30,6 +30,8 @@ struct Workspace{
     nlohmann::json data;
     bool is_saved;
     bool is_selected;
+
+    void save();
 };
 
 struct ProjectPayload{
@@ -62,7 +64,7 @@ private:
         FLOAT,
         BOOL
     };
-    nlohmann::json& m_route_to_data(nlohmann::json& p_data, std::vector<PString>& p_keys, DefaultType p_type);
+    nlohmann::json* m_route_to_data(nlohmann::json* p_data, std::vector<PString>& p_keys, DefaultType p_type);
 
     std::vector<WorkspaceInfo> m_display_data;
     void m_refresh_display_data();
@@ -110,6 +112,10 @@ public:
     void get(ProjectPayload p_key, float& p_val);
     void get(ProjectPayload p_key, bool& p_val);
 
+    void remove_key(PString p_project, PString p_workspace, PString p_key);
+    void remove_key(PString p_project, PString p_workspace, std::vector<PString> p_keys);
+    void remove_key(ProjectPayload p_data_key);
+
     PString current_project_uid();
     PString current_workspace_uid();
     void go_to_workspace(PString p_workspace);
@@ -119,6 +125,9 @@ public:
 
     std::vector<WorkspaceInfo> get_display_data();
     size_t get_workspace_count();
+
+    void save_workspace(PString p_uid);
+    void save_all_workspaces();
 
     friend class ProjectPayload;
 };

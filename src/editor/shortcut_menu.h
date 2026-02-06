@@ -585,7 +585,7 @@ private:
             }
 
             PopupWindow* window = ObjectServer::Ref()->queue_create<PopupWindow>();
-            WindowUID hovered_uid = this->datapipeline.strs[0];
+            PString hovered_uid = this->datapipeline.strs[0];
             WindowUID window_uid = window->get_uid();
             WindowPtr window_ptr = window;
 
@@ -600,6 +600,7 @@ private:
                     ProjectPayload payload;
                     payload.project = ProjectServer::Ref()->current_project_uid();
                     payload.workspace = hovered_uid;
+                    payload.keys.push_back("workspace_info");
                     payload.keys.push_back("name");
                     ProjectServer::Ref()->set(payload, value);
                     window->close();
@@ -607,10 +608,23 @@ private:
             });
         }
     };
+    Option m_explorer_save_workspace = {
+        &UiTextBank::Ref()->OptionSaveWorkspace,
+        {},
+        [this](){
+            if(datapipeline.strs.empty()){
+                return;
+            }
+
+            PString hovered_uid = this->datapipeline.strs[0];
+            ProjectServer::Ref()->save_workspace(hovered_uid);
+        }
+    };
 
     Option m_explorer_on_list_only_one_workspace = {
         &UiTextBank::Ref()->OptionRoot,
         {
+            m_explorer_save_workspace,
             m_explorer_rename_workspace,
         },
         std::function<void()>()
@@ -619,6 +633,7 @@ private:
     Option m_explorer_on_list_more_than_one_workspace = {
         &UiTextBank::Ref()->OptionRoot,
         {
+            m_explorer_save_workspace,
             m_explorer_rename_workspace,
             m_explorer_delete_workspace,
         },

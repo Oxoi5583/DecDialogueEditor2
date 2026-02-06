@@ -184,9 +184,9 @@ public:
         "Ouvrir", "Öffnen", "Abrir", "Buka"
     };
 
-    UiText Save = {
-        "Save", "儲存", "保存", "保存", "저장",
-        "Enregistrer", "Speichern", "Guardar", "Simpan"
+    UiText SaveAll = {
+        "Save All", "全部儲存", "すべて保存", "全部保存", "모두 저장",
+        "Tout enregistrer", "Alles speichern", "Guardar todo", "Simpan semua"
     };
 
     UiText SaveAs = {
@@ -432,6 +432,12 @@ public:
         "Rename Workspace", "重新命名工作區", "ワークスペースの名前を変更", "重命名工作区",
         "작업 공간 이름 변경",
         "Renommer l’espace de travail", "Arbeitsbereich umbenennen", "Renombrar espacio de trabajo", "Ganti Nama Ruang Kerja"
+    };
+
+    UiText OptionSaveWorkspace = {
+        "Save Workspace", "儲存工作區", "ワークスペースを保存", "保存工作区",
+        "작업 공간 저장",
+        "Enregistrer l’espace de travail", "Arbeitsbereich speichern", "Guardar espacio de trabajo", "Simpan Ruang Kerja"
     };
 
     UiText OptionRoot = {

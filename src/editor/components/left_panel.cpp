@@ -189,6 +189,9 @@ void EditorLeftPanel::m_update_explorer_list(){
 
         for(auto& space : proj_data_v){
             std::string obj_id = space.name + "##" + space.uid;
+            if(!space.is_saved){
+                obj_id = "*" + obj_id;
+            }
             
             int pop_times;
             if(space.is_selected){

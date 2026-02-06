@@ -1,5 +1,6 @@
 #include "menu_bar.h"
 #include "config/config_loader.h"
+#include "server/project_server.h"
 #include "server/ui_icon_unicode.h"
 #include "server/ui_text_bank.h"
 #include "editor/layout.h"
@@ -77,8 +78,8 @@ void EditorMenuBar::m_begin_main_bar(){
 void EditorMenuBar::m_update_menu_file(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->File)){
         ImGui::MenuItem(UiTextBank::Ref()->New);
-        if(ImGui::MenuItem(UiTextBank::Ref()->Save)){
-            
+        if(ImGui::MenuItem(UiTextBank::Ref()->SaveAll)){
+            ProjectServer::Ref()->save_all_workspaces();
         }
         if(ImGui::MenuItem(UiTextBank::Ref()->SaveAs)){
 

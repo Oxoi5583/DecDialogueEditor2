@@ -36,6 +36,9 @@ private:
     std::string m_name;
     std::string m_content;
 
+    std::string m_uid;
+
+    std::string m_project_id;
     std::string m_workspace_id;
 
     OrderedMap<std::string,Property> m_properties = {
@@ -50,9 +53,16 @@ private:
     void m_update_mouse_on_time();
 
     bool m_is_expanded = false;
+
+    void m_update_project_data();
+    void m_remove_project_data();
+    void m_check_if_upload_project_data_needed();
 public:
     GraphBase();
     ~GraphBase();
+
+    std::string get_uid();
+    void set_uid(std::string p_uid);   
 
     double get_mouse_on_time() const { return m_mouse_on_time; }
 
