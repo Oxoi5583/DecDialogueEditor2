@@ -22,6 +22,8 @@ struct Project{
     ProjectCode code;
     OID folder_id;
     Workspaces spaces;
+
+    void save_as(PString p_path);
 };
 
 struct Workspace{
@@ -62,7 +64,8 @@ private:
         STRING,
         INT,
         FLOAT,
-        BOOL
+        BOOL,
+        ARRAY,
     };
     nlohmann::json* m_route_to_data(nlohmann::json* p_data, std::vector<PString>& p_keys, DefaultType p_type);
 
@@ -80,8 +83,6 @@ public:
     void process();
     void init();
 
-    void save();
-
     void set(PString p_project, PString p_workspace, PString p_key, PString p_val);
     void set(PString p_project, PString p_workspace, PString p_key, int p_val);
     void set(PString p_project, PString p_workspace, PString p_key, float p_val);
@@ -96,6 +97,25 @@ public:
     void set(ProjectPayload p_key, int p_val);
     void set(ProjectPayload p_key, float p_val);
     void set(ProjectPayload p_key, bool p_val);
+
+    void list_push_back(PString p_project, PString p_workspace, PString p_key, PString p_val);
+    void list_push_back(PString p_project, PString p_workspace, PString p_key, int p_val);
+    void list_push_back(PString p_project, PString p_workspace, PString p_key, float p_val);
+    void list_push_back(PString p_project, PString p_workspace, PString p_key, bool p_val);
+
+    void list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, PString p_val);
+    void list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, int p_val);
+    void list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, float p_val);
+    void list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, bool p_val);
+    
+    void list_push_back(ProjectPayload p_key, PString p_val);
+    void list_push_back(ProjectPayload p_key, int p_val);
+    void list_push_back(ProjectPayload p_key, float p_val);
+    void list_push_back(ProjectPayload p_key, bool p_val);
+
+    void list_clear(PString p_project, PString p_workspace, PString p_key);
+    void list_clear(PString p_project, PString p_workspace, std::vector<PString> p_keys);
+    void list_clear(ProjectPayload p_key);
 
     void get(PString p_project, PString p_workspace, PString p_key, PString& p_val);
     void get(PString p_project, PString p_workspace, PString p_key, int& p_val);

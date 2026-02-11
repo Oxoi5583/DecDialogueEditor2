@@ -253,6 +253,8 @@ void EngineRenderer::init(){
     this->m_init_uniform_loc();
 
     glEnable(GL_BLEND);
+    glDisable(GL_DITHER);
+    glDisable(GL_FRAMEBUFFER_SRGB);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 void EngineRenderer::m_init_uniform_loc(){

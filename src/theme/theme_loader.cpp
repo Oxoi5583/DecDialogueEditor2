@@ -1,6 +1,7 @@
 #include "theme/theme_loader.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "config/config_loader.h"
+#include "glm/ext/vector_float4.hpp"
 #include "imgui/imgui.h"
 #include "nlohmann/json.hpp"
 #include <cstdlib>
@@ -152,6 +153,7 @@ vec4 ThemeLoader::get_color(std::string p_key){
         ret.z = (float)std::stoi(b_str, nullptr, 16) / 255.0;
         ret.w = 1;
     }
+
     return ret;
 }
 
@@ -164,8 +166,10 @@ std::vector<std::string> ThemeLoader::get_themes(){
 }
 
 ImVec4 ThemeLoader::get_imgui_color(const std::string& key){
-    vec4 c = ThemeLoader::Ref()->get_color(key);
-    return ImVec4(c.x, c.y, c.z, c.w);
+    vec4 ret = ThemeLoader::Ref()->get_color(key);
+
+    //return ImVec4(0,0,0,1);
+    return ImVec4(ret.x, ret.y, ret.z, ret.w);
 };
 
 ImU32 ThemeLoader::get_imgui_color_int(const std::string& key){

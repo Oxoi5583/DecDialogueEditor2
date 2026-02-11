@@ -3,6 +3,7 @@
 #include "system/obj/fstream/base.h"
 #include <set>
 #include <string>
+#include <vector>
 
 typedef std::string FString;
 
@@ -31,6 +32,19 @@ public:
 
     OID create_file(FString p_name);
     OID create_folder(FString p_name);
+
+    bool is_folder_exists(FString p_name);
+    bool is_file_exists(FString p_name);
+
+    enum DirMode{
+        FILES,
+        FOLDERS,
+        FILES_AND_FOLDERS,
+    };
+    std::vector<FString> dir(DirMode p_mode = DirMode::FILES);
+    OID get_child(FString p_name);
+    OID get_file(FString p_name);
+    OID get_folder(FString p_name);
 
     void clear();
     void remove() override;

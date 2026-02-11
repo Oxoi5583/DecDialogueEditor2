@@ -2,3 +2,6 @@
 	path = include/DecToolsBox
 	url = https://github.com/Oxoi5583/DecToolsBox.git
 	branch = main
+[submodule "third_party/SDL3"]
+	path = third_party/SDL3
+	url = https://github.com/libsdl-org/SDL.git

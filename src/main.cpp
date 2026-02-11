@@ -1,4 +1,5 @@
 #include "DecToolsBox/container/ordered_map.h"
+#include "editor/components/explorer_window.h"
 #include "editor/components/start_up_popup.h"
 #include "server/project_server.h"
 #include "server/ui_text_bank.h"
@@ -86,6 +87,7 @@ int main(int argc, char* argv[]) {
     UiTextBank::Ref()->init();
     unsigned long long frame = 0;
 
+    ObjectServer::Ref()->queue_create<ExplorerWindow>();
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();

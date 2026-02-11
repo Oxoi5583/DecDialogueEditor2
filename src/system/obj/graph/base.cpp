@@ -1,6 +1,7 @@
 #include "system/obj/graph/base.h"
 #include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "engine/renderer.h"
 #include "server/project_server.h"
 #include "server/timer_server.h"
 #include "editor/components/detail_window.h"
@@ -15,6 +16,7 @@
 #include "server/object_server.h"
 #include "struct/shape/rect2.h"
 #include "theme/theme_loader.h"
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -69,44 +71,51 @@ bool GraphBase::is_point_intersect(vec2& p_point){
     return this->get_shape<Rect2>().is_point_intersect(p_point);
 }
 
+ProjectPayload GraphBase::m_get_root_project_data_payload(){
+    ProjectPayload payload;
+    payload.project = m_project_id;
+    payload.workspace = m_workspace_id;
+    payload.keys.push_back("objects");
+    payload.keys.push_back(m_uid);
+    return payload;
+}
 void GraphBase::m_update_project_data(){
     {
-        ProjectPayload payload;
-        payload.project = m_project_id;
-        payload.workspace = m_workspace_id;
-        payload.keys.push_back("objects");
-        payload.keys.push_back(m_uid);
+        ProjectPayload payload = m_get_root_project_data_payload();
         payload.keys.push_back("position");
         payload.keys.push_back("x");
         ProjectServer::Ref()->set(payload, this->get_position().x);
     }
     {
-        ProjectPayload payload;
-        payload.project = m_project_id;
-        payload.workspace = m_workspace_id;
-        payload.keys.push_back("objects");
-        payload.keys.push_back(m_uid);
+        ProjectPayload payload = m_get_root_project_data_payload();
         payload.keys.push_back("position");
         payload.keys.push_back("y");
         ProjectServer::Ref()->set(payload, this->get_position().y);
     }
     {
-        ProjectPayload payload;
-        payload.project = m_project_id;
-        payload.workspace = m_workspace_id;
-        payload.keys.push_back("objects");
-        payload.keys.push_back(m_uid);
+        ProjectPayload payload = m_get_root_project_data_payload();
         payload.keys.push_back("type");
         ProjectServer::Ref()->set(payload, this->get_type_name());
     }
     {
-        ProjectPayload payload;
-        payload.project = m_project_id;
-        payload.workspace = m_workspace_id;
-        payload.keys.push_back("objects");
-        payload.keys.push_back(m_uid);
+        ProjectPayload payload = m_get_root_project_data_payload();
         payload.keys.push_back("name");
         ProjectServer::Ref()->set(payload, this->get_name());
+    }
+    {
+        {
+            ProjectPayload payload = m_get_root_project_data_payload();
+            payload.keys.push_back("children");
+            ProjectServer::Ref()->list_clear(payload);
+        }
+        for(OID id : this->get_children()){
+            ProjectPayload payload = m_get_root_project_data_payload();
+            payload.keys.push_back("children");
+            GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
+            if(obj){
+                ProjectServer::Ref()->list_push_back(payload, obj->get_uid());
+            }
+        }
     }
 }
 
@@ -144,6 +153,40 @@ void GraphBase::post_process(){
 void GraphBase::draw(){
     if(!is_on_camera()){
         return;
+    }
+
+    if(this->is_selected()){
+        const double width = 3.5 / GraphCamera::Ref()->get_zoom();
+
+        vec2 lt = this->get_shape<Rect2>().get_left_top();
+        vec2 rd = this->get_shape<Rect2>().get_right_down();
+        vec2 size = rd - lt;
+        vec2 ct = lt + (size / 2.0f);
+        
+        vec2 lt_hl = lt - vec2(width,width);
+        vec2 rd_hl = rd + vec2(width, width);
+        vec2 size_hl = rd_hl - lt_hl;
+
+        vec4 border_color = ThemeLoader::Ref()->get_color("SelectableHighlightColour");
+
+        EngineRenderer::Ref()->draw_rect({ct, size_hl}, border_color, -1);
+    }
+
+    auto connectables = EventServer::Ref()->poll_first<EventTryConnectTo>().conntectables;
+    if(connectables.contains(this->get_id())){
+        const double width = 3.5 / GraphCamera::Ref()->get_zoom();
+        vec2 lt = this->get_shape<Rect2>().get_left_top();
+        vec2 rd = this->get_shape<Rect2>().get_right_down();
+        vec2 size = rd - lt;
+        vec2 ct = lt + (size / 2.0f);
+        
+        vec2 lt_hl = lt - vec2(width,width);
+        vec2 rd_hl = rd + vec2(width, width);
+        vec2 size_hl = rd_hl - lt_hl;        
+
+        vec4 border_color = ThemeLoader::Ref()->get_color("AccentColour2");
+
+        EngineRenderer::Ref()->draw_rect({ct, size_hl}, border_color, -1);
     }
 
     const float borderSize = 2.0f / GraphCamera::Ref()->get_zoom();
@@ -195,39 +238,6 @@ void GraphBase::draw(){
         fillColor,
         -1
     );
-
-    if(this->is_selected()){
-        const double width = 6.5 / GraphCamera::Ref()->get_zoom();
-
-        vec2 lt = this->get_shape<Rect2>().get_left_top();
-        vec2 rt = this->get_shape<Rect2>().get_right_top();
-        vec2 rd = this->get_shape<Rect2>().get_right_down();
-        vec2 ld = this->get_shape<Rect2>().get_left_down();
-
-        vec4 border_color = ThemeLoader::Ref()->get_color("SelectableHighlightColour");
-
-        EngineRenderer::Ref()->draw_line(lt, rt, border_color, width);
-        EngineRenderer::Ref()->draw_line(rt, rd, border_color, width);
-        EngineRenderer::Ref()->draw_line(rd, ld, border_color, width);
-        EngineRenderer::Ref()->draw_line(ld, lt, border_color, width);
-    }
-
-    auto connectables = EventServer::Ref()->poll_first<EventTryConnectTo>().conntectables;
-    if(connectables.contains(this->get_id())){
-        const double width = 6.5 / GraphCamera::Ref()->get_zoom();
-
-        vec2 lt = this->get_shape<Rect2>().get_left_top();
-        vec2 rt = this->get_shape<Rect2>().get_right_top();
-        vec2 rd = this->get_shape<Rect2>().get_right_down();
-        vec2 ld = this->get_shape<Rect2>().get_left_down();
-
-        vec4 border_color = ThemeLoader::Ref()->get_color("AccentColour2");
-
-        EngineRenderer::Ref()->draw_line(lt, rt, border_color, width);
-        EngineRenderer::Ref()->draw_line(rt, rd, border_color, width);
-        EngineRenderer::Ref()->draw_line(rd, ld, border_color, width);
-        EngineRenderer::Ref()->draw_line(ld, lt, border_color, width);
-    }
 }
 
 GraphManager::NodeType GraphBase::get_type(){
@@ -487,24 +497,28 @@ void GraphBase::add_children(OID p_id){
         return;
     }
     m_children.emplace(p_id);
+    m_update_project_data();
 }
 void GraphBase::remove_children(OID p_id){
     if(!m_children.contains(p_id)){
         return;
     }
     m_children.erase(p_id);
+    m_update_project_data();
 }
 void GraphBase::add_parent(OID p_id){
     if(m_parent.contains(p_id)){
         return;
     }
     m_parent.emplace(p_id);
+    m_update_project_data();
 }
 void GraphBase::remove_parent(OID p_id){
     if(!m_parent.contains(p_id)){
         return;
     }
     m_parent.erase(p_id);
+    m_update_project_data();
 }
 
 

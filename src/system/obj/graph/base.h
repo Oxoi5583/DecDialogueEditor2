@@ -1,5 +1,6 @@
 #pragma once
 
+#include "server/project_server.h"
 #include "server/timer_server.h"
 #include "editor/components/detail_window.h"
 #include "engine/renderer.h"
@@ -54,6 +55,7 @@ private:
 
     bool m_is_expanded = false;
 
+    ProjectPayload m_get_root_project_data_payload();
     void m_update_project_data();
     void m_remove_project_data();
     void m_check_if_upload_project_data_needed();

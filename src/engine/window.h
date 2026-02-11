@@ -6,6 +6,7 @@
 #include "glm/ext/scalar_uint_sized.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_float3.hpp"
+#include "server/project_server.h"
 #include "theme/theme_loader.h"
 #include <DecToolsBox/debug/messenger.h>
 #include <DecToolsBox/abstract/singleton.h>

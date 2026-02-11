@@ -115,7 +115,7 @@ void UpCoordinate::m_draw_blocks(){
                     }
                 }
 
-                ImGui::SetCursorPos(ImVec2(5.0f, 0.0f));
+                ImGui::SetCursorPos(ImVec2(5.0f, -2.5f));
                 ImGui::TextUnformatted(line.code.c_str());
             ImGui::End();
 

@@ -1,5 +1,6 @@
 #include "engine/window.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "SDL3/SDL_render.h"
 #include "editor/components/menu_bar.h"
 #include "editor/layout.h"
 #include "ext/debug/messenger_ext.h"
@@ -60,7 +61,7 @@ void EngineWindow::m_init_sdl_Engine(){
 void EngineWindow::m_init_sdl_set_gl_attribute(){
     const int step = ENGINE_INIT_STEP;
     m_init_check_step(step);
-
+    
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
@@ -68,6 +69,7 @@ void EngineWindow::m_init_sdl_set_gl_attribute(){
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
 }
 void EngineWindow::m_init_create_sdl_window(){
     const int step = ENGINE_INIT_STEP;

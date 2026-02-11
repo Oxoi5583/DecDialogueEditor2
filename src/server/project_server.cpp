@@ -41,6 +41,15 @@ bool ProjectPayload::is_data_exists(){
     return true;
 }
 
+void Project::save_as(PString p_path){
+    for(auto& it : spaces){
+        it.second.save();
+    }
+    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(this->folder_id);
+    if(folder){
+    }
+}
+
 void Workspace::save(){
     is_saved = true;
     this->data["workspace_info"]["updated_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
@@ -68,9 +77,6 @@ void ProjectServer::init(){
 
     PString ws_code = this->create_workspace();
     this->go_to_workspace(ws_code);
-}
-void ProjectServer::save(){
-
 }
 
 ProjectServer::~ProjectServer(){
@@ -160,6 +166,9 @@ nlohmann::json* ProjectServer::m_route_to_data(nlohmann::json* p_data, std::vect
                     case BOOL:
                         (*data)[key] = false;
                         break;
+                    case ARRAY:
+                        (*data)[key] = nlohmann::json::array();
+                        break;
                 }
                 data = &(*data)[key];
             }else{
@@ -176,6 +185,9 @@ nlohmann::json* ProjectServer::m_route_to_data(nlohmann::json* p_data, std::vect
                         break;
                     case BOOL:
                         is_type_correct = (*data)[key].is_boolean();
+                        break;
+                    case ARRAY:
+                        is_type_correct = (*data)[key].is_array();
                         break;
                 }
                 if(is_type_correct){
@@ -409,6 +421,310 @@ void ProjectServer::set(ProjectPayload p_key, bool p_val){
 
     *data = p_val;
 }
+
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, PString p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, int p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, float p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, PString p_key, bool p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, PString p_key, PString p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, PString p_key, int p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, PString p_key, float p_val){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(PString p_project, PString p_workspace, std::vector<PString> p_keys, bool p_val){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+
+void ProjectServer::list_push_back(ProjectPayload p_key, PString p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_string()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(ProjectPayload p_key, int p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_number_integer()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(ProjectPayload p_key, float p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_number_float()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+void ProjectServer::list_push_back(ProjectPayload p_key, bool p_val){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    if(data->size() > 0 && !(*data)[0].is_boolean()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).push_back(p_val);
+}
+
+void ProjectServer::list_clear(PString p_project, PString p_workspace, std::vector<PString> p_keys){
+    ProjectPayload data_key = {p_project, p_workspace, p_keys};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+    (*data).clear();
+}
+void ProjectServer::list_clear(PString p_project, PString p_workspace, PString p_key){
+    ProjectPayload data_key = {p_project, p_workspace, {p_key}};
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).clear();
+}
+void ProjectServer::list_clear(ProjectPayload p_key){
+    ProjectPayload& data_key = p_key;
+    if(!data_key.is_project_exists()) return;
+    if(!data_key.is_workspace_exists()) return;
+
+    m_projects[data_key.project].spaces[data_key.workspace].is_saved = false;
+
+    nlohmann::json& root = m_projects[data_key.project].spaces[data_key.workspace].data;
+    nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
+    if(!data->is_array()){
+        ERROR_MSG("Project Data edit with wrong data type.");
+        return;
+    }
+
+    (*data).clear();
+}
+
 
 void ProjectServer::get(PString p_project, PString p_workspace, PString p_key, PString& p_val){
     ProjectPayload data_key = {p_project, p_workspace, {p_key}};

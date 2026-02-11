@@ -81,6 +81,10 @@ FSizeUnit FStreamFolder::get_size(){
 }
 
 OID FStreamFolder::create_file(FString p_name){
+    if(this->is_file_exists(p_name)){
+        return -1;
+    }
+
     std::filesystem::path new_path = get_path();
     new_path.append(p_name);
     if(std::filesystem::exists(new_path)){
@@ -98,6 +102,10 @@ OID FStreamFolder::create_file(FString p_name){
     return file_id;
 }
 OID FStreamFolder::create_folder(FString p_name){
+    if(this->is_folder_exists(p_name)){
+        return -1;
+    }
+
     std::filesystem::path new_path = get_path();
     new_path.append(p_name);
     if(std::filesystem::exists(new_path)){
@@ -131,8 +139,92 @@ void FStreamFolder::clear(){
         }
     }
 }
+
 void FStreamFolder::remove(){
     this->clear();
     std::filesystem::remove(this->get_path());
     this->queue_free();
+}
+
+bool FStreamFolder::is_folder_exists(FString p_name){
+    FSPath this_path = this->get_path();
+    this_path.append(p_name);
+    return (std::filesystem::exists(this_path) && std::filesystem::is_directory(this_path));
+}
+bool FStreamFolder::is_file_exists(FString p_name){
+    FSPath this_path = this->get_path();
+    this_path.append(p_name);
+    return (std::filesystem::exists(this_path) && std::filesystem::is_regular_file(this_path));
+}
+
+std::vector<FString> FStreamFolder::dir(DirMode p_mode){
+    std::vector<FString> ret;
+    switch (p_mode) {
+        case FILES:{
+            for(OID id : children){
+                FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(id);
+                if(file){
+                    ret.push_back(file->get_name());
+                }
+            }
+            break;
+        }
+        case FOLDERS:{
+            for(OID id : children){
+                FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(id);
+                if(folder){
+                    ret.push_back(folder->get_name());
+                }
+            }
+            break;
+        }
+        case FILES_AND_FOLDERS:{
+            for(OID id : children){
+                FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(id);
+                if(folder){
+                    ret.push_back(folder->get_name());
+                }
+                FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(id);
+                if(file){
+                    ret.push_back(file->get_name());
+                }
+            }
+            break;
+        }
+    }
+    return ret;
+}
+
+OID FStreamFolder::get_child(FString p_name){
+    for(OID id : children){
+        FStreamBase* obj = ObjectServer::Ref()->get_instance<FStreamBase>(id);
+        if(obj){
+            if(obj->get_name() == p_name){
+                return id;
+            }
+        }
+    }
+    return -1;
+}
+OID FStreamFolder::get_file(FString p_name){
+    for(OID id : children){
+        FStreamFile* obj = ObjectServer::Ref()->get_instance<FStreamFile>(id);
+        if(obj){
+            if(obj->get_name() == p_name){
+                return id;
+            }
+        }
+    }
+    return -1;
+}
+OID FStreamFolder::get_folder(FString p_name){
+    for(OID id : children){
+        FStreamFolder* obj = ObjectServer::Ref()->get_instance<FStreamFolder>(id);
+        if(obj){
+            if(obj->get_name() == p_name){
+                return id;
+            }
+        }
+    }
+    return -1;
 }

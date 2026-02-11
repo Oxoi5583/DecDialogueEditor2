@@ -184,14 +184,28 @@ public:
         "Ouvrir", "Öffnen", "Abrir", "Buka"
     };
 
-    UiText SaveAll = {
-        "Save All", "全部儲存", "すべて保存", "全部保存", "모두 저장",
-        "Tout enregistrer", "Alles speichern", "Guardar todo", "Simpan semua"
+    UiText SaveAllWS = {
+        "Save All Workspaces",
+        "儲存所有工作區",
+        "すべてのワークスペースを保存",
+        "保存所有工作区",
+        "모든 워크스페이스 저장",
+        "Enregistrer tous les espaces de travail",
+        "Alle Arbeitsbereiche speichern",
+        "Guardar todos los espacios de trabajo",
+        "Simpan semua ruang kerja"
     };
 
-    UiText SaveAs = {
-        "Save As...", "另存新檔…", "名前を付けて保存…", "另存为…", "다른 이름으로 저장…",
-        "Enregistrer sous…", "Speichern unter…", "Guardar como…", "Simpan sebagai..."
+    UiText SaveAsPJ = {
+        "Save As Project",
+        "另存為專案",
+        "プロジェクトとして保存",
+        "另存为项目",
+        "프로젝트로 저장",
+        "Enregistrer en tant que projet",
+        "Als Projekt speichern",
+        "Guardar como proyecto",
+        "Simpan sebagai proyek"
     };
 
     UiText Edit = {

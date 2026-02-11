@@ -200,8 +200,8 @@ void EditorLayout::refresh_theme(){
     ImVec4 secondary3  = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     ImVec4 accent1     = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
     ImVec4 accent2     = ThemeLoader::Ref()->get_imgui_color("AccentColour2");
-    ImVec4 textColor   = ThemeLoader::Ref()->get_imgui_color("TextColour");
-    ImVec4 gridColor   = ThemeLoader::Ref()->get_imgui_color("GridColour");
+    ImVec4 text_color   = ThemeLoader::Ref()->get_imgui_color("TextColour");
+    ImVec4 grid_color   = ThemeLoader::Ref()->get_imgui_color("GridColour");
 
     colors[ImGuiCol_WindowBg]          = secondary1;
     colors[ImGuiCol_ChildBg]           = secondary1;
@@ -230,8 +230,8 @@ void EditorLayout::refresh_theme(){
     colors[ImGuiCol_TabHovered]        = accent2;
     colors[ImGuiCol_TabActive]         = accent2;
 
-    colors[ImGuiCol_Text]              = textColor;
-    colors[ImGuiCol_TextDisabled]      = ImVec4(textColor.x * 0.5f, textColor.y * 0.5f, textColor.z * 0.5f, 1.0f);
+    colors[ImGuiCol_Text]              = text_color;
+    colors[ImGuiCol_TextDisabled]      = ImVec4(text_color.x * 0.5f, text_color.y * 0.5f, text_color.z * 0.5f, 1.0f);
     colors[ImGuiCol_TextSelectedBg]    = ImVec4(accent1.x, accent1.y, accent1.z, 0.35f);
 
     colors[ImGuiCol_SliderGrab]        = accent1;
@@ -240,7 +240,7 @@ void EditorLayout::refresh_theme(){
     colors[ImGuiCol_SeparatorHovered]  = accent2;
     colors[ImGuiCol_SeparatorActive]   = ImVec4(accent2.x * 0.5f, accent2.y * 0.5f, accent2.z * 0.5f, 1.0f);;
 
-    colors[ImGuiCol_Border] = gridColor;
+    colors[ImGuiCol_Border] = grid_color;
 
     EngineWindow::Ref()->set_clear_color({brand.x,brand.y,brand.z,brand.w});
 }
