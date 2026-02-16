@@ -5,3 +5,6 @@ bin\*
 build\*
 *.bin
 *.exe
+.cache
+bin/DecDialogueEditor.ilk
+bin/imgui.ini

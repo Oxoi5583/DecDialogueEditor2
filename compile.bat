@@ -1,6 +1,6 @@
 cd build
-cmake .. --fresh
-cmake --build .  --config Release
+cmake .. -G Ninja --fresh
+cmake --build . --config Release
 cd ..
 cd bin
 DecDialogueEditor.exe

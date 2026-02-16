@@ -45,7 +45,6 @@ void GraphBase::set_uid(std::string p_uid){
 GraphBase::GraphBase(){
     m_init_shape();
     BIND_CLASS(GraphBase);
-    m_project_id = ProjectServer::Ref()->current_project_uid();
     m_workspace_id = ProjectServer::Ref()->current_workspace_uid();
     m_uid = RandomCode(25).get();
 }
@@ -73,7 +72,6 @@ bool GraphBase::is_point_intersect(vec2& p_point){
 
 ProjectPayload GraphBase::m_get_root_project_data_payload(){
     ProjectPayload payload;
-    payload.project = m_project_id;
     payload.workspace = m_workspace_id;
     payload.keys.push_back("objects");
     payload.keys.push_back(m_uid);
@@ -122,7 +120,6 @@ void GraphBase::m_update_project_data(){
 void GraphBase::m_remove_project_data(){
     {
         ProjectPayload payload;
-        payload.project = m_project_id;
         payload.workspace = m_workspace_id;
         payload.keys.push_back("objects");
         payload.keys.push_back(m_uid);

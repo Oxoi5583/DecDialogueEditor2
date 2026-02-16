@@ -598,7 +598,6 @@ private:
                 std::string value = window->get_input_string(0);
                 if(value.size() > 0){
                     ProjectPayload payload;
-                    payload.project = ProjectServer::Ref()->current_project_uid();
                     payload.workspace = hovered_uid;
                     payload.keys.push_back("workspace_info");
                     payload.keys.push_back("name");

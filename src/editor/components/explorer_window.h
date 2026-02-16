@@ -14,7 +14,8 @@
 
 class ExplorerWindow : public ObjectBase{
 private:
-    
+    void m_close_button_process();
+    std::string m_uid = RandomCode(25).get();
 public:
     ExplorerWindow();
     ~ExplorerWindow();

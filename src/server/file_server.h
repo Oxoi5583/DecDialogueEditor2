@@ -71,8 +71,7 @@ private:
         {"config"},
         {"fonts"},
         {"theme"},
-        {"projects"},
-        {"projects" ,"temp"}
+        {".temp"}
     };
 
     FStreamFolder* m_root_ptr;

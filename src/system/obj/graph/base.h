@@ -39,7 +39,6 @@ private:
 
     std::string m_uid;
 
-    std::string m_project_id;
     std::string m_workspace_id;
 
     OrderedMap<std::string,Property> m_properties = {
