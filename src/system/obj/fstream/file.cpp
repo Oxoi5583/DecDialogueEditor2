@@ -65,6 +65,29 @@ void FStreamFile::append(FString p_text){
         this->locked();
     }
 }
+FString FStreamFile::read(){
+    FString ret;
+
+    bool is_relocked_needed = false;
+    if(this->is_locked()){
+        this->unlocked();
+        is_relocked_needed = true;
+    }
+
+    std::ofstream file(this->get_path(), std::ios::in);
+    if(file.is_open()){
+        std::ostringstream ss;
+        ss << file.rdbuf();
+        ret = ss.str();
+        file.close();
+    }
+
+    if(is_relocked_needed){
+        this->locked();
+    }
+
+    return ret;
+}
 
 void FStreamFile::remove(){
     if(this->is_locked()){

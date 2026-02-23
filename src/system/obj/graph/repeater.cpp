@@ -46,6 +46,3 @@ std::vector<OID> GraphRepeater::get_repeater_from(){
 std::vector<OID> GraphRepeater::get_repeater_to(){
     return m_to_ids;
 }
-std::string GraphRepeater::get_type_name(){
-    return "Repeater";
-}

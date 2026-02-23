@@ -241,7 +241,7 @@ GraphManager::NodeType GraphBase::get_type(){
     return GraphManager::NodeType::BASE;
 }
 std::string GraphBase::get_type_name(){
-    return "Base";
+    return GraphManager::Ref()->type_to_name(this->get_type());
 }
 
 std::string GraphBase::get_name(){
@@ -468,9 +468,13 @@ std::vector<OID> GraphBase::get_children_direct(){
 }
 
 void GraphBase::set_name(std::string p_name){
-    p_name = GraphManager::Ref()->new_name_if_duplicated(get_id(),p_name);
+    OID id = this->get_id();
+    p_name = GraphManager::Ref()->new_name_if_duplicated(id,p_name);
     m_properties["Unique Id"].value = p_name;
     GraphManager::Ref()->notify_name_added(this->get_id(), m_properties["Unique Id"].value);
+}
+void GraphBase::set_name_forced(std::string p_name){
+    m_properties["Unique Id"].value = p_name;
 }
 void GraphBase::add_signals(){
     m_signals.push_back("");
@@ -518,6 +522,9 @@ void GraphBase::remove_parent(OID p_id){
     m_update_project_data();
 }
 
+void GraphBase::set_workspace(std::string p_workspace){
+    this->m_workspace_id = p_workspace;
+}
 
 void GraphBase::m_handle_event_connect(){
     if(EventServer::Ref()->has<EventOpenDetailsWindow>()){

@@ -41,11 +41,14 @@ public:
         FOLDERS,
         FILES_AND_FOLDERS,
     };
-    std::vector<FString> dir(DirMode p_mode = DirMode::FILES);
+    std::vector<FString> dir_to_vector(DirMode p_mode = DirMode::FILES);
+    std::set<FString> dir_to_set(DirMode p_mode = DirMode::FILES);
     OID get_child(FString p_name);
     OID get_file(FString p_name);
     OID get_folder(FString p_name);
 
     void clear();
     void remove() override;
+
+    void extract_from(FString p_path);
 };

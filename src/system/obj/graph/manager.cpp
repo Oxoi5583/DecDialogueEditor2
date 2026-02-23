@@ -12,6 +12,7 @@
 #include "server/object_server.h"
 #include <algorithm>
 #include <string>
+#include <system/graph/connection.h>
 #include <unordered_set>
 #include <vector>
 
@@ -24,7 +25,7 @@
 GraphManager::GraphManager(){}
 GraphManager::~GraphManager(){}
 
-void GraphManager::m_spawn_entry(vec2 p_pos){
+void GraphManager::m_spawn_entry(EventSpawnNode p_event){
     GraphEntry* new_node = ObjectServer::Ref()->queue_create<GraphEntry>();
 
     NodeInfo info = m_create_info(new_node);
@@ -33,9 +34,22 @@ void GraphManager::m_spawn_entry(vec2 p_pos){
     m_entry_node_ids.push_back(info.id);
     m_infos.emplace(info.id, info);
 
-    new_node->set_position(p_pos);
+    new_node->set_position(p_event.spawn_pos);
+
+    if(p_event.is_workspace_custom){
+        new_node->set_workspace(p_event.custom_workspace);
+    }
+    if(p_event.is_uid_custom){
+        new_node->set_uid(p_event.custom_uid);
+    }
+    if(p_event.is_name_custom){
+        new_node->set_name(p_event.custom_name);
+    }
+
+    m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
+    m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
 }
-void GraphManager::m_spawn_node(vec2 p_pos){
+void GraphManager::m_spawn_node(EventSpawnNode p_event){
     GraphNode* new_node = ObjectServer::Ref()->queue_create<GraphNode>();
 
     NodeInfo info = m_create_info(new_node);
@@ -44,9 +58,22 @@ void GraphManager::m_spawn_node(vec2 p_pos){
     m_non_entry_node_ids.push_back(info.id);
     m_infos.emplace(info.id, info);
 
-    new_node->set_position(p_pos);
+    new_node->set_position(p_event.spawn_pos);
+
+    if(p_event.is_workspace_custom){
+        new_node->set_workspace(p_event.custom_workspace);
+    }
+    if(p_event.is_uid_custom){
+        new_node->set_uid(p_event.custom_uid);
+    }
+    if(p_event.is_name_custom){
+        new_node->set_name(p_event.custom_name);
+    }
+
+    m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
+    m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
 }
-void GraphManager::m_spawn_option(vec2 p_pos){
+void GraphManager::m_spawn_option(EventSpawnNode p_event){
     GraphOption* new_node = ObjectServer::Ref()->queue_create<GraphOption>();
     
     NodeInfo info = m_create_info(new_node);
@@ -55,9 +82,22 @@ void GraphManager::m_spawn_option(vec2 p_pos){
     m_non_entry_node_ids.push_back(info.id);
     m_infos.emplace(info.id, info);
 
-    new_node->set_position(p_pos);
+    new_node->set_position(p_event.spawn_pos);
+
+    if(p_event.is_workspace_custom){
+        new_node->set_workspace(p_event.custom_workspace);
+    }
+    if(p_event.is_uid_custom){
+        new_node->set_uid(p_event.custom_uid);
+    }
+    if(p_event.is_name_custom){
+        new_node->set_name(p_event.custom_name);
+    }
+
+    m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
+    m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
 }
-void GraphManager::m_spawn_repeater(vec2 p_pos){
+void GraphManager::m_spawn_repeater(EventSpawnNode p_event){
     GraphRepeater* new_node = ObjectServer::Ref()->queue_create<GraphRepeater>();
     
     NodeInfo info = m_create_info(new_node);
@@ -66,9 +106,22 @@ void GraphManager::m_spawn_repeater(vec2 p_pos){
     m_non_entry_node_ids.push_back(info.id);
     m_infos.emplace(info.id, info);
 
-    new_node->set_position(p_pos);
+    new_node->set_position(p_event.spawn_pos);
+
+    if(p_event.is_workspace_custom){
+        new_node->set_workspace(p_event.custom_workspace);
+    }
+    if(p_event.is_uid_custom){
+        new_node->set_uid(p_event.custom_uid);
+    }
+    if(p_event.is_name_custom){
+        new_node->set_name(p_event.custom_name);
+    }
+
+    m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
+    m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
 }
-void GraphManager::m_spawn_module_entry(vec2 p_pos){
+void GraphManager::m_spawn_module_entry(EventSpawnNode p_event){
     GraphModuleEntry* new_node = ObjectServer::Ref()->queue_create<GraphModuleEntry>();
     
     NodeInfo info = m_create_info(new_node);
@@ -77,9 +130,22 @@ void GraphManager::m_spawn_module_entry(vec2 p_pos){
     m_entry_node_ids.push_back(info.id);
     m_infos.emplace(info.id, info);
 
-    new_node->set_position(p_pos);
+    new_node->set_position(p_event.spawn_pos);
+
+    if(p_event.is_workspace_custom){
+        new_node->set_workspace(p_event.custom_workspace);
+    }
+    if(p_event.is_uid_custom){
+        new_node->set_uid(p_event.custom_uid);
+    }
+    if(p_event.is_name_custom){
+        new_node->set_name(p_event.custom_name);
+    }
+
+    m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
+    m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
 }
-void GraphManager::m_spawn_module_node(vec2 p_pos){
+void GraphManager::m_spawn_module_node(EventSpawnNode p_event){
     GraphModuleNode* new_node = ObjectServer::Ref()->queue_create<GraphModuleNode>();
     
     NodeInfo info = m_create_info(new_node);
@@ -88,7 +154,20 @@ void GraphManager::m_spawn_module_node(vec2 p_pos){
     m_non_entry_node_ids.push_back(info.id);
     m_infos.emplace(info.id, info);
 
-    new_node->set_position(p_pos);
+    new_node->set_position(p_event.spawn_pos);
+
+    if(p_event.is_workspace_custom){
+        new_node->set_workspace(p_event.custom_workspace);
+    }
+    if(p_event.is_uid_custom){
+        new_node->set_uid(p_event.custom_uid);
+    }
+    if(p_event.is_name_custom){
+        new_node->set_name(p_event.custom_name);
+    }
+
+    m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
+    m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
 }
 
 GraphManager::NodeInfo GraphManager::m_create_info(GraphBase* m_ptr){
@@ -134,46 +213,66 @@ void GraphManager::init(){
             TimeUnit(TimeUnit::Type::SECOND, 
             m_data_refresh_second)
         );
+    
+    m_type_dict.add<GraphBase>(NodeType::BASE, "Base", "B_NewBase");
+    m_type_dict.add<GraphEntry>(NodeType::ENTRY, "Entry", "E_NewEntry");
+    m_type_dict.add<GraphOption>(NodeType::OPTION, "Node", "N_NewNode");
+    m_type_dict.add<GraphOption>(NodeType::NODE, "Option", "O_NewOption");
+    m_type_dict.add<GraphRepeater>(NodeType::REPEATER, "Repeater", "R_NewRepeater");
+    m_type_dict.add<GraphModuleEntry>(NodeType::MODULE_ENTRY, "Module Entry", "ME_NewModuleEntry");
+    m_type_dict.add<GraphModuleNode>(NodeType::MODULE_NODE, "Module Node", "MN_NewModuleNode");
+    m_type_dict.add<GraphBase>(NodeType::UNKNOWN, "Unknown", "U_NewUnknown");
 }
 void GraphManager::update(){
     m_poll_spawn_event();
+    m_poll_create_uid_connection();
     m_data_refresh();
 }
-
 
 void GraphManager::m_poll_spawn_event(){
     auto events = EventServer::Ref()->poll<EventSpawnNode>();
     for(auto event : events){
-        vec2 spawn_pos = event.spawn_pos;
         switch (event.type) {
             case ENTRY:{
-                m_spawn_entry(spawn_pos);
+                m_spawn_entry(event);
                 break;
             }
             case NODE:{
-                m_spawn_node(spawn_pos);
+                m_spawn_node(event);
                 break;
             }
             case OPTION:{
-                m_spawn_option(spawn_pos);
+                m_spawn_option(event);
                 break;
             }
             case REPEATER:{
-                m_spawn_repeater(spawn_pos);
+                m_spawn_repeater(event);
                 break;
             }
             case MODULE_ENTRY:{
-                m_spawn_module_entry(spawn_pos);
+                m_spawn_module_entry(event);
                 break;
             }
             case MODULE_NODE:{
-                m_spawn_module_node(spawn_pos);
+                m_spawn_module_node(event);
                 break;
             }
             case BASE:{
                 break;
             }
+            default:{
+                break;
+            }
         }
+    }
+}
+void GraphManager::m_poll_create_uid_connection(){
+    auto events = EventServer::Ref()->poll<EventCreateConnectionWithUID>();
+    for(auto event : events){
+        OID fm_id = m_uid_to_id[event.fm_uid];
+        OID to_id = m_uid_to_id[event.to_uid];
+
+        GraphConnection::Ref()->create_connection_obj(fm_id, to_id);
     }
 }
 
@@ -183,6 +282,9 @@ void GraphManager::m_clear_garbage(){
         if(!ObjectServer::Ref()->is_id_valid(id)){
             garbages.emplace(id);
             m_infos.erase(id);
+            std::string uid = m_id_to_uid[id];
+            m_uid_to_id.erase(uid);
+            m_id_to_uid.erase(id);
         }
     }
 
@@ -290,7 +392,7 @@ std::string GraphManager::new_name_if_duplicated(OID p_id, std::string p_name){
     if(!is_name_duplicated(p_id, p_name)){
         return p_name;
     }
-
+    
     int index = 1;
     std::string new_name = p_name + " (" + std::to_string(index) + ")";
 
@@ -301,35 +403,38 @@ std::string GraphManager::new_name_if_duplicated(OID p_id, std::string p_name){
 
     return new_name;
 }
-std::string GraphManager::get_default_name(NodeType p_type){
-    std::string new_name;
-    switch (p_type) {
-        case BASE:
-            new_name = "B_NewBase";
-            break;
-        case ENTRY:
-            new_name = "E_NewEntry";
-            break;
-        case NODE:
-            new_name = "N_NewNode";
-            break;
-        case OPTION:
-            new_name = "O_NewOption";
-            break;
-        case REPEATER:
-            new_name = "R_NewRepeater";
-            break;
-        case MODULE_ENTRY:
-            new_name = "ME_NewModuleEntry";
-            break;
-        case MODULE_NODE:
-            new_name = "MN_NewModuleNode";
-            break;
-        default:
-            new_name = "U_NewUnknown";
-            break;
+
+GraphManager::NodeType GraphManager::TypeDict::get(std::string p_name){
+    if(!str_to_type.contains(p_name)){
+        return NodeType::UNKNOWN;
+    }
+    return str_to_type[p_name];
+}
+std::string GraphManager::TypeDict::get(NodeType p_type){
+    if(!type_to_str.contains(p_type)){
+        return type_to_str[NodeType::UNKNOWN];
+    }
+    return type_to_str[p_type];
+}
+std::string GraphManager::TypeDict::get_default_name(NodeType p_type){
+    if(!type_to_default.contains(p_type)){
+        return type_to_default[NodeType::UNKNOWN];
+    }
+    return type_to_default[p_type];
+}
+OID GraphManager::TypeDict::spawn(NodeType p_type){
+    if(!type_to_spawn.contains(p_type)){
+        return -1;
+    }
+    if(p_type == NodeType::UNKNOWN){
+        return -1;
     }
 
+    return type_to_spawn[p_type]();
+}
+
+std::string GraphManager::get_default_name(NodeType p_type){
+    std::string new_name = m_type_dict.get_default_name(p_type);
     return new_name_if_duplicated(-1, new_name);
 }
 
@@ -343,4 +448,15 @@ void GraphManager::notify_name_added(OID p_id, std::string p_name){
     if(!m_exists_names.contains(p_name)){
         m_exists_names.emplace(p_name, p_id);
     }
+}
+
+std::string GraphManager::type_to_name(NodeType p_type){
+    return m_type_dict.get(p_type);
+}
+GraphManager::NodeType GraphManager::name_to_type(std::string p_name){
+    return m_type_dict.get(p_name);
+}
+
+OID GraphManager::spawn(NodeType p_type){
+    return m_type_dict.spawn(p_type);
 }

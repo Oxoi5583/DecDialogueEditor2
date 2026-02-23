@@ -18,7 +18,3 @@ void GraphModuleEntry::draw(){}
 GraphManager::NodeType GraphModuleEntry::get_type(){
     return GraphManager::NodeType::MODULE_ENTRY;
 }
-
-std::string GraphModuleEntry::get_type_name(){
-    return "Module Entry";
-}

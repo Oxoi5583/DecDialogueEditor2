@@ -83,12 +83,14 @@ public:
     void draw();
 
     virtual GraphManager::NodeType get_type();
-    virtual std::string get_type_name();
+    std::string get_type_name();
 
     std::string get_name();
     std::vector<std::string> get_signals();
 
     void set_name(std::string p_name);
+    void set_name_forced(std::string p_name);
+    void set_workspace(std::string p_workspace);
     void add_signals();
     void remove_signals(int p_index);
     void set_signal(int p_index, std::string p_signal);
@@ -121,4 +123,5 @@ public:
     bool is_expanded();
     void expand_on_list();
     void collapse_on_list();
+
 };

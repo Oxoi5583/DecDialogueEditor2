@@ -1,6 +1,7 @@
 #include "server/project_server.h"
 #include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "SimZip.h"
 #include "server/file_server.h"
 #include "server/object_server.h"
 #include "system/obj/fstream/base.h"
@@ -12,8 +13,16 @@
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
+#include <exception>
+#include <filesystem>
+#include <fstream>
+#include <ios>
 #include <nlohmann/json.hpp>
+#include <server/event_server.h>
+#include <server/events.h>
+#include <server/object_base.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 
@@ -198,12 +207,17 @@ void ProjectServer::m_refresh_display_data(){
     for(auto& workspace : project.spaces){
         PString uid = workspace.first;
         Workspace& space = workspace.second;
+        FStreamBase* file = ObjectServer::Ref()->get_instance<FStreamBase>(space.file_id);
+        if(!file){
+            DEBUG_MSG("file not exists.");
+            continue;
+        }
 
         WorkspaceInfo info;
         info.uid = space.code;
         info.name = space.data["workspace_info"]["name"];
-        info.path = ObjectServer::Ref()->get_instance<FStreamBase>(space.file_id)->get_path().string();
-        info.size = ObjectServer::Ref()->get_instance<FStreamBase>(space.file_id)->get_size();
+        info.path = file->get_path().string();
+        info.size = file->get_size();
         info.sort_id = space.data["workspace_info"]["created_at"];
         info.is_selected = space.is_selected;
         info.is_saved = space.is_saved;
@@ -926,10 +940,11 @@ PString ProjectServer::create_workspace(){
     FString new_ws_uid = RandomCode(25).get();
     Workspace workspace;
     workspace.code = new_ws_uid;
-    workspace.data["workspace_info"] = {};
-    workspace.data["workspace_info"]["name"] = "New Project";
-    workspace.data["workspace_info"]["created_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
-    workspace.data["workspace_info"]["updated_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
+    workspace.data["workspace_info"] = {
+        {"name", "New Project"},
+        {"created_at", std::chrono::utc_clock::now().time_since_epoch().count()},
+        {"updated_at", std::chrono::utc_clock::now().time_since_epoch().count()},
+    };
 
     FStreamLink link;
     link.push_back(m_temp_folder_name);
@@ -939,7 +954,7 @@ PString ProjectServer::create_workspace(){
         workspace.file_id = folder_ptr->create_file(new_ws_uid);
         FStreamFile* file_ptr = ObjectServer::Ref()->get_instance<FStreamFile>(workspace.file_id);
         file_ptr->append(workspace.data.dump(4));
-        file_ptr->locked();
+        //file_ptr->locked();
     }
 
     m_project.spaces.emplace(new_ws_uid, workspace);
@@ -960,17 +975,143 @@ size_t ProjectServer::get_workspace_count(){
 std::vector<ProjectServer::WorkspaceInfo> ProjectServer::get_display_data(){
     return m_display_data;
 }
-void ProjectServer::save_project(){
+
+void ProjectServer::open_project(FPath p_path){
+    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_project.folder_id);
+    if(folder){
+        folder->clear();
+        folder->extract_from(p_path.string());
+        m_project.spaces.clear();
+
+        for(OID id : folder->get_children()){
+            m_read_workspace(id);
+        }
+
+        m_refresh_display_data();
+        WorkspaceInfo& info = m_display_data[0];
+        this->go_to_workspace(info.uid);
+    }
 }
+
+void ProjectServer::save_as_project(FPath p_path){
+    try {
+        std::streambuf* old_buf = std::cout.rdbuf();
+        std::cout.rdbuf(nullptr); 
+
+        this->save_all_workspaces();
+        p_path = std::filesystem::absolute(p_path);
+        SimZip zip(p_path.string(), SimZip::OpenMode::Create);
+        for(auto& it : m_project.spaces){
+            FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(it.second.file_id);
+            file->unlocked();
+            if(file){
+                zip.add(file->get_path().string());
+            }
+            file->locked();
+        }
+        zip.save();
+        zip.close();
+
+        std::cout.rdbuf(old_buf);
+
+        SUCCESS_MSG("Saved project to " << p_path.string() << " successfully");
+    } catch(std::exception e) {
+        ERROR_MSG("Saving project to " << p_path.string() << " failed.");
+    }
+}
+
 void ProjectServer::save_workspace(PString p_uid){
     Project& project = m_project;
     if(project.spaces.contains(p_uid)){
         project.spaces[p_uid].save();
     }
 }
+
 void ProjectServer::save_all_workspaces(){
     Project& project = m_project;
     for(auto& it : project.spaces){
         it.second.save();
+    }
+}
+
+bool ProjectServer::is_workspace_file_valid(OID p_file){
+    FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(p_file);
+    if(!file){
+        return false;
+    }
+    if(!file->is_exists()){
+        return false;
+    }
+    if(m_project.spaces.contains(file->get_name())){
+        return false;
+    }
+    try{
+        nlohmann::json data = nlohmann::json::parse(file->read());
+        if(!data.contains("workspace_info")){
+            return false;
+        }
+        if(!data["workspace_info"].contains("name")){
+            return false;
+        }
+        if(!data["workspace_info"].contains("created_at")){
+            return false;
+        }
+        if(!data["workspace_info"].contains("updated_at")){
+            return false;
+        }
+    }
+    catch (const nlohmann::json::parse_error&){
+        return false;
+    }
+    return true;
+}
+
+void ProjectServer::m_read_workspace(OID p_file){
+    if(!is_workspace_file_valid(p_file)){
+        return;
+    }
+
+    FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(p_file);
+    nlohmann::json data = nlohmann::json::parse(file->read());
+
+    Workspace workspace;
+    workspace.code = file->get_name();
+    workspace.data = data;
+    workspace.file_id = p_file;
+    workspace.is_saved = true;
+    workspace.is_selected = false;
+
+    //file->locked();
+    m_project.spaces.emplace(workspace.code, workspace);
+
+    if(data.contains("objects")){
+        for(auto& [key, val] : data["objects"].items()){
+            FString code = key;
+            nlohmann::json obj_data = val;
+
+            {
+                EventSpawnNode event;
+                event.spawn_pos = vec2(obj_data["position"]["x"],obj_data["position"]["y"]);
+                event.type = GraphManager::Ref()->name_to_type(obj_data["type"]);
+                event.is_workspace_custom = true;
+                event.custom_workspace = workspace.code;
+                event.is_uid_custom = true;
+                event.custom_uid = code;
+                event.is_name_custom = true;
+                event.custom_name = obj_data["name"];
+
+                EventServer::Ref()->emit(event);
+            }
+
+            {
+                for(std::string to_uid : obj_data["children"]){
+                    EventCreateConnectionWithUID event;
+                    event.fm_uid = code;
+                    event.to_uid = to_uid;
+                    
+                    EventServer::Ref()->emit(event);
+                }
+            }
+        }
     }
 }

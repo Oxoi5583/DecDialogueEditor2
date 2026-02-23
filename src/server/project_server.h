@@ -74,6 +74,8 @@ private:
     void m_update_workspace_selection();
     void m_freeze_non_workspace_obj();
 
+    void m_read_workspace(OID p_file);
+
     FPath m_project_file = "";
 public:
     ProjectServer() = default;
@@ -143,11 +145,12 @@ public:
     std::vector<WorkspaceInfo> get_display_data();
     size_t get_workspace_count();
 
-    void open_project();
-    void save_as_project(PString p_path);
-    void save_project();
+    void open_project(FPath p_path);
+    void save_as_project(FPath p_path);
     void save_workspace(PString p_uid);
     void save_all_workspaces();
+
+    bool is_workspace_file_valid(OID p_file);
 
     friend struct ProjectPayload;
 };

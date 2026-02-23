@@ -1,5 +1,6 @@
 #include "system/obj/fstream/folder.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "SimZip.h"
 #include "server/object_server.h"
 #include "system/obj/fstream/base.h"
 #include "system/obj/fstream/file.h"
@@ -7,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <ios>
+#include <mfobjects.h>
 #include <set>
 #include <vector>
 
@@ -17,11 +19,13 @@ void FStreamFolder::generate_children_objs(){
     if(!this->is_exists()){
         return;
     }
-    if(m_is_first_generate_done){
-        return;
-    }
+
+    std::set<FString> dir = this->dir_to_set(DirMode::FILES_AND_FOLDERS);
 
     for(auto& p : std::filesystem::directory_iterator(this->get_path())){
+        if(dir.contains(p.path().filename().string())){
+           continue;
+        }
         if(std::filesystem::is_directory(p)){
             FStreamFolder* ptr = ObjectServer::Ref()->queue_create<FStreamFolder>();
             ptr->set_path(p);
@@ -138,6 +142,7 @@ void FStreamFolder::clear(){
             file->remove();
         }
     }
+    children.clear();
 }
 
 void FStreamFolder::remove(){
@@ -157,7 +162,7 @@ bool FStreamFolder::is_file_exists(FString p_name){
     return (std::filesystem::exists(this_path) && std::filesystem::is_regular_file(this_path));
 }
 
-std::vector<FString> FStreamFolder::dir(DirMode p_mode){
+std::vector<FString> FStreamFolder::dir_to_vector(DirMode p_mode){
     std::vector<FString> ret;
     switch (p_mode) {
         case FILES:{
@@ -187,6 +192,44 @@ std::vector<FString> FStreamFolder::dir(DirMode p_mode){
                 FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(id);
                 if(file){
                     ret.push_back(file->get_name());
+                }
+            }
+            break;
+        }
+    }
+    return ret;
+}
+
+std::set<FString> FStreamFolder::dir_to_set(DirMode p_mode){
+    std::set<FString> ret;
+    switch (p_mode) {
+        case FILES:{
+            for(OID id : children){
+                FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(id);
+                if(file){
+                    ret.emplace(file->get_name());
+                }
+            }
+            break;
+        }
+        case FOLDERS:{
+            for(OID id : children){
+                FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(id);
+                if(folder){
+                    ret.emplace(folder->get_name());
+                }
+            }
+            break;
+        }
+        case FILES_AND_FOLDERS:{
+            for(OID id : children){
+                FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(id);
+                if(folder){
+                    ret.emplace(folder->get_name());
+                }
+                FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(id);
+                if(file){
+                    ret.emplace(file->get_name());
                 }
             }
             break;
@@ -227,4 +270,21 @@ OID FStreamFolder::get_folder(FString p_name){
         }
     }
     return -1;
+}
+void FStreamFolder::extract_from(FString p_path){
+    FSPath path = std::filesystem::absolute(p_path);
+    if(!std::filesystem::exists(path)){
+        return;
+    }
+
+    if(!std::filesystem::is_regular_file(path)){
+        return;
+    }
+    
+    SimZip zip(path.string());
+    zip.setmode(SimZip::OpenMode::Read);
+    zip.extractall(this->get_path().string());
+    zip.close();
+
+    generate_children_objs();
 }

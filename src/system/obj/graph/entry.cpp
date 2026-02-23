@@ -18,6 +18,3 @@ void GraphEntry::draw(){}
 GraphManager::NodeType GraphEntry::get_type(){
     return GraphManager::NodeType::ENTRY;
 }
-std::string GraphEntry::get_type_name(){
-    return "Entry";
-}

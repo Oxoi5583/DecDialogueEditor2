@@ -43,8 +43,6 @@ endif()
 
 file(GLOB_RECURSE SOURCES src/*.c** src/*/*.c* src_extern/*.c** src_extern/*/*.c*)
 
-add_subdirectory(third_party/SDL3)
-
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 find_package(OpenGL REQUIRED)
@@ -72,6 +70,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Boost)
 
+FetchContent_Declare(
+    SDL3
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG "main"
+)
+FetchContent_MakeAvailable(SDL3)
+
 find_package(glad CONFIG REQUIRED)
 
 include_directories(
@@ -85,7 +90,7 @@ include_directories(
 )
 
 target_link_directories(
-    ${PROJECT_NAME} 
+    ${PROJECT_NAME}
     PRIVATE 
         ${OPENGL_INCLUDE_DIR}
 )

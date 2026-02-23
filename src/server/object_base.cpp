@@ -1,5 +1,6 @@
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include <DecToolsBox/debug/messenger.h>
 
 OID ObjectBase::m_next_id = 100;
 

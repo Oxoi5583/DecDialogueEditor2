@@ -29,6 +29,3 @@ void GraphModuleNode::draw(){}
 GraphManager::NodeType GraphModuleNode::get_type(){
     return GraphManager::NodeType::MODULE_NODE;
 }
-std::string GraphModuleNode::get_type_name(){
-    return "Module Node";
-}

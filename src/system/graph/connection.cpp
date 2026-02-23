@@ -43,7 +43,7 @@ void GraphConnection::m_update_state(){
         }
         case PLACED_CONNECT:{
             if(m_condition_placed_to_nul()){
-                m_create_connection_obj();
+                create_connection_obj(m_start_id, m_end_id);
                 m_state = State::NUL;
                 break;
             }
@@ -182,10 +182,10 @@ bool GraphConnection::is_connecting(){
     return m_state != State::NUL;
 }
 
-void GraphConnection::m_create_connection_obj(){
+void GraphConnection::create_connection_obj(OID p_fm_id, OID p_to_id){
     GraphConnectionLine* line_obj = ObjectServer::Ref()->queue_create<GraphConnectionLine>();
-    line_obj->set_from_id(m_start_id);
-    line_obj->set_to_id(m_end_id);
+    line_obj->set_from_id(p_fm_id);
+    line_obj->set_to_id(p_to_id);
 }
 
 std::set<OID> GraphConnection::get_connection(OID p_id){

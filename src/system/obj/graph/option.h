@@ -23,5 +23,4 @@ public:
     void draw();
 
     GraphManager::NodeType get_type() override;
-    std::string get_type_name() override;
 };

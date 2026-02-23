@@ -1,6 +1,5 @@
 #pragma once
 
-#include "editor/layout.h"
 #include "glm/ext/vector_float2.hpp"
 #include "system/obj/graph/manager.h"
 #include "server/mouse_server.h"
@@ -116,6 +115,14 @@ struct EventEditorSpaceResizerDragging : public UniqueEvent{};
 struct EventSpawnNode : public NonUniqueEvent{
     vec2 spawn_pos;
     GraphManager::NodeType type;
+    
+    std::string custom_workspace;
+    std::string custom_uid;
+    std::string custom_name;
+
+    bool is_workspace_custom = false;
+    bool is_uid_custom = false;
+    bool is_name_custom = false;
 };
 
 struct EventMouseJustClickSelectedObj : public NonUniqueEvent{
@@ -161,6 +168,10 @@ struct EventSearchingConnect : public NonUniqueEvent{
 struct EventCreateConnection : public NonUniqueEvent{
     OID fm_id;
     OID to_id;
+};
+struct EventCreateConnectionWithUID : public NonUniqueEvent{
+    std::string fm_uid;
+    std::string to_uid;
 };
 struct EventRemoveConnection : public NonUniqueEvent{
     OID fm_id;

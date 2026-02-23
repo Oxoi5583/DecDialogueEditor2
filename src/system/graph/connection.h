@@ -38,7 +38,6 @@ private:
     void m_update_state();
 
     void m_emit_event();
-    void m_create_connection_obj();
     void m_handle_event();
 
     std::vector<OID> m_on_screen_ids;
@@ -69,4 +68,7 @@ public:
     std::set<OID> get_connection(OID p_id);
 
     bool test_connection(OID p_fm_id, OID p_to_id);
+
+    void create_connection_obj(OID p_fm_id, OID p_to_id);
+
 };

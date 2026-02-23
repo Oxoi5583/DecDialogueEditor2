@@ -20,7 +20,3 @@ void GraphOption::draw(){}
 GraphManager::NodeType GraphOption::get_type(){
     return GraphManager::NodeType::OPTION;
 }
-std::string GraphOption::get_type_name(){
-    return "Option";
-}
-

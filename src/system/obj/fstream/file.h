@@ -26,6 +26,7 @@ public:
 
     void truncate();
     void append(FString p_text);
+    FString read();
 
     bool is_locked();
     void locked();
