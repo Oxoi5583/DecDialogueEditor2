@@ -32,3 +32,6 @@
 
 #define ICON_EXPAND_OPEN    ""  // expand_more (展開)
 #define ICON_EXPAND_CLOSE   ""  // expand_less (收起)
+
+#define ICON_LAST_PAGE      "«";
+#define ICON_NEXT_PAGE      "»";

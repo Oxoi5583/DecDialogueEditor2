@@ -78,6 +78,8 @@ public:
         m_events[typeid(EventType)].push_back(p_event);
     }
     void flush();
+
+    void emit_locked_all();
 private:
     DataContainer m_events;
     DataContainer m_events_buffer;

@@ -11,6 +11,15 @@
 #include "system/obj/abstract/clickable.h"
 
 MouseServer::MouseServer() {
+    m_left_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true);
+    m_left_double_click_timer->reset();
+    m_left_double_click_timer->stop();
+    m_right_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true);
+    m_right_double_click_timer->reset();
+    m_right_double_click_timer->stop();
+    m_middle_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true);
+    m_middle_double_click_timer->reset();
+    m_middle_double_click_timer->stop();
     load_cursor();
 }
 
@@ -18,6 +27,9 @@ MouseServer::~MouseServer() {
     for (SDL_Cursor* cursor : cursors) {
         if (cursor) SDL_DestroyCursor(cursor);
     }
+    m_left_double_click_timer->queue_free();
+    m_right_double_click_timer->queue_free();
+    m_middle_double_click_timer->queue_free();
 }
 void MouseServer::load_cursor() {
     cursors.resize(SDL_SYSTEM_CURSOR_COUNT);
@@ -91,6 +103,41 @@ void MouseServer::update() {
     m_event_handle_hover_event();
     m_event_handle_resize_event();
     m_event_handle_set_to_cursor();
+
+
+    if(!m_left_double_click_timer->is_timeout()){
+        if(m_is_left_just_clicked){
+            m_left_clicked_times++;
+            m_left_double_click_timer->reset();
+            m_left_double_click_timer->start();
+        }
+    }else{
+        m_left_clicked_times = 0;
+        m_left_double_click_timer->reset();
+        m_left_double_click_timer->stop();
+    }
+    if(!m_right_double_click_timer->is_timeout()){
+        if(m_is_right_just_clicked){
+            m_right_clicked_times++;
+            m_right_double_click_timer->reset();
+            m_right_double_click_timer->start();
+        }
+    }else{
+        m_right_clicked_times = 0;
+        m_right_double_click_timer->reset();
+        m_right_double_click_timer->stop();
+    }
+    if(!m_middle_double_click_timer->is_timeout()){
+        if(m_is_middle_just_clicked){
+            m_middle_clicked_times++;
+            m_middle_double_click_timer->reset();
+            m_middle_double_click_timer->start();
+        }
+    }else{
+        m_middle_clicked_times = 0;
+        m_middle_double_click_timer->reset();
+        m_middle_double_click_timer->stop();
+    }
 }
 void MouseServer::m_event_handle_normal_request(){
     while (!m_cursor_commands_buffer.empty()) {
@@ -251,6 +298,14 @@ bool MouseServer::is_just_released(MouseButton p_button) {
         case MouseButton::LEFT: return m_is_left_just_released;
         case MouseButton::RIGHT: return m_is_right_just_released;
         case MouseButton::MIDDLE: return m_is_middle_just_released;
+    }
+    return false;
+}
+bool MouseServer::is_mouse_multi_clicked(size_t p_times, MouseButton p_button){
+    switch (p_button) {
+        case MouseButton::LEFT: return m_left_clicked_times == p_times && m_is_left_just_clicked;
+        case MouseButton::RIGHT: return m_right_clicked_times == p_times && m_is_right_just_clicked;
+        case MouseButton::MIDDLE: return m_middle_clicked_times == p_times && m_is_middle_just_clicked;
     }
     return false;
 }

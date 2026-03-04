@@ -4,7 +4,9 @@
 #include "glm/glm.hpp"
 #include "engine/input_hub.h"
 #include "SDL3/SDL_mouse.h"
+#include <cstddef>
 #include <queue>
+#include <server/timer_server.h>
 #include <vector>
 
 using namespace glm;
@@ -17,6 +19,7 @@ enum class MouseButton {
 
 class MouseServer : public Singleton<MouseServer> {
 private:
+
     vec2 m_world_mouse_pos;
     vec2 m_screen_mouse_pos;
     vec2 m_screen_mouse_pos_center;
@@ -27,14 +30,20 @@ private:
     bool m_is_left_just_clicked = false;
     bool m_is_left_clicked = false;
     bool m_is_left_just_released = false;
+    size_t m_left_clicked_times = 0;
+    Timer* m_left_double_click_timer = nullptr;
 
     bool m_is_right_just_clicked = false;
     bool m_is_right_clicked = false;
     bool m_is_right_just_released = false;
+    size_t m_right_clicked_times = 0;
+    Timer* m_right_double_click_timer = nullptr;
 
     bool m_is_middle_just_clicked = false;
     bool m_is_middle_clicked = false;
     bool m_is_middle_just_released = false;
+    size_t m_middle_clicked_times = 0;
+    Timer* m_middle_double_click_timer = nullptr;
 
     std::vector<SDL_Cursor*> cursors;
 
@@ -102,6 +111,7 @@ public:
     bool is_just_released(MouseButton p_button = MouseButton::LEFT);
     bool is_mouse_in_window();
     bool is_mouse_in_viewport();
+    bool is_mouse_multi_clicked(size_t p_times, MouseButton p_button = MouseButton::LEFT);
 
     // Cursor control
     void cursor_default();

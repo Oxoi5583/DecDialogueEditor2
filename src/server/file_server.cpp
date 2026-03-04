@@ -169,3 +169,31 @@ OID FileServer::get_fstream_obj(FStreamLink p_link){
     }
     return node->id;
 }
+
+
+#ifdef _WIN32
+#define _AMD64_
+#include <minwindef.h>
+#include <fileapi.h>
+#endif
+
+bool FileServer::is_file_hidden(FPath p_path){
+    #ifdef _WIN32
+        // Windows-specific implementation using GetFileAttributes
+        DWORD attributes = GetFileAttributes(p_path.string().c_str());
+        if (attributes != INVALID_FILE_ATTRIBUTES) {
+            return (attributes & FILE_ATTRIBUTE_HIDDEN) != 0;
+        }
+        return false; // Or throw an error
+    #else
+        // Unix-like implementation (Linux, macOS)
+        fs::path::string_type name = p.filename();
+        if (name != "." && name != ".." && !name.empty() && name[0] == '.') {
+            return true;
+        }
+        return false;
+    #endif
+}
+bool FileServer::is_file_exists(FPath p_path){
+    return std::filesystem::exists(p_path);
+}

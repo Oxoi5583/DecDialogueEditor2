@@ -83,4 +83,6 @@ public:
     void process();
 
     OID get_fstream_obj(FStreamLink p_link);
+    bool is_file_hidden(FPath p_path);
+    bool is_file_exists(FPath p_path);
 };
