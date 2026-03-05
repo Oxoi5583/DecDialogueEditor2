@@ -941,7 +941,7 @@ PString ProjectServer::create_workspace(){
     Workspace workspace;
     workspace.code = new_ws_uid;
     workspace.data["workspace_info"] = {
-        {"name", "New Project"},
+        {"name", "New Workspace"},
         {"created_at", std::chrono::utc_clock::now().time_since_epoch().count()},
         {"updated_at", std::chrono::utc_clock::now().time_since_epoch().count()},
     };

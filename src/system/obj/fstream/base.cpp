@@ -52,3 +52,11 @@ FString FStreamBase::get_name(){
     std::filesystem::path name = m_path;
     return name.filename().string();
 }
+
+bool FStreamBase::is_hidden(){
+    return FileServer::Ref()->is_file_hidden(this->m_path);
+}
+
+void FStreamBase::set_hidden(){
+    FileServer::Ref()->set_file_to_hidden(this->m_path);
+}

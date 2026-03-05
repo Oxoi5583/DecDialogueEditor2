@@ -160,7 +160,7 @@ void EditorMenuBar::m_update_minimize_button(){
     ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
     float full_height = ImGui::GetContentRegionAvail().y;
-    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
+    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f) - 2.0f;
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f,0.5f));
 
     const int button_count = 3;
@@ -196,7 +196,7 @@ void EditorMenuBar::m_update_maximize_button(){
     ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
     float full_height = ImGui::GetContentRegionAvail().y;
-    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
+    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f) - 2.0f;
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f,0.5f));
 
 
@@ -233,7 +233,7 @@ void EditorMenuBar::m_update_close_button(){
     ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
     float text_height = ImGui::CalcTextSize(name.c_str()).y;
     float full_height = ImGui::GetContentRegionAvail().y;
-    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f);
+    float padding_y = std::max(0.0f, (full_height - text_height) + 2.0f) - 2.0f;
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f,0.5f));
 
     const int button_count = 1;

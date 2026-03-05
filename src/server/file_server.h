@@ -66,12 +66,17 @@ typedef std::vector<FString> FStreamLink;
 
 class FileServer : public Singleton<FileServer>{
 private:
-    std::vector<FStreamLink> m_needed_folder = {
-        {"assets"},
-        {"config"},
-        {"fonts"},
-        {"theme"},
-        {".temp"}
+    struct NeededFolder{
+        FStreamLink link;
+        bool need_hidden;
+    };
+
+    std::vector<NeededFolder> m_needed_folder = {
+        {{"assets"}, false},
+        {{"config"}, false},
+        {{"fonts"}, false},
+        {{"theme"}, false},
+        {{".temp"}, true}
     };
 
     FStreamFolder* m_root_ptr;
@@ -85,4 +90,6 @@ public:
     OID get_fstream_obj(FStreamLink p_link);
     bool is_file_hidden(FPath p_path);
     bool is_file_exists(FPath p_path);
+
+    void set_file_to_hidden(FPath p_path);
 };

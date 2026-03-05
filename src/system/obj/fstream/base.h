@@ -29,6 +29,9 @@ public:
     bool is_exists();
     bool is_directory();
     bool is_file();
+    bool is_hidden();
+    
+    void set_hidden();
 
     virtual FSizeUnit get_size();
     

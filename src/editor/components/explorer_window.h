@@ -15,9 +15,18 @@ class ExplorerWindowDataPipeline : public Singleton<ExplorerWindowDataPipeline>{
 public:
     std::unordered_set<std::string> opened_folder = {};
     std::string dir_path = ".";
+    std::set<OID> all_explorer_windows;
+
+    std::string selected_path;
 };
 
 class ExplorerWindow : public ObjectBase{
+public:
+    enum Mode{
+        NORAML,
+        FOLDER_ONLY,
+    };
+
 private:
     struct FObjectRow{
         int index;
@@ -28,6 +37,7 @@ private:
         bool is_hidden;
         bool is_directory;
         bool is_opened;
+        bool is_expand_row;
         std::vector<FObjectRow> children;
     };
 
@@ -48,6 +58,7 @@ private:
     };
 
     Page page;
+    Mode mode = Mode::NORAML;
 
     std::string m_uid = RandomCode(25).get();
     ImDrawList* m_draw_list = nullptr;
@@ -76,6 +87,7 @@ private:
     void m_explorer_area_process_draw_split_line();
     void m_explorer_area_process_create_sub_selectable();
     void m_explorer_area_process_draw_folder_line();
+    void m_explorer_area_confirm_button_process();
 
     bool m_is_refresh_needed = true;
 
@@ -89,4 +101,8 @@ public:
     void process();
     void post_process();
     void draw();
+
+    void set_mode(Mode p_mode);
+
+    std::string get_selected();
 };

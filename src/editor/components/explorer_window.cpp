@@ -16,6 +16,8 @@
 #include <iterator>
 #include <new>
 #include <server/file_server.h>
+#include <server/ui_text_bank.h>
+#include <sstream>
 #include <string>
 #include <system_error>
 #include <theme/theme_loader.h>
@@ -26,9 +28,25 @@
 
 ExplorerWindow::ExplorerWindow(){
     BIND_CLASS(ExplorerWindow);
+
+    if(ExplorerWindowDataPipeline::Ref()->all_explorer_windows.size() > 0){
+        for(OID id : ExplorerWindowDataPipeline::Ref()->all_explorer_windows){
+            if(!ObjectServer::Ref()->is_id_valid(id)){
+                continue;
+            }
+            ExplorerWindow* window = ObjectServer::Ref()->get_instance<ExplorerWindow>(id);
+            if(!window){
+                continue;
+            }
+            window->queue_free();
+        }
+    }
+
+
+    ExplorerWindowDataPipeline::Ref()->all_explorer_windows.emplace(this->get_id());
 }
 ExplorerWindow::~ExplorerWindow(){
-
+    ExplorerWindowDataPipeline::Ref()->all_explorer_windows.erase(this->get_id());
 }
 
 void ExplorerWindow::ready(){
@@ -37,20 +55,14 @@ void ExplorerWindow::ready(){
 void ExplorerWindow::Page::last_page(){
     from -= size;
     to -= size;
-
-    DEBUG_MSG("Page :" << from << "-" << to);
 }
 void ExplorerWindow::Page::next_page(){
     from = to + 1;
     to += size;
-
-    DEBUG_MSG("Page :" << from << "-" << to);
 }
 void ExplorerWindow::Page::reset(){
     from = 1;
     to = size;
-    
-    DEBUG_MSG("Page :" << from << "-" << to);
 }
 bool ExplorerWindow::Page::is_in_page(int p_index){
     return from <= p_index && p_index <= to;
@@ -89,7 +101,7 @@ void ExplorerWindow::m_close_button_process(){
             m_go_to_dir(p.parent_path());
         }
     }
-    
+
     std::string refresh_button_id = ICON_REFRESH;
     refresh_button_id += "##";
     refresh_button_id += m_uid;
@@ -140,7 +152,13 @@ void ExplorerWindow::m_generate_display_list(){
         row.display_name = row.name + "##" + std::to_string(index);
         row.is_hidden = FileServer::Ref()->is_file_hidden(row.abs_path);
         row.is_directory = base_entry.is_directory();
+        row.is_expand_row = false;
         row.index = (row.is_directory) ? index - 100000 : index;
+
+        if(!row.is_directory && mode == Mode::FOLDER_ONLY){
+            continue;
+        }
+
         if(row.is_directory){
             row.is_opened = ExplorerWindowDataPipeline::Ref()->opened_folder.contains(row.str_path);
 
@@ -160,10 +178,17 @@ void ExplorerWindow::m_generate_display_list(){
                 sub_row.display_name = "      " + sub_row.name + "##" + std::to_string(index);
                 sub_row.is_hidden = FileServer::Ref()->is_file_hidden(sub_row.abs_path);
                 sub_row.is_directory = sub_entry.is_directory();
+                sub_row.is_expand_row = false;
                 sub_row.index = (sub_row.is_directory) ? index - 100000 : index;
+
+                if(!sub_row.is_directory && mode == Mode::FOLDER_ONLY){
+                    continue;
+                }
+
                 row.children.push_back(sub_row);
             }
         }
+
         rows.push_back(row);
     }
     m_display_list.swap(rows);
@@ -200,6 +225,7 @@ void ExplorerWindow::m_generate_display_list(){
             show_more_row.name = "...";
             show_more_row.display_name = "...";
             show_more_row.children.clear();
+            show_more_row.is_expand_row = true;
             row.children.push_back(show_more_row);
         }
 
@@ -215,7 +241,7 @@ void ExplorerWindow::m_update_render_data(){
 
     const float padding_x = 15.0f;
     const float padding_y = 10.0f;
-    const float non_explorer_area_height = 25.0f;
+    const float non_explorer_area_height = 55.0f;
     const float close_button_offset = 25.0f;
 
     m_window_size = {m_win_size.x ,m_win_size.y};
@@ -234,7 +260,12 @@ void ExplorerWindow::m_update_opened_folder(){
             }
             for(FObjectRow& sub_row : row.children){
                 sub_row.is_opened = ExplorerWindowDataPipeline::Ref()->opened_folder.contains(sub_row.str_path);
-                sub_row.display_name = "      " + sub_row.name + "##" + std::to_string(sub_row.index);
+                sub_row.display_name = "      ";
+                if(sub_row.is_directory && !sub_row.is_expand_row){
+                    sub_row.display_name += ICON_FOLDER;
+                    sub_row.display_name += " ";
+                }
+                sub_row.display_name += sub_row.name + "##" + std::to_string(sub_row.index);
             }
         }
     }
@@ -366,6 +397,22 @@ void ExplorerWindow::m_explorer_area_process(){
     }
     
 }
+void ExplorerWindow::m_explorer_area_confirm_button_process(){
+    const float button_height = 25.0f;
+    const float button_width = 55.0f;
+
+    std::stringstream uid_ss;
+    uid_ss << UiTextBank::Ref()->Confirm.get();
+    uid_ss << "##";
+    uid_ss << this->m_uid;
+    ImGui::Button(uid_ss.rdbuf()->str().c_str(), {button_width, button_height});
+    if(ImGui::IsItemHovered()){
+        EventServer::Ref()->emit_locked_all();
+        if(MouseServer::Ref()->is_just_released()){
+            
+        }
+    }
+}
     
 void ExplorerWindow::pre_process(){
     if(m_is_refresh_needed){
@@ -382,10 +429,13 @@ void ExplorerWindow::pre_process(){
     ImGui::Begin("##EXPLORER_WINDOW", NULL, ImGuiWindowFlags_NoDecoration);
         m_close_button_process();
         m_explorer_area_process();
+        m_explorer_area_confirm_button_process();
         if(ImGui::IsWindowFocused()){
             EventServer::Ref()->emit_locked_all();
         }
     ImGui::End();
+
+    ExplorerWindowDataPipeline::Ref()->selected_path = m_selected_path;
 }
 void ExplorerWindow::process(){
 
@@ -395,4 +445,13 @@ void ExplorerWindow::post_process(){
 }
 void ExplorerWindow::draw(){
 
+}
+
+void ExplorerWindow::set_mode(Mode p_mode){
+    mode = p_mode;
+    m_is_refresh_needed = true;
+}
+
+std::string ExplorerWindow::get_selected(){
+    return m_selected_path;
 }

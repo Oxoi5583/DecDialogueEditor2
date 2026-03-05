@@ -60,9 +60,9 @@ void EditorDetailsWindow::pre_process(){
 
 
         ImGui::Begin((m_obj_name + " " + m_name).c_str(),&m_opened, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-        ImVec2 curr_size = ImGui::GetWindowSize();
-        ImVec2 curr_pos = ImGui::GetWindowPos();
-        m_draw_fields();
+        if(size.x > 200){
+            m_draw_fields();
+        }
         ImGui::End();
     }
 }

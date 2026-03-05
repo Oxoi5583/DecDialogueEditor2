@@ -89,7 +89,8 @@ int main(int argc, char* argv[]) {
     UiTextBank::Ref()->init();
     unsigned long long frame = 0;
 
-    ObjectServer::Ref()->queue_create<ExplorerWindow>(ObjectServer::Layer::UI_LAYER);
+    ExplorerWindow* ew = ObjectServer::Ref()->queue_create<ExplorerWindow>(ObjectServer::Layer::UI_LAYER);
+    ew->set_mode(ExplorerWindow::Mode::FOLDER_ONLY);
 
     while (EngineWindow::Ref()->is_running()){
         EngineInputHub::Ref()->polling_sdl_event();
