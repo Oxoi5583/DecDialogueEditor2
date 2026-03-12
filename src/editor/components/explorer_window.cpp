@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iterator>
+#include <mutex>
 #include <new>
 #include <server/file_server.h>
 #include <server/ui_text_bank.h>
@@ -21,6 +22,7 @@
 #include <string>
 #include <system_error>
 #include <theme/theme_loader.h>
+#include <thread>
 #include <vector>
 
 #include "ext/debug/messenger_ext.h"
@@ -42,40 +44,52 @@ ExplorerWindow::ExplorerWindow(){
         }
     }
 
-
+    ExplorerWindowDataPipeline::Ref()->all_explorer_windows.clear();
     ExplorerWindowDataPipeline::Ref()->all_explorer_windows.emplace(this->get_id());
 }
 ExplorerWindow::~ExplorerWindow(){
+    m_display_list_runner.terminate_runner();
     ExplorerWindowDataPipeline::Ref()->all_explorer_windows.erase(this->get_id());
 }
 
+void ExplorerWindow::close(){
+    this->queue_free();
+}
+
 void ExplorerWindow::ready(){
+    m_target_path.resize(m_target_path_length);
 }
 
 void ExplorerWindow::Page::last_page(){
+    std::lock_guard<std::mutex> lock(mtx);
     from -= size;
     to -= size;
 }
 void ExplorerWindow::Page::next_page(){
-    from = to + 1;
+    std::lock_guard<std::mutex> lock(mtx);
+    from += size;
     to += size;
 }
 void ExplorerWindow::Page::reset(){
+    std::lock_guard<std::mutex> lock(mtx);
     from = 1;
-    to = size;
+    to = from + size;
 }
-bool ExplorerWindow::Page::is_in_page(int p_index){
+bool ExplorerWindow::Page::is_in_page(int p_index) const{
     return from <= p_index && p_index <= to;
 }
-bool ExplorerWindow::Page::is_at_first_page(){
+bool ExplorerWindow::Page::is_at_first_page() const{
     return from <= min;
 }
-bool ExplorerWindow::Page::is_at_last_page(){
+bool ExplorerWindow::Page::is_at_last_page() const{
     return to > max;
 }
 
 void ExplorerWindow::m_go_to_dir(std::filesystem::path p_path){
+    m_display_list_runner.stop_runner();
+    
     std::string str_path = p_path.string();
+    
     ExplorerWindowDataPipeline::Ref()->dir_path = str_path;
     m_selected_path = str_path;
 
@@ -130,79 +144,94 @@ void ExplorerWindow::m_close_button_process(){
 
     ImGui::PushFont(EngineFontLoader::Ref()->get(12));
     if(ImGui::Button(button_id.c_str(), ImVec2(button_width, button_height))){
-        this->queue_free();
+        this->close();
     }
     ImGui::PopFont();
     if(ImGui::IsItemHovered()){
         EventServer::Ref()->emit_locked_all();
     }
 }
-void ExplorerWindow::m_generate_display_list(){
-    auto dir_path = std::filesystem::absolute(ExplorerWindowDataPipeline::Ref()->dir_path);
-    auto dir_it = std::filesystem::directory_iterator(dir_path, std::filesystem::directory_options::skip_permission_denied);
-    std::vector<FObjectRow> rows;
 
-    int index = 0;
-    for(auto& base_entry : dir_it){
-        index++;
-        FObjectRow row;
-        row.abs_path = std::filesystem::absolute(base_entry.path());
-        row.str_path = row.abs_path.string();
-        row.name = row.abs_path.filename().string();
-        row.display_name = row.name + "##" + std::to_string(index);
-        row.is_hidden = FileServer::Ref()->is_file_hidden(row.abs_path);
-        row.is_directory = base_entry.is_directory();
-        row.is_expand_row = false;
-        row.index = (row.is_directory) ? index - 100000 : index;
+void ExplorerWindow::DisplayListRunner::m_generate_one_row_of_raw_files_list_single(int p_index, const std::filesystem::directory_entry& p_entry){
+    FObjectRow row;
+    row.abs_path = std::filesystem::absolute(p_entry.path());
 
-        if(!row.is_directory && mode == Mode::FOLDER_ONLY){
-            continue;
-        }
-
-        if(row.is_directory){
-            row.is_opened = ExplorerWindowDataPipeline::Ref()->opened_folder.contains(row.str_path);
-
-            if(row.is_opened){
-                row.display_name = ICON_FOLDER_OPEN + row.name;
-            }else{
-                row.display_name = ICON_FOLDER + row.name;
-            }
-
-            auto sub_dir_it = std::filesystem::directory_iterator(row.abs_path, std::filesystem::directory_options::skip_permission_denied);
-            for(auto& sub_entry : sub_dir_it){
-                index++;
-                FObjectRow sub_row;
-                sub_row.abs_path = std::filesystem::absolute(sub_entry.path());
-                sub_row.str_path = sub_row.abs_path.string();
-                sub_row.name = sub_row.abs_path.filename().string();
-                sub_row.display_name = "      " + sub_row.name + "##" + std::to_string(index);
-                sub_row.is_hidden = FileServer::Ref()->is_file_hidden(sub_row.abs_path);
-                sub_row.is_directory = sub_entry.is_directory();
-                sub_row.is_expand_row = false;
-                sub_row.index = (sub_row.is_directory) ? index - 100000 : index;
-
-                if(!sub_row.is_directory && mode == Mode::FOLDER_ONLY){
-                    continue;
-                }
-
-                row.children.push_back(sub_row);
-            }
-        }
-
-        rows.push_back(row);
+    if(!std::filesystem::exists(row.abs_path)){
+        return;
     }
-    m_display_list.swap(rows);
 
-    std::sort(m_display_list.begin(), m_display_list.end(), [](FObjectRow a, FObjectRow b){
+
+    row.str_path = row.abs_path.string();
+    row.name = row.abs_path.filename().string();
+    row.display_name = row.name + "##" + row.str_path;
+    row.is_hidden = FileServer::Ref()->is_file_hidden(row.abs_path);
+    row.is_directory = p_entry.is_directory();
+    row.is_expand_row = false;
+    row.index = (row.is_directory) ? p_index - 100000 : p_index;
+
+
+    if(!row.is_directory && explorer_mode == ExplorerMode::FOLDER_ONLY){
+        return;
+    }
+
+    if(row.is_directory){
+        auto sub_dir_it = std::filesystem::directory_iterator(row.abs_path, std::filesystem::directory_options::skip_permission_denied);
+        for(auto& sub_entry : sub_dir_it){
+            p_index++;
+            FObjectRow sub_row;
+            sub_row.abs_path = std::filesystem::absolute(sub_entry.path());
+            sub_row.str_path = sub_row.abs_path.string();
+            sub_row.name = sub_row.abs_path.filename().string();
+            sub_row.display_name = "      " + sub_row.name + "##" + sub_row.str_path;
+            sub_row.is_hidden = FileServer::Ref()->is_file_hidden(sub_row.abs_path);
+            sub_row.is_directory = sub_entry.is_directory();
+            sub_row.is_expand_row = false;
+            sub_row.index = (sub_row.is_directory) ? p_index - 100000 : p_index;
+
+            if(!sub_row.is_directory && explorer_mode == ExplorerMode::FOLDER_ONLY){
+                break;
+            }
+
+            row.children.push_back(sub_row);
+        }
+    }
+    m_raw_files_list.push_back(row);
+}
+
+void ExplorerWindow::Page::set_max(int p_val){
+    std::lock_guard<std::mutex> lock(mtx);
+    this->max = p_val;
+}
+void ExplorerWindow::Page::set_min(int p_val){
+    std::lock_guard<std::mutex> lock(mtx);
+    this->min = p_val;
+}
+int ExplorerWindow::Page::get_max() const{
+    return this->max;
+}
+int ExplorerWindow::Page::get_min() const{
+    return this->min;
+}
+int ExplorerWindow::Page::get_from() const{
+    return this->from;
+}
+int ExplorerWindow::Page::get_to() const{
+    return this->to;
+}
+
+void ExplorerWindow::DisplayListRunner::m_regenerate_display_list(){
+    std::sort(m_raw_files_list.begin(), m_raw_files_list.end(), [](FObjectRow a, FObjectRow b){
         return a.index < b.index;
     });
 
-    index = 1;
-    page.min = index;
-    page.max = index;
+    m_display_list = m_raw_files_list;
+
+    int index = 1;
+    page_max = index;
+    page_min = index;
     for(FObjectRow& row : m_display_list){
         row.index = index;
-
+        
         const int children_max = 5;
         bool is_children_overflow = false;
         int sub_index = 0;
@@ -223,15 +252,78 @@ void ExplorerWindow::m_generate_display_list(){
             row.children.swap(children_buf);
             FObjectRow show_more_row = row;
             show_more_row.name = "...";
-            show_more_row.display_name = "...";
+            show_more_row.display_name = "...##" + show_more_row.str_path;
             show_more_row.children.clear();
             show_more_row.is_expand_row = true;
             row.children.push_back(show_more_row);
         }
 
-        page.max = index;
+        page_max = index;
         index++;
     }
+}
+void ExplorerWindow::DisplayListRunner::stop_runner(){
+    m_display_list_thread.join();
+    std::queue<std::filesystem::directory_entry>().swap(m_dir_iterator);
+    m_display_list_thread = std::thread(&ExplorerWindow::DisplayListRunner::m_generate_one_row_of_raw_files_list, this);
+}
+void ExplorerWindow::DisplayListRunner::terminate_runner(){
+    m_display_list_thread.join();
+    std::queue<std::filesystem::directory_entry>().swap(m_dir_iterator);
+}
+void ExplorerWindow::DisplayListRunner::m_fetch_dir_iterator(){
+    m_display_list_thread.join();
+
+    m_dir = ExplorerWindowDataPipeline::Ref()->dir_path;
+    std::queue<std::filesystem::directory_entry>().swap(m_dir_iterator);
+
+    auto dir_path = std::filesystem::absolute(m_dir);
+    auto dir_it = std::filesystem::directory_iterator(dir_path, std::filesystem::directory_options::skip_permission_denied);
+    
+    for(auto& entry : dir_it){
+        m_dir_iterator.emplace(entry);
+    }
+    m_raw_files_list.clear();
+    
+    m_display_list_thread = std::thread(&ExplorerWindow::DisplayListRunner::m_generate_one_row_of_raw_files_list, this);
+}
+
+void ExplorerWindow::DisplayListRunner::m_refresh_display_list(ExplorerWindow* p_window){
+    if(m_is_regenerate_needed){
+        p_window->m_display_list_buf.swap(m_display_list);
+        p_window->page.set_max(page_max);
+        p_window->page.set_min(page_min);
+        m_is_regenerate_needed = false;
+        return;
+    }
+
+    if(m_dir_iterator.empty()){
+        m_generate_one_row_of_raw_files_list_index = 0;
+        return;
+    }
+
+    if(m_display_list_thread.joinable()){
+        m_display_list_thread.join();
+        m_display_list_thread = std::thread(&ExplorerWindow::DisplayListRunner::m_generate_one_row_of_raw_files_list, this);
+    }
+}
+
+void ExplorerWindow::DisplayListRunner::m_generate_one_row_of_raw_files_list(){
+    std::lock_guard<std::mutex> lock(m_display_list_mtx);
+    if(m_dir_iterator.empty()){
+        m_generate_one_row_of_raw_files_list_index = 0;
+        return;
+    }
+
+    auto it = m_dir_iterator.front();
+
+    m_generate_one_row_of_raw_files_list_single(m_generate_one_row_of_raw_files_list_index, it);
+
+    m_dir_iterator.pop();
+
+    m_regenerate_display_list();
+    m_is_regenerate_needed = true;
+    m_generate_one_row_of_raw_files_list_index++;
 }
 void ExplorerWindow::m_update_render_data(){
     m_engine_win_size = EngineWindow::Ref()->get_window_size();
@@ -249,14 +341,25 @@ void ExplorerWindow::m_update_render_data(){
     m_explorer_area_pos = {padding_x, padding_y + close_button_offset};
 }
 void ExplorerWindow::m_update_opened_folder(){
-    for(FObjectRow& row : m_display_list){
+
+    
+    for(size_t i = page.get_from(); i <= page.get_to(); i++){
+        if(i > m_display_list_buf.size()){
+            break;
+        }
+
+        FObjectRow& row = m_display_list_buf[i - 1];
+
+        if(!page.is_in_page(i)){
+            break;
+        }
+
         row.is_opened = ExplorerWindowDataPipeline::Ref()->opened_folder.contains(row.str_path);
         if(row.is_directory){
-            row.display_name = " " + row.name + "##" + std::to_string(row.index);;
             if(row.is_opened){
-                row.display_name = ICON_FOLDER_OPEN + row.display_name;
+                row.display_name = ICON_FOLDER_OPEN + row.name + std::to_string(row.index) + "##" + row.str_path + "##" + row.str_path;
             }else{
-                row.display_name = ICON_FOLDER + row.display_name;
+                row.display_name = ICON_FOLDER + row.name + std::to_string(row.index) + "##" + row.str_path + "##" + row.str_path;
             }
             for(FObjectRow& sub_row : row.children){
                 sub_row.is_opened = ExplorerWindowDataPipeline::Ref()->opened_folder.contains(sub_row.str_path);
@@ -265,7 +368,7 @@ void ExplorerWindow::m_update_opened_folder(){
                     sub_row.display_name += ICON_FOLDER;
                     sub_row.display_name += " ";
                 }
-                sub_row.display_name += sub_row.name + "##" + std::to_string(sub_row.index);
+                sub_row.display_name += sub_row.name + std::to_string(sub_row.index) + "##" + sub_row.str_path;
             }
         }
     }
@@ -276,34 +379,36 @@ void ExplorerWindow::m_explorer_area_process_draw_area_background(){
         ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"));
 }
 void ExplorerWindow::m_explorer_area_process_create_main_selectable(){
-    ImGui::Selectable(m_main_row.display_name.c_str());
+    ImGui::Selectable(m_main_row->display_name.c_str());
     if(ImGui::IsItemHovered()){
         EventServer::Ref()->emit_locked_all();
         if(MouseServer::Ref()->is_mouse_multi_clicked(1)){
-            if(m_main_row.is_opened){
-                ExplorerWindowDataPipeline::Ref()->opened_folder.erase(m_main_row.str_path);
+            if(m_main_row->is_opened){
+                ExplorerWindowDataPipeline::Ref()->opened_folder.erase(m_main_row->str_path);
             }else{
-                ExplorerWindowDataPipeline::Ref()->opened_folder.emplace(m_main_row.str_path);
+                ExplorerWindowDataPipeline::Ref()->opened_folder.emplace(m_main_row->str_path);
             }
-            m_selected_path = m_main_row.str_path;
+            m_selected_path = m_main_row->str_path;
+            m_target_path = m_selected_path;
         }
         if(MouseServer::Ref()->is_mouse_multi_clicked(2)){
-            if(m_main_row.is_directory && FileServer::Ref()->is_file_exists(m_main_row.abs_path)){
-                m_go_to_dir(m_main_row.abs_path);
+            if(m_main_row->is_directory && FileServer::Ref()->is_file_exists(m_main_row->abs_path)){
+                m_go_to_dir(m_main_row->abs_path);
             }
         }
     }
 }
 void ExplorerWindow::m_explorer_area_process_create_sub_selectable(){
-    ImGui::Selectable(m_sub_row.display_name.c_str());
+    ImGui::Selectable(m_sub_row->display_name.c_str());
     if(ImGui::IsItemHovered()){
         EventServer::Ref()->emit_locked_all();
         if(MouseServer::Ref()->is_mouse_multi_clicked(1)){
-            m_selected_path = m_sub_row.str_path;
+            m_selected_path = m_sub_row->str_path;
+            m_target_path = m_selected_path;
         }
         if(MouseServer::Ref()->is_mouse_multi_clicked(2)){
-            if(m_sub_row.is_directory && FileServer::Ref()->is_file_exists(m_sub_row.abs_path)){
-                m_go_to_dir(m_sub_row.abs_path);
+            if(m_sub_row->is_directory && FileServer::Ref()->is_file_exists(m_sub_row->abs_path)){
+                m_go_to_dir(m_sub_row->abs_path);
             }
         }
     }
@@ -345,32 +450,36 @@ void ExplorerWindow::m_explorer_area_process(){
             }
             m_explorer_area_process_draw_split_line();
         }
+        
+        for(size_t i = page.get_from(); i <= page.get_to(); i++){
+            if(i > m_display_list_buf.size()){
+                break;
+            }
+            
+            m_main_row = &m_display_list_buf[i - 1];
 
-        for(auto& main_row : m_display_list){
-            m_main_row = main_row;
-
-            if(m_main_row.is_hidden){
+            if(m_main_row->is_hidden){
                 continue;
             }
 
-            if(!page.is_in_page(m_main_row.index)){
-                continue;
+            if(!page.is_in_page(m_main_row->index)){
+                break;
             }
 
             m_explorer_area_process_create_main_selectable();
             m_explorer_area_process_draw_split_line();
 
-            if(m_main_row.is_directory){
-                if(m_main_row.is_opened){
-                    for(auto& sub_row : m_main_row.children){
-                        m_sub_row = sub_row;
-
-                        if(m_sub_row.is_hidden){
+            if(m_main_row->is_directory){
+                if(m_main_row->is_opened){
+                    for(auto& sub_row : m_main_row->children){
+                        m_sub_row = &sub_row;
+                        
+                        if(m_sub_row->is_hidden){
                             continue;
                         }
 
-                        if(!page.is_in_page(m_sub_row.index)){
-                            continue;
+                        if(!page.is_in_page(m_sub_row->index)){
+                            break;
                         }
 
                         m_explorer_area_process_create_sub_selectable();
@@ -401,6 +510,8 @@ void ExplorerWindow::m_explorer_area_confirm_button_process(){
     const float button_height = 25.0f;
     const float button_width = 55.0f;
 
+    m_is_confirm_pressed = false;
+
     std::stringstream uid_ss;
     uid_ss << UiTextBank::Ref()->Confirm.get();
     uid_ss << "##";
@@ -409,14 +520,24 @@ void ExplorerWindow::m_explorer_area_confirm_button_process(){
     if(ImGui::IsItemHovered()){
         EventServer::Ref()->emit_locked_all();
         if(MouseServer::Ref()->is_just_released()){
-            
+            m_is_confirm_pressed = true;
         }
     }
+}
+void ExplorerWindow::m_explorer_area_target_text_input_process(){
+    const float button_height = 25.0f;
+    std::string uid = "##" + m_uid;
+
+    ImGui::SameLine();
+    ImGui::InputText(uid.c_str(), m_target_path.data(), m_target_path_length);
+    ImVec2 min = ImGui::GetItemRectMin();
+    ImVec2 max = ImGui::GetItemRectMax();
+    m_draw_list->AddRectFilled(min, max, ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour2"));
 }
     
 void ExplorerWindow::pre_process(){
     if(m_is_refresh_needed){
-        m_generate_display_list();
+        m_display_list_runner.m_fetch_dir_iterator();
         m_is_refresh_needed = false;
     }
 
@@ -430,6 +551,7 @@ void ExplorerWindow::pre_process(){
         m_close_button_process();
         m_explorer_area_process();
         m_explorer_area_confirm_button_process();
+        m_explorer_area_target_text_input_process();
         if(ImGui::IsWindowFocused()){
             EventServer::Ref()->emit_locked_all();
         }
@@ -441,17 +563,21 @@ void ExplorerWindow::process(){
 
 }
 void ExplorerWindow::post_process(){
-
+    m_display_list_runner.m_refresh_display_list(this);
 }
 void ExplorerWindow::draw(){
 
 }
 
-void ExplorerWindow::set_mode(Mode p_mode){
-    mode = p_mode;
+void ExplorerWindow::set_explorer_mode(ExplorerMode p_mode){
+    m_display_list_runner.explorer_mode = p_mode;
     m_is_refresh_needed = true;
 }
 
 std::string ExplorerWindow::get_selected(){
     return m_selected_path;
+}
+
+bool ExplorerWindow::is_confirm_pressed(){
+    return m_is_confirm_pressed;
 }
