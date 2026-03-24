@@ -1,10 +1,13 @@
 #pragma once
 
 #include "DecToolsBox/abstract./singleton.h"
+#include "file_server.h"
 #include "server/file_server.h"
 #include <cstddef>
 #include <cstdint>
+#include <editor/components/explorer_window.h>
 #include <map>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -20,8 +23,6 @@ typedef std::map<PString, Workspace> Workspaces;
 struct Project{
     OID folder_id;
     Workspaces spaces;
-
-    void save_as(PString p_path);
 };
 
 struct Workspace{
@@ -77,6 +78,27 @@ private:
     void m_read_workspace(OID p_file);
 
     FPath m_project_file = "";
+    OID m_explorer_window_id = 0;
+
+    bool m_action_save_as_project(FPath p_path);
+    bool m_action_open_project(FPath p_path);
+
+    enum class SaveAction{
+        SAVE,
+        SAVE_AS,
+        OPEN,
+    };
+    struct SaveActionPackage{
+        SaveAction action;
+    };
+    std::vector<SaveActionPackage> m_save_action_packages;
+    void m_handle_action();
+    bool m_handle_action_save();
+    bool m_handle_action_save_as();
+    bool m_handle_action_open();
+
+    OID m_new_explorer_save();
+    OID m_new_explorer_open();
 public:
     ProjectServer() = default;
     ~ProjectServer();
@@ -145,10 +167,14 @@ public:
     std::vector<WorkspaceInfo> get_display_data();
     size_t get_workspace_count();
 
-    void open_project(FPath p_path);
-    void save_as_project(FPath p_path);
+    void open_project();
+    void save_project();
+    void save_as_project();
     void save_workspace(PString p_uid);
     void save_all_workspaces();
+
+    bool have_saved_target();
+    bool have_explorer_window();
 
     bool is_workspace_file_valid(OID p_file);
 

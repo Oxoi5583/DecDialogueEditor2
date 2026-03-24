@@ -45,10 +45,13 @@ void ExplorerWindow::m_open_file_dialog(){
     SDL_DialogFileFilter* filters = m_sdl_filters.data();
     switch (m_mode) {
         case Mode::FILE:
-            SDL_ShowOpenFileDialog(ExplorerWindow::on_open_file, this, m_window, filters, SDL_arraysize(filters), NULL, m_allow_multi_select);
+            SDL_ShowOpenFileDialog(ExplorerWindow::on_open_file, this, m_window, filters, SDL_arraysize(filters), m_default_path.c_str(), m_allow_multi_select);
             break;
         case Mode::FOLDER:
-            SDL_ShowOpenFolderDialog(ExplorerWindow::on_open_file, this, m_window, NULL, m_allow_multi_select);
+            SDL_ShowOpenFolderDialog(ExplorerWindow::on_open_file, this, m_window, m_default_path.c_str(), m_allow_multi_select);
+            break;
+        case Mode::SAVE:
+            SDL_ShowSaveFileDialog(ExplorerWindow::on_open_file, this, m_window, filters,0,m_default_path.c_str());
             break;
     }
 }
@@ -88,6 +91,9 @@ void ExplorerWindow::set_mode(Mode p_mode){
 }
 void ExplorerWindow::set_allow_multi_select(bool p_option){
     m_allow_multi_select = p_option;
+}
+void ExplorerWindow::set_default_path(std::string p_path){
+    m_default_path = p_path;
 }
 void ExplorerWindow::add_filter(FilterOption p_option){
     m_filter_options.push_back(p_option);

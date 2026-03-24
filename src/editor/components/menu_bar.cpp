@@ -82,9 +82,11 @@ void EditorMenuBar::m_update_menu_file(){
             ProjectServer::Ref()->save_all_workspaces();
         }
         if(ImGui::MenuItem(UiTextBank::Ref()->SaveAsPJ)){
-            ProjectServer::Ref()->save_as_project("E:\\test.dlg");
+            ProjectServer::Ref()->save_as_project();
         }
-        ImGui::MenuItem(UiTextBank::Ref()->Open);
+        if(ImGui::MenuItem(UiTextBank::Ref()->Open)){
+            ProjectServer::Ref()->open_project();
+        };
         ImGui::EndMenu();
     }
     if (ImGui::IsItemHovered()) {

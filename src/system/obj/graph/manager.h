@@ -123,4 +123,6 @@ public:
     NodeType name_to_type(std::string p_name);
 
     OID spawn(NodeType p_type);
+
+    void clear_nodes();
 };

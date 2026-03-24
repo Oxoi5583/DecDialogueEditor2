@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cstddef>
+#include <editor/components/explorer_window.h>
+#include <engine/window.h>
 #include <exception>
 #include <filesystem>
 #include <fstream>
@@ -44,15 +46,6 @@ bool ProjectPayload::is_data_exists(){
     return true;
 }
 
-void Project::save_as(PString p_path){
-    for(auto& it : spaces){
-        it.second.save();
-    }
-    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(this->folder_id);
-    if(folder){
-    }
-}
-
 void Workspace::save(){
     is_saved = true;
     this->data["workspace_info"]["updated_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
@@ -67,6 +60,7 @@ void ProjectServer::process(){
     m_freeze_non_workspace_obj();
     m_update_workspace_selection();
     m_refresh_display_data();
+    m_handle_action();
 }
 void ProjectServer::init(){
     FStreamLink link;
@@ -976,12 +970,19 @@ std::vector<ProjectServer::WorkspaceInfo> ProjectServer::get_display_data(){
     return m_display_data;
 }
 
-void ProjectServer::open_project(FPath p_path){
+bool ProjectServer::m_action_open_project(FPath p_path){
+    if(!std::filesystem::exists(p_path)){
+        return false;
+    }
+
     FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_project.folder_id);
     if(folder){
         folder->clear();
         folder->extract_from(p_path.string());
         m_project.spaces.clear();
+        GraphManager::Ref()->clear_nodes();
+
+        folder->extract_from(p_path.string());
 
         for(OID id : folder->get_children()){
             m_read_workspace(id);
@@ -990,10 +991,13 @@ void ProjectServer::open_project(FPath p_path){
         m_refresh_display_data();
         WorkspaceInfo& info = m_display_data[0];
         this->go_to_workspace(info.uid);
+
+        return true;
     }
+    return false;
 }
 
-void ProjectServer::save_as_project(FPath p_path){
+bool ProjectServer::m_action_save_as_project(FPath p_path){
     try {
         std::streambuf* old_buf = std::cout.rdbuf();
         std::cout.rdbuf(nullptr); 
@@ -1014,9 +1018,29 @@ void ProjectServer::save_as_project(FPath p_path){
 
         std::cout.rdbuf(old_buf);
 
+        m_project_file = p_path;
         SUCCESS_MSG("Saved project to " << p_path.string() << " successfully");
+        return true;
     } catch(std::exception e) {
         ERROR_MSG("Saving project to " << p_path.string() << " failed.");
+    }
+
+    return false;
+}
+
+void ProjectServer::save_project(){
+    if(m_save_action_packages.empty()){
+        m_save_action_packages.push_back({SaveAction::SAVE});
+    }
+}
+void ProjectServer::save_as_project(){
+    if(m_save_action_packages.empty()){
+        m_save_action_packages.push_back({SaveAction::SAVE_AS});
+    }
+}
+void ProjectServer::open_project(){
+    if(m_save_action_packages.empty()){
+        m_save_action_packages.push_back({SaveAction::OPEN});
     }
 }
 
@@ -1033,6 +1057,7 @@ void ProjectServer::save_all_workspaces(){
         it.second.save();
     }
 }
+
 
 bool ProjectServer::is_workspace_file_valid(OID p_file){
     FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(p_file);
@@ -1114,4 +1139,152 @@ void ProjectServer::m_read_workspace(OID p_file){
             }
         }
     }
+}
+
+bool ProjectServer::have_saved_target(){
+    return std::filesystem::exists(m_project_file);
+}
+bool ProjectServer::have_explorer_window(){
+    return ObjectServer::Ref()->is_id_valid(m_explorer_window_id);
+}
+
+void ProjectServer::m_handle_action(){
+    if(m_save_action_packages.empty()){
+        return;
+    }
+
+    bool is_list_need_to_clear = false;
+
+    SaveActionPackage& package = m_save_action_packages[0];
+    switch (package.action) {
+        case SaveAction::SAVE:{
+            if(m_handle_action_save()){
+                is_list_need_to_clear = true;
+            }
+            break;
+        }
+        case SaveAction::SAVE_AS:{
+            if(m_handle_action_save_as()){
+                is_list_need_to_clear = true;
+            }
+            break;
+        }
+        case SaveAction::OPEN:{
+            if(m_handle_action_open()){
+                is_list_need_to_clear = true;
+            }
+            break;
+        }
+    }
+    
+    if(is_list_need_to_clear){
+        m_save_action_packages.clear();
+    }
+}
+OID ProjectServer::m_new_explorer_save(){
+    ExplorerWindow* window = EngineWindow::Ref()->create_explorer_window();
+    window->set_allow_multi_select(false);
+    window->set_mode(ExplorerWindow::Mode::SAVE);
+    window->add_filter(ExplorerWindow::FilterOption::DEC_DIALOGUE);
+    window->set_default_path("New Dialogue Project.ddlg");
+
+    return window->get_id();
+}
+OID ProjectServer::m_new_explorer_open(){
+    ExplorerWindow* window = EngineWindow::Ref()->create_explorer_window();
+    window->set_allow_multi_select(false);
+    window->set_mode(ExplorerWindow::Mode::FILE);
+    window->add_filter(ExplorerWindow::FilterOption::DEC_DIALOGUE);
+    window->set_default_path("New Dialogue Project.ddlg");
+
+    return window->get_id();
+}
+bool ProjectServer::m_handle_action_save(){
+    if(!have_explorer_window() && !have_saved_target()){
+        m_explorer_window_id = m_new_explorer_save();
+    }
+    
+    ExplorerWindow* window = ObjectServer::Ref()->get_instance<ExplorerWindow>(m_explorer_window_id);
+    if(window->have_result()){
+        if(window->get_result().empty()){
+            window->close();
+            return false;
+        }
+
+        std::string path = window->get_result()[0];
+        if(!m_action_save_as_project(path)){
+            window->close();
+            return  false;
+        }
+
+        window->close();
+        return true;
+    }
+
+    if(window->is_finished()){
+        window->close();
+        return true;
+    }
+
+    return false;
+}
+bool ProjectServer::m_handle_action_save_as(){
+    if(!have_explorer_window()){
+        m_explorer_window_id = m_new_explorer_save();
+    }
+    
+    ExplorerWindow* window = ObjectServer::Ref()->get_instance<ExplorerWindow>(m_explorer_window_id);
+    if(window->have_result()){
+        if(window->get_result().empty()){
+            window->close();
+            return false;
+        }
+
+        std::string path = window->get_result()[0];
+        DEBUG_MSG("Path : " << path);
+        if(!m_action_save_as_project(path)){
+            window->close();
+            return  false;
+        }
+
+        window->close();
+        return true;
+    }
+
+    if(window->is_finished()){
+        window->close();
+        return true;
+    }
+
+    return false;
+}
+bool ProjectServer::m_handle_action_open(){
+    if(!have_explorer_window()){
+        m_explorer_window_id = m_new_explorer_open();
+    }
+    
+    ExplorerWindow* window = ObjectServer::Ref()->get_instance<ExplorerWindow>(m_explorer_window_id);
+    if(window->have_result()){
+        if(window->get_result().empty()){
+            window->close();
+            return false;
+        }
+
+        std::string path = window->get_result()[0];
+        DEBUG_MSG("Path : " << path);
+        if(!m_action_open_project(path)){
+            window->close();
+            return  false;
+        }
+
+        window->close();
+        return true;
+    }
+
+    if(window->is_finished()){
+        window->close();
+        return true;
+    }
+
+    return false;
 }

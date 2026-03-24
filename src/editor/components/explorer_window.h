@@ -21,6 +21,7 @@ public:
     enum class Mode{
         FILE,
         FOLDER,
+        SAVE,
     };
     enum class FilterOption{
         TEXT_FILES,
@@ -47,7 +48,7 @@ public:
     };
 private:
     static void SDLCALL on_open_file(void* userdata, const char* const* filelist, int filter);
-    SDL_Window* m_window;
+    SDL_Window* m_window = nullptr;
     std::vector<SDL_DialogFileFilter> m_sdl_filters;
     bool m_allow_multi_select = false;
     void m_refresh_sdl_filters();
@@ -78,6 +79,7 @@ private:
 
     void m_open_file_dialog();
 
+    std::string m_default_path;
     State m_state = State::IDLE;
 public:
     ExplorerWindow();
@@ -94,6 +96,7 @@ public:
     void set_sdl_window(SDL_Window* p_window);
     void set_mode(Mode p_mode);
     void set_allow_multi_select(bool p_option);
+    void set_default_path(std::string p_path);
     void add_filter(FilterOption p_option);
 
     bool is_finished();

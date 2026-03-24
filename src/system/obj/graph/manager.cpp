@@ -460,3 +460,9 @@ GraphManager::NodeType GraphManager::name_to_type(std::string p_name){
 OID GraphManager::spawn(NodeType p_type){
     return m_type_dict.spawn(p_type);
 }
+
+void GraphManager::clear_nodes(){
+    for(OID id : m_all_node_ids){
+        ObjectServer::Ref()->get_instance<ObjectBase>(id)->queue_free();
+    }
+}
