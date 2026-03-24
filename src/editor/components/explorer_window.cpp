@@ -19,7 +19,6 @@ void SDLCALL ExplorerWindow::on_open_file(void* userdata, const char* const* fil
     ExplorerWindow* window = (ExplorerWindow*)userdata;
 
     if (*filelist == NULL) {
-        DEBUG_MSG("User canceled the dialog.");
         window->m_state = ExplorerWindow::State::CLOSE;
         return;
     }
@@ -71,13 +70,7 @@ void ExplorerWindow::process(){
 
 }
 void ExplorerWindow::post_process(){
-    if(is_finished()){
-        auto ret = get_result();
-        for(std::string r : ret){
-            DEBUG_MSG(r);
-        }
-        this->close();
-    }
+
 }
 void ExplorerWindow::draw(){
 
