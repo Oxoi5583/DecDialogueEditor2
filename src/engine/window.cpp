@@ -10,12 +10,14 @@
 #include "engine/input_hub.h"
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_int3.hpp"
+#include <editor/components/explorer_window.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "engine/input_hub.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "struct/shape/rect2.h"
+#include <server/object_server.h>
 #include <vector>
 
 #define ENGINE_INIT_STEP __COUNTER__
@@ -588,4 +590,11 @@ void EngineWindow::refresh() {
 
 unsigned long long EngineWindow::get_frame(){
     return m_frame;
+}
+
+
+ExplorerWindow* EngineWindow::create_explorer_window(){
+    ExplorerWindow* ret = ObjectServer::Ref()->queue_create<ExplorerWindow>();
+    ret->set_sdl_window(m_sdl_window);
+    return ret;
 }

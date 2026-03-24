@@ -1,5 +1,6 @@
 #pragma once
 
+#include <editor/components/explorer_window.h>
 #include <functional>
 #include "SDL3/SDL_video.h"
 #include "glm/detail/qualifier.hpp"
@@ -152,4 +153,6 @@ public:
     void refresh();
 
     unsigned long long get_frame();
+
+    ExplorerWindow* create_explorer_window();
 };

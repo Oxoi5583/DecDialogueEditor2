@@ -189,19 +189,19 @@ OID FileServer::get_fstream_obj(FStreamLink p_link){
 #endif
 
 bool FileServer::is_file_hidden(FPath p_path){
+    std::string name = p_path.filename().string();
+    if (name != "." && name != ".." && !name.empty() && (name[0] == '.' || name [0] == '$')) {
+        return true;
+    }
+
     #ifdef _WIN32
         DWORD attributes = GetFileAttributes(p_path.string().c_str());
         if (attributes != INVALID_FILE_ATTRIBUTES) {
             return (attributes & FILE_ATTRIBUTE_HIDDEN) != 0;
         }
-        return false;
-    #else
-        fs::path::string_type name = p.filename();
-        if (name != "." && name != ".." && !name.empty() && name[0] == '.') {
-            return true;
-        }
-        return false;
     #endif
+    
+    return false;
 }
 bool FileServer::is_file_exists(FPath p_path){
     return std::filesystem::exists(p_path);
