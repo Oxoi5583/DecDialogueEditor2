@@ -1,0 +1,21 @@
+{
+    "Name": "Default",
+    "BrandColour": "263238",
+    "SecondaryColour1": "232E33",
+    "SecondaryColour2": "20292E",
+    "SecondaryColour3": "161F23",
+    "AccentColour1": "7FACAE",
+    "AccentColour2": "DC8533",
+    "TextColour": "DCE7E9",
+    "HighlightTextColour": "C9D4CA",
+    "CloseButtonColour": "D53134",
+    "GridColour": "161F23",
+    "SelectAreaColour": "63839380",
+    "SelectAreaBorderColour": "8FA7B3",
+    "SelectableHighlightColour": "74FEDB",
+    "EntryColour": "E8B69D",
+    "NodeColour": "70C7BA",
+    "OptionColour": "C6C3F0",
+    "ModuleEntryColour": "F3CFBB",
+    "ModuleNodeColour": "57C182"
+}

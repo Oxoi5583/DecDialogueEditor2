@@ -15,9 +15,6 @@
 TimerServer::TimerServer(){}
 
 TimerServer::~TimerServer(){
-    INFO_MSG("Timer Count (Before Free) : " << this->get_timer_count());
-    this->free_all();
-    INFO_MSG("Timer Count (After Free) : " << this->get_timer_count());
 }
 
 void TimerServer::reset_clear_timer(){
@@ -49,10 +46,8 @@ void TimerServer::update(double delta){
     if(is_clear_timer_timeout()){
         clear_garbage();
     }
-    int i = 0;
     for(auto& timer : timer_list){
         timer->update(delta);
-        i++;
     }
 }
 
@@ -95,6 +90,12 @@ void TimerServer::free_all(){
 
 int TimerServer::get_timer_count(){
     return timer_list.size();
+}
+
+void TimerServer::shutdown(){
+    INFO_MSG("Timer Count (Before Free) : " << this->get_timer_count());
+    this->free_all();
+    INFO_MSG("Timer Count (After Free) : " << this->get_timer_count());
 }
 
 bool TimerId::operator ==(const TimerId& other) const{
@@ -162,8 +163,8 @@ uint32_t TimeUnit::m_calculate_delta() const{
             return m_value * 86400000;
             break;
     }
+    return m_value;
 }
-
 
 
 // Init Class with pointer

@@ -9,11 +9,10 @@
 #include <algorithm>
 #include <vector>
 
-Rect2::Rect2() = default;
-
+Rect2::Rect2(){};
 Rect2::Rect2(const vec2& p_position, const vec2& p_size)
     : m_position(p_position), m_size(p_size) {}
-Rect2::~Rect2() = default;
+Rect2::~Rect2(){};
 Rect2::Rect2(const Rect2& other)
     : m_position(other.m_position), m_size(other.m_size) {}
 Rect2::Rect2(Rect2&& other) noexcept

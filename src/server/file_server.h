@@ -7,18 +7,24 @@
 #include <cassert>
 #include <cstdint>
 #include <filesystem>
-#include <functional>
 #include <map>
-#include <memory>
-#include <queue>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <string>
 
 typedef std::filesystem::path FPath;
 typedef std::string FString;
+
+namespace std{
+    string to_string(FSizeUnit& p_size);
+}
+
+struct FStreamNode{
+    std::map<FString, FStreamNode> children;
+    OID id;
+    
+    void build_tree();
+};
 
 struct FSizeUnit{
     enum Type{
@@ -51,17 +57,6 @@ struct FSizeUnit{
     void update_type();
 };
 
-namespace std{
-    string to_string(FSizeUnit p_size);
-}
-
-struct FStreamNode{
-    OID id;
-    std::map<FString, FStreamNode> children;
-    
-    void build_tree();
-};
-
 typedef std::vector<FString> FStreamLink;
 
 class FileServer : public Singleton<FileServer>{
@@ -69,21 +64,26 @@ private:
     struct NeededFolder{
         FStreamLink link;
         bool need_hidden;
+
+        NeededFolder(std::initializer_list<FString> p_link, bool p_need_hidden)
+            : link(p_link), need_hidden(p_need_hidden) {}
     };
 
-    std::vector<NeededFolder> m_needed_folder = {
-        {{"assets"}, false},
-        {{"config"}, false},
-        {{"fonts"}, false},
-        {{"theme"}, false},
-        {{".temp"}, true}
-    };
-
-    FStreamFolder* m_root_ptr;
     FStreamNode m_root;
+    std::vector<NeededFolder> m_needed_folder;
+    FStreamFolder* m_root_ptr = nullptr;
     void m_rebuild_tree();
 
 public:
+    FileServer(){
+        m_needed_folder.push_back(NeededFolder({FString("assets")}, false));
+        m_needed_folder.push_back(NeededFolder({FString("config")}, false));
+        m_needed_folder.push_back(NeededFolder({FString("fonts")}, false));
+        m_needed_folder.push_back(NeededFolder({FString("theme")}, false));
+        m_needed_folder.push_back(NeededFolder({FString(".temp")}, true));
+    }
+    ~FileServer() = default;
+
     void init();
     void process();
 

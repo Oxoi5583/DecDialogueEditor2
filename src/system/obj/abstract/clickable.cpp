@@ -12,7 +12,7 @@ ClickableObject::ClickableObject(){
     m_double_click_timer->stop();
 }
 ClickableObject::~ClickableObject(){
-
+    m_double_click_timer->queue_free();
 }
 
 void ClickableObject::ready(){

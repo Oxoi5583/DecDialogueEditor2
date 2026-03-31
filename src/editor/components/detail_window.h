@@ -35,7 +35,6 @@ private:
 
     ImVec2 m_prev_size = ImVec2(0, 0);
 
-    static const std::string lb;
     static std::vector<std::string> static_str_pipeline;
     static int max_cols;
     void m_draw_fields();

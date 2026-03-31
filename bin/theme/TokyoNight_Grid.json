@@ -1,0 +1,21 @@
+{
+  "Name": "TokyoNight_Grid",
+  "BrandColour": "1A1B26",
+  "SecondaryColour1": "16161E",
+  "SecondaryColour2": "14141B",
+  "SecondaryColour3": "101014",
+  "AccentColour1": "7AA2F7",
+  "AccentColour2": "E0AF68",
+  "TextColour": "A9B1D6",
+  "HighlightTextColour": "C0CAF5",
+  "CloseButtonColour": "DB4B4B",
+  "GridColour": "101014",
+  "SelectAreaColour": "515C7E80",
+  "SelectAreaBorderColour": "7AA2F7",
+  "SelectableHighlightColour": "73DACA",
+  "EntryColour": "E0AF68",
+  "NodeColour": "2AC3DE",
+  "OptionColour": "BB9AF7",
+  "ModuleEntryColour": "C49A5A",
+  "ModuleNodeColour": "9ECE6A"
+}

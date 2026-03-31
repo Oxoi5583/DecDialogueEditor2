@@ -1,0 +1,21 @@
+{
+  "Name": "DarkPlus_Foundry",
+  "BrandColour": "252526",
+  "SecondaryColour1": "1E1E1E",
+  "SecondaryColour2": "181818",
+  "SecondaryColour3": "111111",
+  "AccentColour1": "569CD6",
+  "AccentColour2": "CE9178",
+  "TextColour": "D4D4D4",
+  "HighlightTextColour": "E6E6E6",
+  "CloseButtonColour": "F44747",
+  "GridColour": "111111",
+  "SelectAreaColour": "264F7880",
+  "SelectAreaBorderColour": "569CD6",
+  "SelectableHighlightColour": "4FC1FF",
+  "EntryColour": "D7BA7D",
+  "NodeColour": "4EC9B0",
+  "OptionColour": "C586C0",
+  "ModuleEntryColour": "CE9178",
+  "ModuleNodeColour": "6A9955"
+}

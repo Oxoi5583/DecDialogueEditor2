@@ -24,6 +24,7 @@
 #include <server/events.h>
 #include <server/object_base.h>
 #include <string>
+#include <system/graph/camera.h>
 #include <unordered_map>
 #include <vector>
 
@@ -72,8 +73,6 @@ void ProjectServer::init(){
 }
 
 ProjectServer::~ProjectServer(){
-    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_project.folder_id);
-    folder->clear();
 }
 
 void ProjectServer::m_update_workspace_selection(){
@@ -228,8 +227,6 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, PStrin
     ProjectPayload data_key = {p_workspace, p_keys};
     if(!data_key.is_workspace_exists()) return;
 
-    m_project.spaces[data_key.workspace].is_saved = false;
-
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::STRING);
     if(!data->is_string()){
@@ -237,13 +234,17 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, PStrin
         return;
     }
 
-    *data = p_val;
+
+    PString old_val = *data;
+    PString new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, int p_val){
     ProjectPayload data_key = {p_workspace, p_keys};
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::INT);
@@ -252,13 +253,16 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, int p_
         return;
     }
 
-    *data = p_val;
+    int old_val = *data;
+    int new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, float p_val){
     ProjectPayload data_key = {p_workspace, p_keys};
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::FLOAT);
@@ -267,13 +271,16 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, float 
         return;
     }
 
-    *data = p_val;
+    float old_val = *data;
+    float new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(PString p_workspace, PString p_key, bool p_val){
     ProjectPayload data_key = {p_workspace, {p_key}};
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::BOOL);
@@ -282,15 +289,18 @@ void ProjectServer::set(PString p_workspace, PString p_key, bool p_val){
         return;
     }
 
-    *data = p_val;
+    bool old_val = *data;
+    bool new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 
 void ProjectServer::set(PString p_workspace, PString p_key, PString p_val){
     ProjectPayload data_key = {p_workspace, {p_key}};
     if(!data_key.is_workspace_exists()) return;
 
-    m_project.spaces[data_key.workspace].is_saved = false;
-
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::STRING);
     if(!data->is_string()){
@@ -298,13 +308,16 @@ void ProjectServer::set(PString p_workspace, PString p_key, PString p_val){
         return;
     }
 
-    *data = p_val;
+    PString old_val = *data;
+    PString new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(PString p_workspace, PString p_key, int p_val){
     ProjectPayload data_key = {p_workspace, {p_key}};
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::INT);
@@ -313,13 +326,16 @@ void ProjectServer::set(PString p_workspace, PString p_key, int p_val){
         return;
     }
 
-    *data = p_val;
+    int old_val = *data;
+    int new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(PString p_workspace, PString p_key, float p_val){
     ProjectPayload data_key = {p_workspace, {p_key}};
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::FLOAT);
@@ -328,13 +344,16 @@ void ProjectServer::set(PString p_workspace, PString p_key, float p_val){
         return;
     }
 
-    *data = p_val;
+    float old_val = *data;
+    float new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, bool p_val){
     ProjectPayload data_key = {p_workspace, p_keys};
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::BOOL);
@@ -343,15 +362,18 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, bool p
         return;
     }
 
-    *data = p_val;
+    bool old_val = *data;
+    bool new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 
 void ProjectServer::set(ProjectPayload p_key, PString p_val){
     ProjectPayload& data_key = p_key;
     if(!data_key.is_workspace_exists()) return;
 
-    m_project.spaces[data_key.workspace].is_saved = false;
-
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::STRING);
     if(!data->is_string()){
@@ -359,13 +381,16 @@ void ProjectServer::set(ProjectPayload p_key, PString p_val){
         return;
     }
 
-    *data = p_val;
+    PString old_val = *data;
+    PString new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(ProjectPayload p_key, int p_val){
     ProjectPayload& data_key = p_key;
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::INT);
@@ -374,13 +399,16 @@ void ProjectServer::set(ProjectPayload p_key, int p_val){
         return;
     }
 
-    *data = p_val;
+    int old_val = *data;
+    int new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(ProjectPayload p_key, float p_val){
     ProjectPayload& data_key = p_key;
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::FLOAT);
@@ -389,13 +417,16 @@ void ProjectServer::set(ProjectPayload p_key, float p_val){
         return;
     }
 
-    *data = p_val;
+    float old_val = *data;
+    float new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 void ProjectServer::set(ProjectPayload p_key, bool p_val){
     ProjectPayload& data_key = p_key;
     if(!data_key.is_workspace_exists()) return;
-
-    m_project.spaces[data_key.workspace].is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::BOOL);
@@ -404,7 +435,12 @@ void ProjectServer::set(ProjectPayload p_key, bool p_val){
         return;
     }
 
-    *data = p_val;
+    bool old_val = *data;
+    bool new_val = p_val;
+    if(old_val != new_val){
+        *data = p_val;
+        m_project.spaces[data_key.workspace].is_saved = false;
+    }
 }
 
 void ProjectServer::list_push_back(PString p_workspace, std::vector<PString> p_keys, PString p_val){
@@ -928,6 +964,28 @@ void ProjectServer::go_to_workspace(PString p_workspace){
     }
 
     m_workspace_uid = p_workspace;
+
+    nlohmann::json& data = m_project.spaces[m_workspace_uid].data;
+
+    vec2 size = GraphCamera::Ref()->get_zoomed_size();
+    
+    if(data.contains("camera")){
+        nlohmann::json& cam_data = data["camera"];
+        vec2 pos;
+        float zoom;
+        if(cam_data.contains("position")){
+            pos = {(float)cam_data["position"]["x"], (float)cam_data["position"]["y"]};
+        }else{
+            pos = size / 2.0f;
+        }
+        if(cam_data.contains("zoom")){
+            zoom = (float)cam_data["zoom"];
+        }else{
+            zoom = 1;
+        }
+        GraphCamera::Ref()->set_zoom(zoom);
+        GraphCamera::Ref()->set_target(pos);
+    }
 }
 
 PString ProjectServer::create_workspace(){
@@ -1109,6 +1167,14 @@ void ProjectServer::m_read_workspace(OID p_file){
     //file->locked();
     m_project.spaces.emplace(workspace.code, workspace);
 
+    if(data.contains("camera")){
+        if(data.contains("position")) GraphCamera::Ref()->set_target({data["position"]["x"], data["position"]["y"]});
+        if(data.contains("zoom")) GraphCamera::Ref()->set_zoom(data["zoom"]);
+    }else{
+        GraphCamera::Ref()->set_target({0, 0});
+        GraphCamera::Ref()->set_zoom(1);
+    }
+
     if(data.contains("objects")){
         for(auto& [key, val] : data["objects"].items()){
             FString code = key;
@@ -1200,6 +1266,10 @@ OID ProjectServer::m_new_explorer_open(){
     return window->get_id();
 }
 bool ProjectServer::m_handle_action_save(){
+    if(have_saved_target()){
+        return m_action_save_as_project(m_project_file);
+    }
+
     if(!have_explorer_window() && !have_saved_target()){
         m_explorer_window_id = m_new_explorer_save();
     }
@@ -1241,7 +1311,6 @@ bool ProjectServer::m_handle_action_save_as(){
         }
 
         std::string path = window->get_result()[0];
-        DEBUG_MSG("Path : " << path);
         if(!m_action_save_as_project(path)){
             window->close();
             return  false;
@@ -1271,7 +1340,6 @@ bool ProjectServer::m_handle_action_open(){
         }
 
         std::string path = window->get_result()[0];
-        DEBUG_MSG("Path : " << path);
         if(!m_action_open_project(path)){
             window->close();
             return  false;
@@ -1287,4 +1355,9 @@ bool ProjectServer::m_handle_action_open(){
     }
 
     return false;
+}
+
+void ProjectServer::shutdown(){
+    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_project.folder_id);
+    folder->clear();
 }

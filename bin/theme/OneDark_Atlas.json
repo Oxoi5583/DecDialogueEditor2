@@ -1,0 +1,21 @@
+{
+  "Name": "OneDark_Atlas",
+  "BrandColour": "21252B",
+  "SecondaryColour1": "282C34",
+  "SecondaryColour2": "1E2228",
+  "SecondaryColour3": "181A1F",
+  "AccentColour1": "61AFEF",
+  "AccentColour2": "D19A66",
+  "TextColour": "ABB2BF",
+  "HighlightTextColour": "E6EFF7",
+  "CloseButtonColour": "E06C75",
+  "GridColour": "181A1F",
+  "SelectAreaColour": "3E445180",
+  "SelectAreaBorderColour": "61AFEF",
+  "SelectableHighlightColour": "56B6C2",
+  "EntryColour": "E5C07B",
+  "NodeColour": "56B6C2",
+  "OptionColour": "C678DD",
+  "ModuleEntryColour": "D19A66",
+  "ModuleNodeColour": "98C379"
+}

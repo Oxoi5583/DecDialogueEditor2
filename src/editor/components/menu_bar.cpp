@@ -81,6 +81,9 @@ void EditorMenuBar::m_update_menu_file(){
         if(ImGui::MenuItem(UiTextBank::Ref()->SaveAllWS)){
             ProjectServer::Ref()->save_all_workspaces();
         }
+        if(ImGui::MenuItem(UiTextBank::Ref()->Save)){
+            ProjectServer::Ref()->save_project();
+        }
         if(ImGui::MenuItem(UiTextBank::Ref()->SaveAsPJ)){
             ProjectServer::Ref()->save_as_project();
         }

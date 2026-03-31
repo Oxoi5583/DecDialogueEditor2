@@ -1,0 +1,21 @@
+{
+    "Name": "Midnight Teal",
+    "BrandColour": "21343B",
+    "SecondaryColour1": "1D2D33",
+    "SecondaryColour2": "18262B",
+    "SecondaryColour3": "121B1F",
+    "AccentColour1": "6FB7B5",
+    "AccentColour2": "D88A4B",
+    "TextColour": "D9E7E7",
+    "HighlightTextColour": "F0FAFA",
+    "CloseButtonColour": "C94A4A",
+    "GridColour": "142025",
+    "SelectAreaColour": "5F8F9B80",
+    "SelectAreaBorderColour": "89B9C0",
+    "SelectableHighlightColour": "7FFFE0",
+    "EntryColour": "CFA58E",
+    "NodeColour": "67C2B5",
+    "OptionColour": "B9B7E8",
+    "ModuleEntryColour": "E8C3AC",
+    "ModuleNodeColour": "54BB86"
+}

@@ -18,6 +18,7 @@
 #include "server/mouse_server.h"
 #include "struct/shape/rect2.h"
 #include <cstddef>
+#include <server/project_server.h>
 
 void GraphCamera::init(){
     m_rect = Rect2(vec2(0.0f,0.0f), vec2(0.0f,0.0f));
@@ -119,10 +120,12 @@ void GraphCamera::update(){
 void GraphCamera::set_target(const vec2& p_target){
     m_rect.set_center(p_target);
     refresh_left_top_buffer();
+    m_job_upload_data();
 }
 void GraphCamera::set_zoom(const float& p_zoom){
     m_zoom = p_zoom;
     refresh_left_top_buffer();
+    m_job_upload_data();
 }
 
 vec2 GraphCamera::get_origin() const{
@@ -230,3 +233,29 @@ bool GraphCamera::is_rect_on_camera(Rect2 p_rect, bool p_is_full_needed){
         return camera_rect.is_rect_intersect(p_rect);
     }
 }
+void GraphCamera::m_job_upload_data(){
+    {
+        ProjectPayload payload;
+        payload.workspace = ProjectServer::Ref()->current_workspace_uid();
+        payload.keys.push_back("camera");
+        payload.keys.push_back("position");
+        payload.keys.push_back("x");
+        ProjectServer::Ref()->set(payload, this->get_target().x);
+    }
+    {
+        ProjectPayload payload;
+        payload.workspace = ProjectServer::Ref()->current_workspace_uid();
+        payload.keys.push_back("camera");
+        payload.keys.push_back("position");
+        payload.keys.push_back("y");
+        ProjectServer::Ref()->set(payload, this->get_target().y);
+    }
+    {
+        ProjectPayload payload;
+        payload.workspace = ProjectServer::Ref()->current_workspace_uid();
+        payload.keys.push_back("camera");
+        payload.keys.push_back("zoom");
+        ProjectServer::Ref()->set(payload, this->get_zoom());
+    }
+}
+

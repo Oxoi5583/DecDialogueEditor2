@@ -105,6 +105,7 @@ void GraphBase::m_update_project_data(){
             ProjectPayload payload = m_get_root_project_data_payload();
             payload.keys.push_back("children");
             ProjectServer::Ref()->list_clear(payload);
+    // Here is a Overflow issue
         }
         for(OID id : this->get_children()){
             ProjectPayload payload = m_get_root_project_data_payload();
@@ -254,7 +255,7 @@ std::vector<OID> GraphBase::get_children(bool is_pass_repeater, bool is_all){
     std::vector<OID> ancestor_ids = this->skip_from_repeater();
 
     std::vector<OID> ret;
-
+    
     for(OID& ancestor_id : ancestor_ids){
         GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(ancestor_id);
         if(!ancestor){
@@ -536,10 +537,6 @@ void GraphBase::m_handle_event_connect(){
         }
     }
 
-    if(EventServer::Ref()->has<EventStartConnect>()){
-        EventStartConnect event = EventServer::Ref()->poll_first<EventStartConnect>();
-    }
-
     if(EventServer::Ref()->has<EventCreateConnection>()){
         auto events = EventServer::Ref()->poll<EventCreateConnection>();
         for(auto event : events){
@@ -574,8 +571,8 @@ std::vector<OID> GraphBase::skip_from_repeater(){
     
     std::set<OID> parent = this->m_parent;
     for(OID id : parent){
-        GraphBase* g_obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(g_obj){
+        if(id != this->get_id() && ObjectServer::Ref()->is_id_valid(id)){
+            GraphBase* g_obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
             std::vector<OID> cc = g_obj->skip_from_repeater();
             for(OID& c_id : cc){
                 ret.push_back(c_id);
@@ -598,8 +595,8 @@ std::vector<OID> GraphBase::skip_to_repeater(){
     
     std::set<OID> children = this->m_children;
     for(OID id : children){
-        GraphBase* g_obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(g_obj){
+        if(id != this->get_id() && ObjectServer::Ref()->is_id_valid(id)){
+            GraphBase* g_obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
             std::vector<OID> cc = g_obj->skip_to_repeater();
             for(OID& c_id : cc){
                 ret.push_back(c_id);

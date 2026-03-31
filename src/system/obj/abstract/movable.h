@@ -7,7 +7,7 @@
 
 class MovableObject : public ObjectBase {
 private:
-    std::unique_ptr<ShapeBase> m_shape = std::make_unique<ShapeBase>();
+    std::unique_ptr<ShapeBase> m_shape = nullptr;
     bool m_is_on_camera = false;
     bool m_is_full_rect_in_camera = false; 
 public:

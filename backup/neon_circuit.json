@@ -1,0 +1,21 @@
+{
+    "Name": "Neon Circuit",
+    "BrandColour": "161A24",
+    "SecondaryColour1": "131722",
+    "SecondaryColour2": "10131C",
+    "SecondaryColour3": "0A0D14",
+    "AccentColour1": "3EE6D5",
+    "AccentColour2": "FF4F9A",
+    "TextColour": "D7E9FF",
+    "HighlightTextColour": "FFFFFF",
+    "CloseButtonColour": "FF5A5F",
+    "GridColour": "0D1220",
+    "SelectAreaColour": "3EE6D540",
+    "SelectAreaBorderColour": "5FF5E6",
+    "SelectableHighlightColour": "90FFF5",
+    "EntryColour": "F0A8C5",
+    "NodeColour": "3DD9C5",
+    "OptionColour": "A99BFF",
+    "ModuleEntryColour": "FFC1DA",
+    "ModuleNodeColour": "3DFF9C"
+}

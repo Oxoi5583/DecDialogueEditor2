@@ -1,0 +1,21 @@
+{
+    "Name": "Ivory Graphite",
+    "BrandColour": "E6E2D8",
+    "SecondaryColour1": "DDD8CD",
+    "SecondaryColour2": "D2CCC1",
+    "SecondaryColour3": "C3BCAE",
+    "AccentColour1": "5E7C8A",
+    "AccentColour2": "C77B48",
+    "TextColour": "2B3135",
+    "HighlightTextColour": "111417",
+    "CloseButtonColour": "C94F4F",
+    "GridColour": "BBB4A7",
+    "SelectAreaColour": "7B9AAA40",
+    "SelectAreaBorderColour": "6A8795",
+    "SelectableHighlightColour": "4BC7B6",
+    "EntryColour": "D8A88F",
+    "NodeColour": "5CA5A4",
+    "OptionColour": "B1AED6",
+    "ModuleEntryColour": "E7C7B4",
+    "ModuleNodeColour": "6EAE78"
+}

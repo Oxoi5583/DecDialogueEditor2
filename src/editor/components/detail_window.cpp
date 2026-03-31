@@ -103,7 +103,7 @@ void EditorDetailsWindow::draw(){
 
 #include <cmath>
 std::vector<std::string> EditorDetailsWindow::static_str_pipeline = {};
-const std::string EditorDetailsWindow::lb = "\t\n";
+const char* lb = "\t\n";
 int EditorDetailsWindow::max_cols = 80;
 
 void EditorDetailsWindow::m_replace_all_substring(std::string& str, const std::string& from, const std::string& to) {
@@ -123,7 +123,6 @@ std::string EditorDetailsWindow::m_draw_fields_auto_wrap(std::string& p_raw_str,
     bool searching = true;
 
     int last_lb_pos = 0;
-    int run = 0;
     while(searching){
         for(size_t pos = last_lb_pos ;pos < p_original_len; pos++){
             if(!searching){
@@ -136,8 +135,8 @@ std::string EditorDetailsWindow::m_draw_fields_auto_wrap(std::string& p_raw_str,
                 break;
             }
             if(pos - last_lb_pos > max_cols){
-                ret.insert(pos, lb.c_str());
-                p_original_len += lb.length();
+                ret.insert(pos, lb);
+                p_original_len += strlen(lb);
                 break;
             }
         }
@@ -176,8 +175,8 @@ int EditorDetailsWindow::m_draw_fields_auto_wrap_callback(ImGuiInputTextCallback
                 break;
             }
             if(pos - last_lb_pos > max_cols){
-                p_data->InsertChars(pos, lb.c_str());
-                original_len += lb.length();
+                p_data->InsertChars(pos, lb);
+                original_len += strlen(lb);
                 break;
             }
         }

@@ -208,6 +208,18 @@ public:
         "Simpan sebagai proyek"
     };
 
+    UiText Save = {
+        "Save",
+        "儲存",
+        "保存",
+        "保存",
+        "저장",
+        "Enregistrer",
+        "Speichern",
+        "Guardar",
+        "Simpan"
+    };
+
     UiText Edit = {
         "Edit", "編輯", "編集", "编辑", "편집",
         "Éditer", "Bearbeiten", "Editar", "Edit"

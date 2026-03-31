@@ -9,7 +9,7 @@ Circle::Circle() : m_position(0.0f, 0.0f), m_radius(0.0) {}
 Circle::Circle(const vec2& p_position, const vec2& p_size)
     : m_position(p_position), m_radius(p_size.x) {}
 
-Circle::~Circle() = default;
+Circle::~Circle(){};
 
 Circle::Circle(const Circle& other)
     : m_position(other.m_position), m_radius(other.m_radius) {}

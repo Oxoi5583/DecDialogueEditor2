@@ -24,12 +24,6 @@ MouseServer::MouseServer() {
 }
 
 MouseServer::~MouseServer() {
-    for (SDL_Cursor* cursor : cursors) {
-        if (cursor) SDL_DestroyCursor(cursor);
-    }
-    m_left_double_click_timer->queue_free();
-    m_right_double_click_timer->queue_free();
-    m_middle_double_click_timer->queue_free();
 }
 void MouseServer::load_cursor() {
     cursors.resize(SDL_SYSTEM_CURSOR_COUNT);
@@ -364,3 +358,12 @@ SDL_Cursor* MouseServer::m_get_cursor_SE_resize()    { return cursors[SDL_SYSTEM
 SDL_Cursor* MouseServer::m_get_cursor_S_resize()     { return cursors[SDL_SYSTEM_CURSOR_S_RESIZE]; }
 SDL_Cursor* MouseServer::m_get_cursor_SW_resize()    { return cursors[SDL_SYSTEM_CURSOR_SW_RESIZE]; }
 SDL_Cursor* MouseServer::m_get_cursor_W_resize()     { return cursors[SDL_SYSTEM_CURSOR_W_RESIZE]; }
+
+void MouseServer::shutdown(){
+    for (SDL_Cursor* cursor : cursors) {
+        if (cursor) SDL_DestroyCursor(cursor);
+    }
+    m_left_double_click_timer->queue_free();
+    m_right_double_click_timer->queue_free();
+    m_middle_double_click_timer->queue_free();
+}

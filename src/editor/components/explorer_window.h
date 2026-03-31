@@ -11,6 +11,19 @@
 #include "SDL3/SDL_log.h"
 
 
+struct DialogFilters{
+    std::vector<std::string> names;
+    std::vector<std::string> patterns;
+    std::vector<SDL_DialogFileFilter> sdl_filters;
+
+    void add(std::string name, std::string pattern);
+
+    void build();
+
+    const SDL_DialogFileFilter* data() const;
+    int size() const;
+};
+
 struct FilterOption{
     std::string name;
     std::vector<std::string> exts; 
@@ -49,12 +62,12 @@ public:
 private:
     static void SDLCALL on_open_file(void* userdata, const char* const* filelist, int filter);
     SDL_Window* m_window = nullptr;
-    std::vector<SDL_DialogFileFilter> m_sdl_filters;
     bool m_allow_multi_select = false;
     void m_refresh_sdl_filters();
 
     std::vector<FilterOption> m_filter_options;
     std::vector<std::string> m_selected_files;
+    DialogFilters m_sdl_filters;
 
     Mode m_mode = Mode::FILE;
 

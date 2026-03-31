@@ -178,5 +178,7 @@ public:
 
     bool is_workspace_file_valid(OID p_file);
 
+    void shutdown();
+
     friend struct ProjectPayload;
 };

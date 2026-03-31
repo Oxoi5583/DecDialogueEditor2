@@ -1,0 +1,21 @@
+{
+    "Name": "Amber Industry",
+    "BrandColour": "2F2E2A",
+    "SecondaryColour1": "292824",
+    "SecondaryColour2": "22211E",
+    "SecondaryColour3": "181714",
+    "AccentColour1": "D9A441",
+    "AccentColour2": "E36A2C",
+    "TextColour": "F0E7D6",
+    "HighlightTextColour": "FFF7E8",
+    "CloseButtonColour": "C64539",
+    "GridColour": "1A1815",
+    "SelectAreaColour": "A8823C66",
+    "SelectAreaBorderColour": "D8B26A",
+    "SelectableHighlightColour": "FFD36B",
+    "EntryColour": "D7A680",
+    "NodeColour": "C9933B",
+    "OptionColour": "B7A58A",
+    "ModuleEntryColour": "E6BB96",
+    "ModuleNodeColour": "A98C3A"
+}

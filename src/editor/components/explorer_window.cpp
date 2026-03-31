@@ -1,12 +1,40 @@
 #include "editor/components/explorer_window.h"
 #include "SDL3/SDL_dialog.h"
+#include "SDL3/SDL_stdinc.h"
 #include <DecToolsBox/abstract/singleton.h>
 #include <DecToolsBox/debug/messenger.h>
+#include <array>
+#include <cstddef>
 #include <engine/window.h>
 #include <server/file_server.h>
 #include <server/object_server.h>
 #include <server/ui_text_bank.h>
 #include <theme/theme_loader.h>
+
+void DialogFilters::add(std::string name, std::string pattern){
+    names.push_back(std::move(name));
+    patterns.push_back(std::move(pattern));
+}
+
+void DialogFilters::build(){
+    sdl_filters.clear();
+    sdl_filters.reserve(names.size());
+
+    for (size_t i = 0; i < names.size(); ++i){
+        sdl_filters.push_back(SDL_DialogFileFilter{
+            names[i].c_str(),
+            patterns[i].c_str()
+        });
+    }
+}
+
+const SDL_DialogFileFilter* DialogFilters::data() const{
+    return sdl_filters.empty() ? nullptr : sdl_filters.data();
+}
+
+int DialogFilters::size() const{
+    return static_cast<int>(sdl_filters.size());
+}
 
 ExplorerWindow::ExplorerWindow(){
     BIND_CLASS(ExplorerWindow);
@@ -32,26 +60,28 @@ void SDLCALL ExplorerWindow::on_open_file(void* userdata, const char* const* fil
 }
 
 void ExplorerWindow::m_refresh_sdl_filters(){
-    m_sdl_filters.clear();
+    m_sdl_filters = DialogFilters();
 
     for(FilterOption& option : m_filter_options){
-        m_sdl_filters.push_back(m_filter_map[option]);
+        SDL_DialogFileFilter& filter = m_filter_map[option];
+        m_sdl_filters.add(filter.name, filter.pattern);
     }
+
+    m_sdl_filters.build();
 }
 
 void ExplorerWindow::m_open_file_dialog(){
     m_refresh_sdl_filters();
 
-    SDL_DialogFileFilter* filters = m_sdl_filters.data();
     switch (m_mode) {
         case Mode::FILE:
-            SDL_ShowOpenFileDialog(ExplorerWindow::on_open_file, this, m_window, filters, SDL_arraysize(filters), m_default_path.c_str(), m_allow_multi_select);
+            SDL_ShowOpenFileDialog(ExplorerWindow::on_open_file, this, m_window, m_sdl_filters.data(), m_sdl_filters.size(), m_default_path.c_str(), m_allow_multi_select);
             break;
         case Mode::FOLDER:
             SDL_ShowOpenFolderDialog(ExplorerWindow::on_open_file, this, m_window, m_default_path.c_str(), m_allow_multi_select);
             break;
         case Mode::SAVE:
-            SDL_ShowSaveFileDialog(ExplorerWindow::on_open_file, this, m_window, filters,0,m_default_path.c_str());
+            SDL_ShowSaveFileDialog(ExplorerWindow::on_open_file, this, m_window, m_sdl_filters.data(), m_sdl_filters.size(),m_default_path.c_str());
             break;
     }
 }

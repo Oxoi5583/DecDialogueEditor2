@@ -135,4 +135,5 @@ public:
     void cursor_SW_resize();
     void cursor_W_resize();
     
+    void shutdown();
 };

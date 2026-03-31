@@ -38,7 +38,6 @@ void ObjectServer::ready(){
 void ObjectServer::pre_process(){
     for(auto it = m_ui_process_list.begin(); it != m_ui_process_list.end(); ++it){
         OID id = it->get_id();
-        //DEBUG_MSG("OID (pre_process) : " << id);
         if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_pre_process_functions[id];
             for(auto function : functions){
@@ -48,7 +47,6 @@ void ObjectServer::pre_process(){
     }
     for(auto it = m_graph_process_list.begin(); it != m_graph_process_list.end(); ++it){
         OID id = it->get_id();
-        //DEBUG_MSG("OID (pre_process) : " << id);
         if(it->is_alive() && it->is_ready() && !it->is_freeze()){
             auto& functions = m_pre_process_functions[id];
             for(auto function : functions){
@@ -294,4 +292,11 @@ bool ObjectServer::is_obj_freeze(OID p_id){
         return ptr->is_freeze();
     }
     return false;
+}
+
+void ObjectServer::shutdown(){
+    for(OID id : m_ids){
+        m_id_to_instances[id]->queue_free();
+    }
+    clear_garbage();
 }

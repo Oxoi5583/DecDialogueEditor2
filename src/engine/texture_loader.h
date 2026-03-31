@@ -3,6 +3,10 @@
 #include "glad/glad.h"
 #include "DecToolsBox/abstract/singleton.h"
 #include <map>
+#include <string>
+#include <vector>
+
+
 
 class EngineTextureLoader : public Singleton<EngineTextureLoader>{
 private:

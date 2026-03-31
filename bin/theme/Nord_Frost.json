@@ -1,0 +1,21 @@
+{
+  "Name": "Nord_Frost",
+  "BrandColour": "2E3440",
+  "SecondaryColour1": "3B4252",
+  "SecondaryColour2": "242933",
+  "SecondaryColour3": "1F242D",
+  "AccentColour1": "88C0D0",
+  "AccentColour2": "D08770",
+  "TextColour": "E5E9F0",
+  "HighlightTextColour": "ECEFF4",
+  "CloseButtonColour": "BF616A",
+  "GridColour": "1F242D",
+  "SelectAreaColour": "81A1C180",
+  "SelectAreaBorderColour": "88C0D0",
+  "SelectableHighlightColour": "8FBCBB",
+  "EntryColour": "EBCB8B",
+  "NodeColour": "88C0D0",
+  "OptionColour": "B48EAD",
+  "ModuleEntryColour": "D08770",
+  "ModuleNodeColour": "A3BE8C"
+}

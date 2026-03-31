@@ -3,6 +3,9 @@
 #include "DecToolsBox/abstract./singleton.h"
 #include "SDL3/SDL_stdinc.h"
 #include <cstdint>
+#include <memory>
+#include <string>
+#include <vector>
 
 class Timer;
 class TimeUnit;
@@ -32,6 +35,8 @@ public:
 
     void free_all();
     int get_timer_count();
+
+    void shutdown();
 };
 
 

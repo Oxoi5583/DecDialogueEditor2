@@ -33,6 +33,7 @@ private:
     void m_job_update_control_motion();
     void m_job_update_control_zoom();
     void m_job_draw_border();
+    void m_job_upload_data();
 public:
     GraphCamera()
     : m_view(mat4(1.0f))

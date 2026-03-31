@@ -157,5 +157,10 @@ int main(int argc, char* argv[]) {
     EngineRenderer::Ref()->destory_all();
     EngineWindow::Ref()->destory_all();
     
+    ProjectServer::Ref()->shutdown();
+    MouseServer::Ref()->shutdown();
+    ObjectServer::Ref()->shutdown();
+    TimerServer::Ref()->shutdown();
+
     return 0;
 }

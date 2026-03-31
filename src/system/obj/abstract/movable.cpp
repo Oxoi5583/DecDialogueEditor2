@@ -3,6 +3,7 @@
 #include "DecToolsBox/debug/messenger.h"
 #include "system/graph/camera.h"
 #include "server/object_server.h"
+#include <glm/ext/vector_float2.hpp>
 
 
 MovableObject::MovableObject(){
@@ -13,12 +14,21 @@ MovableObject::~MovableObject(){
 }
 
 bool MovableObject::is_point_intersect(vec2 p_pos){
+    if(!m_shape){
+        return false;
+    }
     return m_shape->is_point_intersect(p_pos);
 }
 void MovableObject::set_position(vec2 p_pos){
+    if(!m_shape){
+        return;
+    }
     m_shape->set_position(p_pos);
 }
 vec2 MovableObject::get_position(){
+    if(!m_shape){
+        return vec2();
+    }
     return m_shape->get_position();
 }
 
@@ -27,6 +37,9 @@ void MovableObject::ready(){
 void MovableObject::pre_process(){
 }
 void MovableObject::process(){
+    if(!m_shape){
+        return;
+    }
     vec2 pos = m_shape->get_position();
     vec2 size = m_shape->get_size();
     m_is_on_camera = GraphCamera::Ref()->is_rect_on_camera({pos,size},m_is_full_rect_in_camera);

@@ -1,0 +1,21 @@
+{
+    "Name": "Crimson Night",
+    "BrandColour": "241A1E",
+    "SecondaryColour1": "1F171A",
+    "SecondaryColour2": "191215",
+    "SecondaryColour3": "120C0E",
+    "AccentColour1": "C94F5D",
+    "AccentColour2": "E09F3E",
+    "TextColour": "F1E4E7",
+    "HighlightTextColour": "FFF3F5",
+    "CloseButtonColour": "E04242",
+    "GridColour": "160F12",
+    "SelectAreaColour": "A14D5A66",
+    "SelectAreaBorderColour": "D36C78",
+    "SelectableHighlightColour": "FF7F9A",
+    "EntryColour": "D8A089",
+    "NodeColour": "B14E5B",
+    "OptionColour": "A88EC7",
+    "ModuleEntryColour": "E5B7A5",
+    "ModuleNodeColour": "7FAF6D"
+}

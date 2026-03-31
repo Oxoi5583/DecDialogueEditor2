@@ -3,7 +3,6 @@ cmake_policy(SET CMP0135 NEW)
 
 project(DecDialogueEditor LANGUAGES C CXX)
 
-
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -19,6 +18,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
 if (MSVC)
     add_compile_options(/utf-8)
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        add_compile_options(/fsanitize=address
+                            #/fsanitize-address-use-after-return
+                            /Zi
+                            /Od)
+        add_link_options(/fsanitize=address /fsanitize-address-use-after-return)
+    endif()
 endif()
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
