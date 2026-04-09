@@ -6,3 +6,5 @@ so that I can add type easier.
 路標
 
 Multi-Language
+
+Left Panel Performance Issue

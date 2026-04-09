@@ -139,6 +139,34 @@ void GraphBase::ready(){
     std::string default_name = GraphManager::Ref()->get_default_name(type);
     set_name(default_name);
     m_update_project_data();
+
+
+    switch(get_type()){
+        case GraphManager::BASE:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
+            break;
+        case GraphManager::ENTRY:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("EntryColour");
+            break;
+        case GraphManager::NODE:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("NodeColour");
+            break;
+        case GraphManager::OPTION:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("OptionColour");
+            break;
+        case GraphManager::REPEATER:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
+            break;
+        case GraphManager::MODULE_ENTRY:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("ModuleEntryColour");
+            break;
+        case GraphManager::MODULE_NODE:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("ModuleNodeColour");
+            break;
+        default:
+            m_rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
+            break;
+    }
 }
 void GraphBase::pre_process(){
     m_handle_event_connect();
@@ -165,9 +193,7 @@ void GraphBase::draw(){
         vec2 rd_hl = rd + vec2(width, width);
         vec2 size_hl = rd_hl - lt_hl;
 
-        vec4 border_color = ThemeLoader::Ref()->get_color("SelectableHighlightColour");
-
-        EngineRenderer::Ref()->draw_rect({ct, size_hl}, border_color, -1);
+        EngineRenderer::Ref()->draw_rect({ct, size_hl}, m_selected_border_color, -1);
     }
 
     auto connectables = EventServer::Ref()->poll_first<EventTryConnectTo>().conntectables;
@@ -182,9 +208,7 @@ void GraphBase::draw(){
         vec2 rd_hl = rd + vec2(width, width);
         vec2 size_hl = rd_hl - lt_hl;        
 
-        vec4 border_color = ThemeLoader::Ref()->get_color("AccentColour2");
-
-        EngineRenderer::Ref()->draw_rect({ct, size_hl}, border_color, -1);
+        EngineRenderer::Ref()->draw_rect({ct, size_hl}, m_connectable_border_color, -1);
     }
 
     const float borderSize = 2.0f / GraphCamera::Ref()->get_zoom();
@@ -193,43 +217,15 @@ void GraphBase::draw(){
         this->get_shape<Rect2>().get_size() + vec2(borderSize * 2.0f)
     );
 
-    ImVec4 rect_colour;
-    switch(get_type()){
-        case GraphManager::BASE:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
-            break;
-        case GraphManager::ENTRY:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("EntryColour");
-            break;
-        case GraphManager::NODE:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("NodeColour");
-            break;
-        case GraphManager::OPTION:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("OptionColour");
-            break;
-        case GraphManager::REPEATER:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
-            break;
-        case GraphManager::MODULE_ENTRY:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("ModuleEntryColour");
-            break;
-        case GraphManager::MODULE_NODE:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("ModuleNodeColour");
-            break;
-        default:
-            rect_colour = ThemeLoader::Ref()->get_imgui_color("SecondaryColour1");
-            break;
-    }
-
     EngineRenderer::Ref()->draw_rect(
         borderRect,
-        vec4( rect_colour.x * 0.2f, rect_colour.y * 0.2f, rect_colour.z * 0.2f, rect_colour.w * 1.0f),
+        vec4( m_rect_colour.x * 0.2f, m_rect_colour.y * 0.2f, m_rect_colour.z * 0.2f, m_rect_colour.w * 1.0f),
         -1
     );
 
     vec4 fillColor = this->was_clicked()
-        ? vec4( rect_colour.x * 1.0f, rect_colour.y * 1.0f, rect_colour.z * 1.0f, rect_colour.w * 1.0f)
-        : vec4( rect_colour.x * 0.7f, rect_colour.y * 0.7f, rect_colour.z * 0.7f, rect_colour.w * 0.7f);
+        ? vec4( m_rect_colour.x * 1.0f, m_rect_colour.y * 1.0f, m_rect_colour.z * 1.0f, m_rect_colour.w * 1.0f)
+        : vec4( m_rect_colour.x * 0.7f, m_rect_colour.y * 0.7f, m_rect_colour.z * 0.7f, m_rect_colour.w * 0.7f);
 
     EngineRenderer::Ref()->draw_rect(
         this->get_shape<Rect2>(),

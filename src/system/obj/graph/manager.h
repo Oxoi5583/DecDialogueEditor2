@@ -126,7 +126,7 @@ public:
     void notify_name_removed(std::string p_name);
     void notify_name_added(OID p_id, std::string p_name);
 
-    PanelData get_panel_data();
+    const GraphManager::PanelData& get_panel_data();
 
     std::string type_to_name(NodeTypeId p_type);
     NodeTypeId name_to_type(std::string p_name);

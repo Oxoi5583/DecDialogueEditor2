@@ -108,7 +108,7 @@ void GraphCamera::m_job_update_control_zoom(){
     this->set_zoom(new_zoom);
 }
 void GraphCamera::m_job_draw_border(){
-    std::vector<vec2> points = get_zoomed_rect().get_points();
+    std::array<glm::vec2, 4> points = get_zoomed_rect().get_points();
     EngineRenderer::Ref()->draw_line(points[0], points[1], vec4(0.0f,0.0f,0.0f,1.0f), 3);
     EngineRenderer::Ref()->draw_line(points[1], points[2], vec4(0.0f,0.0f,0.0f,1.0f), 3);
     EngineRenderer::Ref()->draw_line(points[2], points[3], vec4(0.0f,0.0f,0.0f,1.0f), 3);

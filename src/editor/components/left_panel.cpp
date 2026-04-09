@@ -66,14 +66,11 @@ void EditorLeftPanel::ready(){
 void EditorLeftPanel::pre_process(){
     m_update_shape();
     m_refresh_buffers();
-    m_refresh_panel_data();
     m_update_penel_properties();
 
     if(m_is_displaying){
         ImGuiStyle& style = ImGui::GetStyle();
         style.TabRounding = 0.1f;
-
-        m_panel_data = GraphManager::Ref()->get_panel_data();
 
         //ImGui::SetNextWindowFocus();
 
@@ -242,7 +239,7 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
     const float item_height = ImGui::CalcTextSize("@").y + ImGui::GetStyle().ItemInnerSpacing.y * 2.0f;
     inpector_item_size = {0.0f, item_height};
 
-    auto pri_item_list = m_panel_data.primary_info_list;
+    auto& pri_item_list = GraphManager::Ref()->get_panel_data().primary_info_list;
 
     const ImVec4 pri_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
     const ImVec4 pri_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
@@ -327,8 +324,8 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
 }
 
 void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
-    auto pri_item_list = m_panel_data.primary_info_list;
-    auto& sec_item_list = m_panel_data.secondary_info_list[p_parent_index];
+    auto& pri_item_list = GraphManager::Ref()->get_panel_data().primary_info_list;
+    auto& sec_item_list = GraphManager::Ref()->get_panel_data().secondary_info_list[p_parent_index];
     const int sec_item_size = sec_item_list.size();
     if (sec_item_size > 0 && pri_item_list[p_parent_index].is_expanded){
         const std::string sec_list_box_name = "##InspectorSecListBox";
@@ -407,7 +404,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
 }
 
 void EditorLeftPanel::m_update_inpector_other_list(){
-    auto other_item_list = m_panel_data.other_info_list;
+    auto& other_item_list = GraphManager::Ref()->get_panel_data().other_info_list;
 
     if(!other_item_list.empty()){
         ImGui::Separator();
@@ -433,7 +430,6 @@ void EditorLeftPanel::m_update_inpector_other_list(){
 
                 const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(other_id)) ? true :  other_item_list[o].is_selected;
 
-                auto other_type = other_item_list[o].type;
                 std::string padding = (is_selected) ? "    " : "";
                 auto other_name = padding + "*" + std::to_string(o + 1) + " - " + other_item_list[o].name;
 
@@ -579,19 +575,6 @@ void EditorLeftPanel::m_refresh_buffers(){
     m_is_displaying = m_window_rect.get_size().x > 0.0f;
 }
 
-void EditorLeftPanel::m_refresh_panel_data(){
-    if(!m_double_click_timer.timeout_and_reset()){
-        return;
-    }
-
-    if(GraphSelection::Ref()->is_group_dragging()){
-        return;
-    }
-    if(!m_is_displaying){
-        return;
-    }
-    m_panel_data = GraphManager::Ref()->get_panel_data();
-}
 void EditorLeftPanel::m_update_penel_properties(){
     if(!m_is_displaying){
         return;

@@ -85,7 +85,7 @@ void EditorDetailsWindow::draw(){
 
     if(ObjectServer::Ref()->is_id_valid(m_parent_id) && m_opened){
         vec2 parent_pos = ObjectServer::Ref()->get_instance<MovableObject>(m_parent_id)->get_position();
-        std::vector<vec2> points = this->get_shape<Rect2>().get_points();
+        std::array<glm::vec2, 4> points = this->get_shape<Rect2>().get_points();
         
         float min_dist = std::numeric_limits<float>::max();
         vec2 cloest_pos;

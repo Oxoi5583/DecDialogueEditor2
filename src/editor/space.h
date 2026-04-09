@@ -46,7 +46,6 @@ public:
         Type min_type = Type::PROPORTION;
         Type max_type = Type::PROPORTION;
 
-
         void enable();
         void disable();
         bool is_enabled();

@@ -48,7 +48,13 @@ void MovableObject::post_process(){
     vec2 size = m_shape->get_size();
     vec2 min = pos - (size / 2.0f);
     vec2 max = pos + (size / 2.0f);
-    PhysicsServer::Ref()->set_instance(m_shape_id, {min, max});
+    
+    if(last_frame_shape_min != min || last_frame_shape_max != max){
+        PhysicsServer::Ref()->set_instance(m_shape_id, {min, max});
+
+        last_frame_shape_min = min;
+        last_frame_shape_max = max;
+    }
 }
 void MovableObject::draw(){
 }

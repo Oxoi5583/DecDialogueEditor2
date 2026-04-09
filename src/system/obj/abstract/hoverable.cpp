@@ -24,7 +24,7 @@ bool HoverableObject::m_check_hovering(){
     }
     vec2 mouse_pos = get_mouse_pos();
     
-    if(!PhysicsServer::Ref()->is_shape_in_same_chunk(mouse_pos, this->get_shape_id())){
+    if(m_type == Type::WORLD && !PhysicsServer::Ref()->is_shape_in_same_chunk(MouseServer::Ref()->get_mouse_world_shape_id(), this->get_shape_id())){
         return false;
     }
 

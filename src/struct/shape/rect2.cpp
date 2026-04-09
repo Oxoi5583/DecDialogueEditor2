@@ -68,11 +68,10 @@ void Rect2::m_refresh_data(){
     m_right_top = m_position + vec2(m_size.x ,-m_size.y) / 2.0f;
     m_right_down = m_position + vec2(m_size.x ,m_size.y) / 2.0f;
 
-    std::vector<vec2>().swap(m_points);
-    m_points.push_back(m_left_top);
-    m_points.push_back(m_right_top);
-    m_points.push_back(m_right_down);
-    m_points.push_back(m_left_down);
+    m_points[0] = m_left_top;
+    m_points[1] = m_right_top;
+    m_points[2] = m_right_down;
+    m_points[3] = m_left_down;
 }
 
 void Rect2::set_size(vec2 p_size){
@@ -126,7 +125,7 @@ vec2 Rect2::get_right_down() const{
 vec2 Rect2::get_center() const{
     return m_position;
 }
-std::vector<vec2> Rect2::get_points() const{
+const std::array<vec2, 4>& Rect2::get_points() const{
     return m_points;
 }
 
@@ -253,7 +252,7 @@ bool Rect2::is_rect_intersect(Rect2 p_rect){
 
     this_buf.set_size(this_size);
 
-    std::vector<vec2> points = rect_buf.get_points();
+    const std::array<glm::vec2, 4>& points = rect_buf.get_points();
     if(this_buf.is_segment_intersect(points[0], points[1])) return true;
     if(this_buf.is_segment_intersect(points[1], points[2])) return true;
     if(this_buf.is_segment_intersect(points[2], points[3])) return true;

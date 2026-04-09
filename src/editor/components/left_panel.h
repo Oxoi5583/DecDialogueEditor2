@@ -22,8 +22,6 @@ private:
 
     int m_current_item = -1;
 
-    GraphManager::PanelData m_panel_data;
-
     void m_go_to_item(OID p_id);
 
     ImVec2 inpector_item_size;
@@ -52,7 +50,6 @@ private:
     void m_update_range_select();
 
     void m_refresh_buffers();
-    void m_refresh_panel_data();
 public:
     EditorLeftPanel();
     ~EditorLeftPanel();

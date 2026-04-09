@@ -1,21 +1,14 @@
 #pragma once
 
 #include "server/project_server.h"
-#include "server/timer_server.h"
-#include "editor/components/detail_window.h"
-#include "engine/renderer.h"
 #include "glm/ext/vector_float2.hpp"
-#include "system/obj/abstract/clickable.h"
-#include "system/obj/abstract/dragable.h"
-#include "system/obj/abstract/hoverable.h"
 #include "system/obj/abstract/selectable.h"
 #include "system/obj/graph/manager.h"
 #include "server/object_base.h"
-#include "server/object_server.h"
 #include "struct/shape/rect2.h"
 #include <glm/fwd.hpp>
-#include <map>
 #include <string>
+#include <theme/theme_loader.h>
 #include <vector>
 
 #include "DecToolsBox/container/ordered_map.h"
@@ -34,6 +27,10 @@ private:
     std::vector<std::string> m_signals;
     std::set<OID> m_children;
     std::set<OID> m_parent;
+
+    vec4 m_selected_border_color = ThemeLoader::Ref()->get_color("SelectableHighlightColour");
+    vec4 m_connectable_border_color = ThemeLoader::Ref()->get_color("AccentColour2");
+    ImVec4  m_rect_colour;
 
     std::string m_name;
     std::string m_content;

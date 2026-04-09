@@ -372,7 +372,7 @@ void GraphManager::m_data_refresh(){
     m_regenerate_panel_data();
 }
 
-GraphManager::PanelData GraphManager::get_panel_data(){
+const GraphManager::PanelData& GraphManager::get_panel_data(){
     return m_panel_data;
 }
 

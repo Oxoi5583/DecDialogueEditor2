@@ -116,4 +116,5 @@ target_link_libraries(
         glad::glad
         SimZip
         Boost::interprocess
+        Boost::headers
 )

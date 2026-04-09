@@ -9,6 +9,7 @@
 #include "server/object_server.h"
 #include "system/obj/abstract/hoverable.h"
 #include "system/obj/abstract/clickable.h"
+#include <glm/fwd.hpp>
 
 MouseServer::MouseServer() {
     m_left_double_click_timer.reset();
@@ -129,6 +130,10 @@ void MouseServer::update() {
         m_middle_double_click_timer.reset();
         m_middle_double_click_timer.stop();
     }
+
+    vec2 physics_shape_min = m_world_mouse_pos - vec2(0.5, 0.5);
+    vec2 physics_shape_max = m_world_mouse_pos + vec2(0.5, 0.5);
+    PhysicsServer::Ref()->set_instance(m_world_phyiscs_shape_id, {physics_shape_min, physics_shape_max});
 }
 void MouseServer::m_event_handle_normal_request(){
     while (!m_cursor_commands_buffer.empty()) {
@@ -360,4 +365,8 @@ void MouseServer::shutdown(){
     for (SDL_Cursor* cursor : cursors) {
         if (cursor) SDL_DestroyCursor(cursor);
     }
+}
+
+const ShapeId& MouseServer::get_mouse_world_shape_id(){
+    return m_world_phyiscs_shape_id;
 }

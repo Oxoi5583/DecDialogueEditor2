@@ -2,6 +2,7 @@
 
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/base.h"
+#include <array>
 #include <cstddef>
 #include <limits>
 #include <vector>
@@ -16,7 +17,7 @@ private:
     vec2 m_left_down;
     vec2 m_right_top;
     vec2 m_right_down;
-    std::vector<vec2> m_points;
+    std::array<vec2, 4> m_points;
 
     void m_refresh_data();
 
@@ -52,7 +53,7 @@ public:
     vec2 get_right_top() const;
     vec2 get_right_down() const;
     vec2 get_center() const;
-    std::vector<vec2> get_points() const;
+    const std::array<vec2, 4>&  get_points() const;
 
 
     bool is_point_intersect(vec2 p_pos) override;

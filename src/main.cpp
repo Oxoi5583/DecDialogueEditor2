@@ -34,6 +34,7 @@
 #include "struct/shape/line.h"
 #include "struct/shape/rect2.h"
 #include <cmath>
+#include <cstddef>
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl3.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
@@ -155,10 +156,12 @@ int main(int argc, char* argv[]) {
         PhysicsServer::Ref()->update();
         
         if(EngineInputHub::Ref()->keyboard_is_down(K_LCTRL) && MouseServer::Ref()->is_clicked()){
-            EventSpawnNode event;
-            event.spawn_pos = MouseServer::Ref()->get_mouse_world_position();
-            event.type = GraphManager::NodeTypeId::NODE;
-            EventServer::Ref()->emit(event);
+            for(size_t i = 0; i < 15; i++){
+                EventSpawnNode event;
+                event.spawn_pos = MouseServer::Ref()->get_mouse_world_position();
+                event.type = GraphManager::NodeTypeId::NODE;
+                EventServer::Ref()->emit(event);
+            }
         }
 
         frame++;

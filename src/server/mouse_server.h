@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "engine/input_hub.h"
 #include "SDL3/SDL_mouse.h"
+#include "physics_server.h"
 #include "timer_server.h"
 #include <cstddef>
 #include <queue>
@@ -20,6 +21,7 @@ enum class MouseButton {
 
 class MouseServer : public Singleton<MouseServer> {
 private:
+    const ShapeId m_world_phyiscs_shape_id = PhysicsServer::Ref()->next_shape_id();
 
     vec2 m_world_mouse_pos;
     vec2 m_screen_mouse_pos;
@@ -137,4 +139,6 @@ public:
     void cursor_W_resize();
     
     void shutdown();
+
+    const ShapeId& get_mouse_world_shape_id();
 };
