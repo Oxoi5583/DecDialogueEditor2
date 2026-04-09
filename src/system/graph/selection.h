@@ -5,6 +5,7 @@
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
 #include <queue>
+#include <server/physics_server.h>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -23,6 +24,8 @@ private:
     vec2 m_end_dragging_pos;
 
     Rect2 m_selection_area;
+
+    ShapeId m_shape_id = PhysicsServer::Ref()->next_shape_id();
 
     std::vector<OID> m_selected_group_dragging_buffer;
     std::unordered_set<OID> m_selected_group_dragging_buffer_us;
@@ -60,7 +63,7 @@ public:
     void draw();
 
     bool is_selecting();
-    bool is_in_area(Rect2& p_rect);
+    bool is_in_area(ShapeId p_sid, Rect2& p_rect);
 
     void drag_all_selection();
     void place_all_selection();

@@ -170,7 +170,7 @@ public:
     Binary craete_shader_binary(ShaderType p_type, const char* p_src);
     void init();
     void render();
-    void destory_all();
+    void shutdown();
 
     void set_texture_data(GLuint p_data);
 

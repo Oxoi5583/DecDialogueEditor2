@@ -19,15 +19,20 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
 if (MSVC)
     add_compile_options(/utf-8)
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-        add_compile_options(/fsanitize=address
-                            #/fsanitize-address-use-after-return
-                            /Zi
-                            /Od)
-        add_link_options(/fsanitize=address /fsanitize-address-use-after-return)
-    endif()
+    #if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    #    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+    #    add_compile_options(/fsanitize=address
+    #                        #/fsanitize-address-use-after-return
+    #                        /Zi
+    #                        /Od)
+    #    add_link_options(/fsanitize=address /fsanitize-address-use-after-return)
+    #endif()
 endif()
+
+add_compile_options(
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4267>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4244>
+)
 
 set(SDL_SHARED OFF CACHE BOOL "" FORCE)
 set(SDL_STATIC ON  CACHE BOOL "" FORCE)

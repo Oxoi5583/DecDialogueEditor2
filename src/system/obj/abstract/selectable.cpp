@@ -94,7 +94,7 @@ void SelectableObject::m_select_if_in_select_area(){
         this->get_shape<ShapeBase>().get_size(),
     };
 
-    if(!GraphSelection::Ref()->is_in_area(rect)){
+    if(!GraphSelection::Ref()->is_in_area(get_shape_id(), rect)){
         return;
     }
 
@@ -157,7 +157,7 @@ void SelectableObject::m_unselect_if_not_in_select_area(){
         this->get_shape<ShapeBase>().get_size(),
     };
 
-    if(GraphSelection::Ref()->is_in_area(rect)){
+    if(GraphSelection::Ref()->is_in_area(get_shape_id(), rect)){
         return;
     }
 

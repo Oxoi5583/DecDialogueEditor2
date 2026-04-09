@@ -12,6 +12,8 @@
 #include "server/object_server.h"
 #include "struct/shape/line.h"
 #include <cmath>
+#include <server/mouse_server.h>
+#include <server/physics_server.h>
 #include "theme/theme_loader.h"
 
 GraphConnectionLine::GraphConnectionLine()
@@ -76,18 +78,20 @@ void GraphConnectionLine::draw(){
         , colour
         , m_line.get_width() / zoom
     );
-    EngineRenderer::Ref()->draw_line(
-        m_arrow_pos_middle
-        , m_arrow_pos_left
-        , colour
-        , m_line.get_width() * 0.75f / zoom
-    );
-    EngineRenderer::Ref()->draw_line(
-        m_arrow_pos_middle
-        , m_arrow_pos_right
-        , colour
-        , m_line.get_width() * 0.75f / zoom
-    );
+    if(!this->is_dragging()){
+        EngineRenderer::Ref()->draw_line(
+            m_arrow_pos_middle
+            , m_arrow_pos_left
+            , colour
+            , m_line.get_width() * 0.75f / zoom
+        );
+        EngineRenderer::Ref()->draw_line(
+            m_arrow_pos_middle
+            , m_arrow_pos_right
+            , colour
+            , m_line.get_width() * 0.75f / zoom
+        );
+    }
 }
 
 void GraphConnectionLine::m_remove_if_double_clicked(){

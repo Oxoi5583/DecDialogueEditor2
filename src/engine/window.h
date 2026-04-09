@@ -106,7 +106,7 @@ public:
 
     void init();
 
-    void destory_all();
+    void shutdown();
 
     void set_clear_color(vec4 p_color);
     vec4 get_clear_color();

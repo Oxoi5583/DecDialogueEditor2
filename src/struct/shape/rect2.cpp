@@ -11,40 +11,86 @@
 
 Rect2::Rect2(){};
 Rect2::Rect2(const vec2& p_position, const vec2& p_size)
-    : m_position(p_position), m_size(p_size) {}
+    : m_position(p_position),
+      m_size(p_size) {
+        m_refresh_data();
+      }
 Rect2::~Rect2(){};
+
 Rect2::Rect2(const Rect2& other)
-    : m_position(other.m_position), m_size(other.m_size) {}
+    : m_position(other.m_position),
+      m_size(other.m_size),
+      m_left_top(other.m_left_top),
+      m_left_down(other.m_left_down),
+      m_right_top(other.m_right_top),
+      m_right_down(other.m_right_down),
+      m_points(other.m_points) {}
+
 Rect2::Rect2(Rect2&& other) noexcept
     : m_position(std::move(other.m_position)),
-      m_size(std::move(other.m_size)) {}
+      m_size(std::move(other.m_size)),
+      m_left_top(std::move(other.m_left_top)),
+      m_left_down(std::move(other.m_left_down)),
+      m_right_top(std::move(other.m_right_top)),
+      m_right_down(std::move(other.m_right_down)),
+      m_points(std::move(other.m_points)) {}
+
 Rect2& Rect2::operator=(const Rect2& other) {
     if (this != &other) {
         m_position = other.m_position;
         m_size = other.m_size;
+        m_left_top = other.m_left_top;
+        m_left_down = other.m_left_down;
+        m_right_top = other.m_right_top;
+        m_right_down = other.m_right_down;
+        m_points = other.m_points;
     }
     return *this;
 }
+
 Rect2& Rect2::operator=(Rect2&& other) noexcept {
     if (this != &other) {
         m_position = std::move(other.m_position);
         m_size = std::move(other.m_size);
+        m_left_top = std::move(other.m_left_top);
+        m_left_down = std::move(other.m_left_down);
+        m_right_top = std::move(other.m_right_top);
+        m_right_down = std::move(other.m_right_down);
+        m_points = std::move(other.m_points);
     }
     return *this;
 }
 
 
+void Rect2::m_refresh_data(){
+    m_left_top = m_position + vec2(-m_size.x ,-m_size.y) / 2.0f;
+    m_left_down =  m_position + vec2(-m_size.x ,m_size.y) / 2.0f;
+    m_right_top = m_position + vec2(m_size.x ,-m_size.y) / 2.0f;
+    m_right_down = m_position + vec2(m_size.x ,m_size.y) / 2.0f;
+
+    std::vector<vec2>().swap(m_points);
+    m_points.push_back(m_left_top);
+    m_points.push_back(m_right_top);
+    m_points.push_back(m_right_down);
+    m_points.push_back(m_left_down);
+}
+
 void Rect2::set_size(vec2 p_size){
     m_size = p_size;
+    m_refresh_data();
 }
 void Rect2::set_position(vec2 p_position){
     m_position = p_position;
+    m_refresh_data();
 }
 void Rect2::set_left_top(vec2 p_position){
     m_position = p_position + (m_size / 2.0f);
+    m_refresh_data();
+
 }
 void Rect2::set_center(vec2 p_center){
     m_position = p_center;
+    m_refresh_data();
 }
 void Rect2::set_AABB(vec2 p_left_top, vec2 p_right_down){
     vec2 left_top = glm::min(p_left_top, p_right_down);
@@ -52,8 +98,9 @@ void Rect2::set_AABB(vec2 p_left_top, vec2 p_right_down){
 
     vec2 size = right_down - left_top;
     vec2 center = left_top + (size / 2.0f);
-    set_size(size);
-    set_center(center);
+    m_size = size;
+    m_position = center;
+    m_refresh_data();
 }
 
 
@@ -65,35 +112,22 @@ vec2 Rect2::get_position() const{
     return m_position;
 }
 vec2 Rect2::get_left_top() const{
-    return m_position + vec2(-m_size.x ,-m_size.y) / 2.0f;
+    return m_left_top;
 }
 vec2 Rect2::get_left_down() const{
-    return m_position + vec2(-m_size.x ,m_size.y) / 2.0f;
+    return m_left_down;
 }
 vec2 Rect2::get_right_top() const{
-    return m_position + vec2(m_size.x ,-m_size.y) / 2.0f;
+    return m_right_top;
 }
 vec2 Rect2::get_right_down() const{
-    return m_position + vec2(m_size.x ,m_size.y) / 2.0f;
+    return m_right_down;
 }
 vec2 Rect2::get_center() const{
     return m_position;
 }
 std::vector<vec2> Rect2::get_points() const{
-    std::vector<vec2> ret;
-    ret.resize(4);
-    
-    vec2 left_top = get_left_top();
-    vec2 left_down = get_left_down();
-    vec2 right_top = get_right_top();
-    vec2 right_down = get_right_down();
-
-    ret[0] = left_top;
-    ret[1] = right_top;
-    ret[2] = right_down;
-    ret[3] = left_down;
-
-    return ret;
+    return m_points;
 }
 
 
@@ -131,8 +165,8 @@ bool Rect2::m_cross_product(vec2 p_pos){
 }
 
 bool Rect2::m_compare_xy(vec2 p_pos){
-    vec2 left_top = get_left_top();
-    vec2 right_down = get_right_down();
+    vec2 left_top = m_left_top;
+    vec2 right_down = m_right_down;
 
     if(p_pos.x < left_top.x || p_pos.x > right_down.x){
         return false;

@@ -5,6 +5,8 @@
 #include "server/mouse_server.h"
 #include "server/object_base.h"
 #include "server/object_server.h"
+#include <string>
+#include <utility>
 #include <vector>
 
 using namespace glm;
@@ -114,7 +116,7 @@ struct EventEditorSpaceResizerDragging : public UniqueEvent{};
 
 struct EventSpawnNode : public NonUniqueEvent{
     vec2 spawn_pos;
-    GraphManager::NodeType type;
+    GraphManager::NodeTypeId type;
     
     std::string custom_workspace;
     std::string custom_uid;
@@ -123,6 +125,13 @@ struct EventSpawnNode : public NonUniqueEvent{
     bool is_workspace_custom = false;
     bool is_uid_custom = false;
     bool is_name_custom = false;
+
+    struct Data{
+        std::string key;
+        std::string value;
+        int max_size;
+    };
+    std::vector<Data> init_data;
 };
 
 struct EventMouseJustClickSelectedObj : public NonUniqueEvent{

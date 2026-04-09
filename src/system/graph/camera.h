@@ -6,6 +6,7 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/rect2.h"
+#include "server/physics_server.h"
 
 using namespace glm;
 
@@ -25,6 +26,8 @@ private:
     vec2 m_dragging_start_target;
 
     vec2 m_left_top_buffer;
+
+    ShapeId m_shape_id = PhysicsServer::Ref()->next_shape_id();
 
     void m_job_update_window_size_buffer();
     void m_job_update_view();
@@ -65,4 +68,5 @@ public:
     vec2 viewport_to_world(vec2 p_pos);
 
     bool is_rect_on_camera(Rect2 p_rect, bool p_is_full_needed = false);
+    bool is_rect_id_on_camera(ShapeId p_sid, bool p_is_full_needed = false);
 };

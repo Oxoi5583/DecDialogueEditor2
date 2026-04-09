@@ -10,13 +10,13 @@ GraphOption::GraphOption(){
 GraphOption::~GraphOption(){}
 
 void GraphOption::ready(){
-    this->add_property("Content", "", 1000);
+    this->set_property("Content", "", 1000);
 }
 void GraphOption::pre_process(){}
 void GraphOption::process(){}
 void GraphOption::post_process(){}
 void GraphOption::draw(){}
 
-GraphManager::NodeType GraphOption::get_type(){
-    return GraphManager::NodeType::OPTION;
+GraphManager::NodeTypeId GraphOption::get_type(){
+    return GraphManager::NodeTypeId::OPTION;
 }

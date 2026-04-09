@@ -13,7 +13,7 @@ GraphModuleNode::GraphModuleNode(){
 GraphModuleNode::~GraphModuleNode(){}
 
 void GraphModuleNode::ready(){
-    this->add_property("Module Id", "", 50);
+    this->set_property("Module Id", "", 50);
 }
 void GraphModuleNode::pre_process(){}
 void GraphModuleNode::process(){
@@ -26,6 +26,6 @@ void GraphModuleNode::post_process(){}
 void GraphModuleNode::draw(){}
 
 
-GraphManager::NodeType GraphModuleNode::get_type(){
-    return GraphManager::NodeType::MODULE_NODE;
+GraphManager::NodeTypeId GraphModuleNode::get_type(){
+    return GraphManager::NodeTypeId::MODULE_NODE;
 }

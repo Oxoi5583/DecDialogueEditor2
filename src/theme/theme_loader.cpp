@@ -31,7 +31,7 @@ ThemeLoader::CheckResult ThemeLoader::m_check_theme_file_valid(std::string p_pat
         error_found++;
     }
 
-    for(auto& key : m_theme_keys){
+    for(const auto& key : m_theme_keys){
         if(!data.contains(key)){
             ERROR_MSG("Theme JSON key" << key << " not found : " << p_path);
             error_found++;
@@ -40,7 +40,7 @@ ThemeLoader::CheckResult ThemeLoader::m_check_theme_file_valid(std::string p_pat
                 std::string value = data[key];
                 if(value.length() == 6 || value.length() == 8){
                     int illegal_char_count = 0;
-                    for(char c : value){
+                    for(const char& c : value){
                         if(!m_acceptable_char.contains(c)){
                             illegal_char_count++;
                         }
@@ -118,19 +118,19 @@ void ThemeLoader::load(){
 
 
 
-std::string ThemeLoader::get_color_string(std::string p_key){
+const std::string& ThemeLoader::get_color_string(const std::string& p_key){
     std::string using_theme_name;
     ConfigLoader::Ref()->get_config("UsingTheme", using_theme_name);
-    json theme_data = m_themes_json_objs[using_theme_name];
+    json& theme_data = m_themes_json_objs[using_theme_name];
 
     if(theme_data.contains(p_key)){
-        return theme_data[p_key];
+        return theme_data[p_key].get_ref<const std::string&>();
     }else{
-        return "000000";
+        return m_default_color_string;
     }
 }
-vec4 ThemeLoader::get_color(std::string p_key){
-    std::string color_string = get_color_string(p_key);
+vec4 ThemeLoader::get_color(const std::string& p_key){
+    const std::string& color_string = get_color_string(p_key);
     vec4 ret;
     if(color_string.length() == 8){
         std::string r_str = color_string.substr(0, 2);
@@ -159,7 +159,7 @@ vec4 ThemeLoader::get_color(std::string p_key){
 
 std::vector<std::string> ThemeLoader::get_themes(){
     std::vector<std::string> ret;
-    for(auto it : m_themes_json_objs){
+    for(const auto& it : m_themes_json_objs){
         ret.push_back(it.first);
     }
     return ret;
@@ -167,8 +167,6 @@ std::vector<std::string> ThemeLoader::get_themes(){
 
 ImVec4 ThemeLoader::get_imgui_color(const std::string& key){
     vec4 ret = ThemeLoader::Ref()->get_color(key);
-
-    //return ImVec4(0,0,0,1);
     return ImVec4(ret.x, ret.y, ret.z, ret.w);
 };
 

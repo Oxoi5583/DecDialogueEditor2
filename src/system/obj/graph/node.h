@@ -21,5 +21,5 @@ public:
     void post_process();
     void draw();
 
-    GraphManager::NodeType get_type() override;
+    GraphManager::NodeTypeId get_type() override;
 };

@@ -53,8 +53,7 @@ struct MsgGenerator{
 
 EditorLeftPanel::EditorLeftPanel(){
     BIND_CLASS(EditorLeftPanel);
-    m_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 100) ,true);
-    m_double_click_timer->stop();
+    m_double_click_timer.stop();
 }
 EditorLeftPanel::~EditorLeftPanel(){
 
@@ -187,6 +186,11 @@ void EditorLeftPanel::m_update_explorer_list(){
 
         auto proj_data_v = ProjectServer::Ref()->get_display_data();
 
+        ImVec4 color_selected = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
+        color_selected.w *= 0.65;
+        ImU32 bg_selected = ThemeLoader::Ref()->ImVec4_to_int(color_selected);
+        ImVec4 bg_non_selected = {0.0f,0.0f,0.0f,0.0f};
+
         for(auto& space : proj_data_v){
             std::string obj_id = space.name + "##" + space.uid;
             if(!space.is_saved){
@@ -195,15 +199,13 @@ void EditorLeftPanel::m_update_explorer_list(){
             
             int pop_times;
             if(space.is_selected){
-                ImVec4 colour = ThemeLoader::Ref()->get_imgui_color("AccentColour1");
-                colour.w *= 0.65;
-                ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, ThemeLoader::Ref()->ImVec4_to_int(colour));
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, ThemeLoader::Ref()->ImVec4_to_int(colour));
-                ImGui::PushStyleColor(ImGuiCol_Header, ThemeLoader::Ref()->ImVec4_to_int(colour));
+                ImGui::PushStyleColor(ImGuiCol_FrameBgHovered, bg_selected);
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, bg_selected);
+                ImGui::PushStyleColor(ImGuiCol_Header, bg_selected);
                 pop_times = 3;
             }else{
-                ImGui::PushStyleColor(ImGuiCol_FrameBg, {0.0f,0.0f,0.0f,0.0f});
-                ImGui::PushStyleColor(ImGuiCol_Header, {0.0f,0.0f,0.0f,0.0f});
+                ImGui::PushStyleColor(ImGuiCol_FrameBg, bg_non_selected);
+                ImGui::PushStyleColor(ImGuiCol_Header, bg_non_selected);
                 pop_times = 2;
             }
             ImGui::Selectable(obj_id.c_str(), space.is_selected, 0, each_size);
@@ -241,20 +243,20 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
     inpector_item_size = {0.0f, item_height};
 
     auto pri_item_list = m_panel_data.primary_info_list;
-    int pri_item_size = pri_item_list.size();
+
+    const ImVec4 pri_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+    const ImVec4 pri_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+    const ImVec4 button_color = {0.0f, 0.0f, 0.0f, 0.0f};
+    const ImU32 sub_area_color = ThemeLoader::Ref()->get_imgui_color_int("AccentColour1");
+    const ImU32 break_color = ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3");
+
     for (int p = 0; p < pri_item_list.size(); ++p){
         auto pri_id = pri_item_list[p].id;
 
         const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(pri_id)) ? true : pri_item_list[p].is_selected;
 
-        auto pri_type = pri_item_list[p].type;
         std::string padding = (is_selected) ? "    " : "";
         auto pri_name = padding + std::to_string(p + 1) + " - " + pri_item_list[p].name;
-
-        const ImVec4 pri_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
-        const ImVec4 pri_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
-        const ImVec4 pri_list_box_text_color = (is_selected) ? ThemeLoader::Ref()->get_imgui_color("HighlightTextColour") 
-                                                                : ThemeLoader::Ref()->get_imgui_color("TextColour");
 
         ImGui::PushStyleColor(ImGuiCol_FrameBg, pri_list_box_color);
         ImGui::PushStyleColor(ImGuiCol_Header, pri_list_box_selected_color);
@@ -262,9 +264,9 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
 
         std::string button_name = (is_expanded) ? std::string(ICON_EXPAND_OPEN) + "##BUTTON_" + pri_name : std::string(ICON_EXPAND_CLOSE) + "##BUTTON_" + pri_name;
 
-        ImGui::PushStyleColor(ImGuiCol_Button, {0.0f, 0.0f, 0.0f, 0.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, {0.0f, 0.0f, 0.0f, 0.0f});
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, {0.0f, 0.0f, 0.0f, 0.0f});
+        ImGui::PushStyleColor(ImGuiCol_Button, button_color);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, button_color);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, button_color);
         
         ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_SMALL));
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + ImGui::GetStyle().ItemSpacing.y);
@@ -300,7 +302,7 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
 
             ImGui::GetWindowDrawList()->AddRectFilled(
                 p_min, p_max,
-                ThemeLoader::Ref()->get_imgui_color_int("AccentColour1"),
+                sub_area_color,
                 0.0f,
                 0
             );
@@ -309,7 +311,7 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
         ImVec2 break_line_max = {ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y};
         ImGui::GetWindowDrawList()->AddRectFilled(
             break_line_min, break_line_max,
-            ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"),
+            break_color,
             0.5f,
             0
         );
@@ -334,7 +336,15 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
         const double sec_item_height = inpector_item_size.y + 3;
         const double sec_list_area_height = (sec_item_size == 0) ? 0.0f : sec_item_height * sec_item_size;
         const ImVec2 sec_list_area = ImVec2(-FLT_MIN, sec_list_area_height);
-                                                                
+                          
+        ImVec4 sec_list_box_color_org = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
+        const ImVec4 sec_list_box_color = {sec_list_box_color_org.x - 0.02f, sec_list_box_color_org.y - 0.02f, sec_list_box_color_org.z - 0.02f, sec_list_box_color_org.w};
+        const ImVec4 sec_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+        const ImVec4 sec_list_box_text_color_selected = ThemeLoader::Ref()->get_imgui_color("HighlightTextColour");
+        const ImVec4 sec_list_box_text_color_not_selected = ThemeLoader::Ref()->get_imgui_color("TextColour");
+        const ImU32 sub_area_color = ThemeLoader::Ref()->get_imgui_color_int("AccentColour1");
+        const ImU32 breakline_color = ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3");
+
         if (ImGui::BeginListBox((sec_list_box_name + std::to_string(p_parent_index)).c_str(), sec_list_area)){
             for (int s = 0; s < sec_item_size; ++s){
                 auto sec_id = sec_item_list[s].id;
@@ -345,13 +355,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                 std::string padding = (is_selected) ? "    " : "";
                 auto sec_name = padding + int_to_roman(s + 1) + " - " + sec_item_list[s].name;
 
-                ImVec4 sec_list_box_color_org = ThemeLoader::Ref()->get_imgui_color("SecondaryColour2");
-                const ImVec4 sec_list_box_color = {sec_list_box_color_org.x - 0.02f, sec_list_box_color_org.y - 0.02f, sec_list_box_color_org.z - 0.02f, sec_list_box_color_org.w};
-                const ImVec4 sec_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
-                const ImVec4 sec_list_box_text_color = (is_selected) ? ThemeLoader::Ref()->get_imgui_color("HighlightTextColour") 
-                                                                        : ThemeLoader::Ref()->get_imgui_color("TextColour")
-                ;
-            
+                const ImVec4& sec_list_box_text_color = (is_selected) ? sec_list_box_text_color_selected : sec_list_box_text_color_not_selected;
 
                 ImGui::PushStyleColor(ImGuiCol_FrameBg, sec_list_box_color);
                 ImGui::PushStyleColor(ImGuiCol_Header, sec_list_box_selected_color);
@@ -377,7 +381,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
 
                     ImGui::GetWindowDrawList()->AddRectFilled(
                         p_min, p_max,
-                        ThemeLoader::Ref()->get_imgui_color_int("AccentColour1"),
+                        sub_area_color,
                         0.0f,
                         0
                     );
@@ -386,7 +390,7 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
                 ImVec2 break_line_max = {ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y};
                 ImGui::GetWindowDrawList()->AddRectFilled(
                     break_line_min, break_line_max,
-                    ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"),
+                    breakline_color,
                     0.5f,
                     0
                 );
@@ -417,6 +421,13 @@ void EditorLeftPanel::m_update_inpector_other_list(){
         const ImVec2 other_list_area = ImVec2(-FLT_MIN, other_list_area_height);
 
         if (ImGui::BeginListBox(other_list_box_name, other_list_area)){
+            const ImVec4 other_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+            const ImVec4 other_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
+            const ImVec4 other_list_box_text_color_selected = ThemeLoader::Ref()->get_imgui_color("HighlightTextColour");
+            const ImVec4 other_list_box_text_color_not_selected = ThemeLoader::Ref()->get_imgui_color("TextColour");
+            const ImU32 sub_area_color = ThemeLoader::Ref()->get_imgui_color_int("AccentColour1");
+            const ImU32 breakline_color = ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3");
+
             for (int o = 0; o < other_item_size; ++o){
                 auto other_id = other_item_list[o].id;
 
@@ -426,11 +437,7 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                 std::string padding = (is_selected) ? "    " : "";
                 auto other_name = padding + "*" + std::to_string(o + 1) + " - " + other_item_list[o].name;
 
-
-                const ImVec4 other_list_box_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
-                const ImVec4 other_list_box_selected_color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
-                const ImVec4 other_list_box_text_color = (is_selected) ? ThemeLoader::Ref()->get_imgui_color("HighlightTextColour") 
-                                                                        : ThemeLoader::Ref()->get_imgui_color("TextColour");
+                const ImVec4 other_list_box_text_color = (is_selected) ? other_list_box_text_color_selected : other_list_box_text_color_not_selected;
 
                 ImGui::PushStyleColor(ImGuiCol_FrameBg, other_list_box_color);
                 ImGui::PushStyleColor(ImGuiCol_Header, other_list_box_selected_color);
@@ -454,7 +461,7 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                     ImVec2 p_max = {ImGui::GetItemRectMin().x + m_hint_width, ImGui::GetItemRectMax().y};
                     ImGui::GetWindowDrawList()->AddRectFilled(
                         p_min, p_max,
-                        ThemeLoader::Ref()->get_imgui_color_int("AccentColour1"),
+                        sub_area_color,
                         0.0f,
                         0
                     );
@@ -463,7 +470,7 @@ void EditorLeftPanel::m_update_inpector_other_list(){
                 ImVec2 break_line_max = {ImGui::GetItemRectMax().x, ImGui::GetItemRectMax().y};
                 ImGui::GetWindowDrawList()->AddRectFilled(
                     break_line_min, break_line_max,
-                    ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3"),
+                    breakline_color,
                     0.5f,
                     0
                 );
@@ -573,7 +580,7 @@ void EditorLeftPanel::m_refresh_buffers(){
 }
 
 void EditorLeftPanel::m_refresh_panel_data(){
-    if(!m_double_click_timer->timeout_and_reset()){
+    if(!m_double_click_timer.timeout_and_reset()){
         return;
     }
 

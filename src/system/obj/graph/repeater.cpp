@@ -36,8 +36,8 @@ void GraphRepeater::m_refresh_from_and_to(){
     m_to_ids = this->skip_to_repeater();
 }
 
-GraphManager::NodeType GraphRepeater::get_type(){
-    return GraphManager::NodeType::REPEATER;
+GraphManager::NodeTypeId GraphRepeater::get_type(){
+    return GraphManager::NodeTypeId::REPEATER;
 }
 
 std::vector<OID> GraphRepeater::get_repeater_from(){

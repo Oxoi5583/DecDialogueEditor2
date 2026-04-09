@@ -18,7 +18,10 @@
 #include "server/mouse_server.h"
 #include "struct/shape/rect2.h"
 #include <cstddef>
+#include <server/physics_server.h>
 #include <server/project_server.h>
+
+#include "ext/debug/messenger_ext.h"
 
 void GraphCamera::init(){
     m_rect = Rect2(vec2(0.0f,0.0f), vec2(0.0f,0.0f));
@@ -31,6 +34,9 @@ void GraphCamera::m_job_update_window_size_buffer(){
     vec2 rd = lt + m_viewport_size_buffer;
     m_rect.set_AABB(lt,rd);
 
+    Rect2 camera_rect = this->get_zoomed_rect();
+    PhysicsServer::Ref()->set_instance(m_shape_id, {camera_rect.get_left_top(), camera_rect.get_right_down()});
+    
 }
 void GraphCamera::m_job_update_view(){
     vec2 pivot = GraphViewport::Ref()->get_viewport_rect().get_center();
@@ -233,6 +239,12 @@ bool GraphCamera::is_rect_on_camera(Rect2 p_rect, bool p_is_full_needed){
         return camera_rect.is_rect_intersect(p_rect);
     }
 }
+
+bool GraphCamera::is_rect_id_on_camera(ShapeId p_sid, bool p_is_full_needed){
+    bool ret = PhysicsServer::Ref()->is_shape_in_same_chunk(p_sid, m_shape_id);
+    return ret;
+}
+
 void GraphCamera::m_job_upload_data(){
     {
         ProjectPayload payload;

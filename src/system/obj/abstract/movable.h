@@ -4,12 +4,15 @@
 #include "server/object_base.h"
 #include "struct/shape/base.h"
 #include <memory>
+#include <server/physics_server.h>
 
 class MovableObject : public ObjectBase {
 private:
     std::unique_ptr<ShapeBase> m_shape = nullptr;
     bool m_is_on_camera = false;
     bool m_is_full_rect_in_camera = false; 
+
+    ShapeId m_shape_id = PhysicsServer::Ref()->next_shape_id();
 public:
     MovableObject();
     ~MovableObject();
@@ -39,4 +42,6 @@ public:
     bool is_on_camera();
     void enable_full_rect_in_camera();
     void disable_full_rect_in_camera();
+
+    ShapeId get_shape_id();
 };

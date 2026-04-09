@@ -43,7 +43,7 @@ bool ConfigLoader::m_load_setting(){
         error_found++;
     }
 
-    for(auto& key : m_setting_keys){
+    for(const auto& key : m_setting_keys){
         if(!data.contains(key)){
             ERROR_MSG("Setting JSON key" << key << " not found : " << m_setting_path);
             error_found++;

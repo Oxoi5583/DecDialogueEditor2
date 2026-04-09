@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "engine/input_hub.h"
 #include "SDL3/SDL_mouse.h"
+#include "timer_server.h"
 #include <cstddef>
 #include <queue>
 #include <server/timer_server.h>
@@ -31,19 +32,19 @@ private:
     bool m_is_left_clicked = false;
     bool m_is_left_just_released = false;
     size_t m_left_clicked_times = 0;
-    Timer* m_left_double_click_timer = nullptr;
+    TimerWrapper m_left_double_click_timer = {TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true};
 
     bool m_is_right_just_clicked = false;
     bool m_is_right_clicked = false;
     bool m_is_right_just_released = false;
     size_t m_right_clicked_times = 0;
-    Timer* m_right_double_click_timer = nullptr;
+    TimerWrapper m_right_double_click_timer = {TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true};
 
     bool m_is_middle_just_clicked = false;
     bool m_is_middle_clicked = false;
     bool m_is_middle_just_released = false;
     size_t m_middle_clicked_times = 0;
-    Timer* m_middle_double_click_timer = nullptr;
+    TimerWrapper m_middle_double_click_timer = {TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true};
 
     std::vector<SDL_Cursor*> cursors;
 

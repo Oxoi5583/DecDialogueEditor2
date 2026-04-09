@@ -1050,6 +1050,7 @@ bool ProjectServer::m_action_open_project(FPath p_path){
         WorkspaceInfo& info = m_display_data[0];
         this->go_to_workspace(info.uid);
 
+        m_project_file = p_path;
         return true;
     }
     return false;
@@ -1190,6 +1191,16 @@ void ProjectServer::m_read_workspace(OID p_file){
                 event.custom_uid = code;
                 event.is_name_custom = true;
                 event.custom_name = obj_data["name"];
+
+                if(obj_data.contains("properties")){
+                    for(auto& obj_data : obj_data["properties"].items()){
+                        std::string key = obj_data.key();
+                        std::string val = obj_data.value()["value"];
+                        int max_size = obj_data.value()["max_size"];
+
+                        event.init_data.push_back({key, val, max_size});
+                    }
+                }
 
                 EventServer::Ref()->emit(event);
             }

@@ -288,7 +288,7 @@ bool GraphConnection::m_test_connection__all_connect_type_is_option(GraphBase* p
     }
 
     if(is_connected_to_option){
-        GraphManager::NodeType to_type = p_to->get_type();
+        GraphManager::NodeTypeId to_type = p_to->get_type();
         if(to_type != GraphManager::OPTION && to_type != GraphManager::REPEATER){
             return false;
         }

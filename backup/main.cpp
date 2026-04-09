@@ -117,6 +117,6 @@ int main(int argc, char* argv[]) {
         CoreLoop::Ref()->render();
     }
 
-    CoreInitializer::Ref()->destory_all();
+    CoreInitializer::Ref()->shutdown();
     return 0;
 }

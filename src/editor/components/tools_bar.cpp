@@ -22,8 +22,7 @@
 
 EditorToolsBar::EditorToolsBar(){
     BIND_CLASS(EditorToolsBar);
-    m_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true);
-    m_double_click_timer->stop();
+    m_double_click_timer.stop();
 }
 EditorToolsBar::~EditorToolsBar(){
 

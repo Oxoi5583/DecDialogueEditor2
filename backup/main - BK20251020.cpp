@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
         EngineWindow::Ref()->end();
     }
 
-    EngineRenderer::Ref()->destory_all();
-    EngineWindow::Ref()->destory_all();
+    EngineRenderer::Ref()->shutdown();
+    EngineWindow::Ref()->shutdown();
     return 0;
 }

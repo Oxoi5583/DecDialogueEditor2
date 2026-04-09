@@ -7,6 +7,7 @@
 #include "server/object_server.h"
 #include "struct/shape/base.h"
 #include <memory>
+#include <server/physics_server.h>
 
 
 HoverableObject::HoverableObject(){
@@ -23,6 +24,10 @@ bool HoverableObject::m_check_hovering(){
     }
     vec2 mouse_pos = get_mouse_pos();
     
+    if(!PhysicsServer::Ref()->is_shape_in_same_chunk(mouse_pos, this->get_shape_id())){
+        return false;
+    }
+
     if(!this->is_point_intersect(mouse_pos)){
         return false;
     }

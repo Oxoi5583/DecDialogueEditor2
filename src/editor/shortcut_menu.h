@@ -68,7 +68,7 @@ private:
 
             EventSpawnNode event;
             event.spawn_pos = this->datapipeline.vectors[0];
-            event.type = GraphManager::NodeType::ENTRY;
+            event.type = GraphManager::NodeTypeId::ENTRY;
             EventServer::Ref()->emit(event);
         }
     };
@@ -82,7 +82,7 @@ private:
 
             EventSpawnNode event;
             event.spawn_pos = this->datapipeline.vectors[0];
-            event.type = GraphManager::NodeType::NODE;
+            event.type = GraphManager::NodeTypeId::NODE;
             EventServer::Ref()->emit(event);
         }
     };
@@ -96,7 +96,7 @@ private:
 
             EventSpawnNode event;
             event.spawn_pos = this->datapipeline.vectors[0];
-            event.type = GraphManager::NodeType::OPTION;
+            event.type = GraphManager::NodeTypeId::OPTION;
             EventServer::Ref()->emit(event);
         }
     };
@@ -110,7 +110,7 @@ private:
 
             EventSpawnNode event;
             event.spawn_pos = this->datapipeline.vectors[0];
-            event.type = GraphManager::NodeType::REPEATER;
+            event.type = GraphManager::NodeTypeId::REPEATER;
             EventServer::Ref()->emit(event);
         }
     };
@@ -124,7 +124,7 @@ private:
 
             EventSpawnNode event;
             event.spawn_pos = this->datapipeline.vectors[0];
-            event.type = GraphManager::NodeType::MODULE_ENTRY;
+            event.type = GraphManager::NodeTypeId::MODULE_ENTRY;
             EventServer::Ref()->emit(event);
         }
     };
@@ -138,7 +138,7 @@ private:
 
             EventSpawnNode event;
             event.spawn_pos = this->datapipeline.vectors[0];
-            event.type = GraphManager::NodeType::MODULE_NODE;
+            event.type = GraphManager::NodeTypeId::MODULE_NODE;
             EventServer::Ref()->emit(event);
         }
     };
@@ -181,7 +181,7 @@ private:
         [this](){
             EventSpawnNode event;
             event.spawn_pos = GraphCamera::Ref()->get_target();
-            event.type = GraphManager::NodeType::ENTRY;
+            event.type = GraphManager::NodeTypeId::ENTRY;
             EventServer::Ref()->emit(event);
         }
     };
@@ -191,7 +191,7 @@ private:
         [this](){
             EventSpawnNode event;
             event.spawn_pos = GraphCamera::Ref()->get_target();
-            event.type = GraphManager::NodeType::NODE;
+            event.type = GraphManager::NodeTypeId::NODE;
             EventServer::Ref()->emit(event);
         }
     };
@@ -201,7 +201,7 @@ private:
         [this](){
             EventSpawnNode event;
             event.spawn_pos = GraphCamera::Ref()->get_target();
-            event.type = GraphManager::NodeType::OPTION;
+            event.type = GraphManager::NodeTypeId::OPTION;
             EventServer::Ref()->emit(event);
         }
     };
@@ -211,7 +211,7 @@ private:
         [this](){
             EventSpawnNode event;
             event.spawn_pos = GraphCamera::Ref()->get_target();
-            event.type = GraphManager::NodeType::REPEATER;
+            event.type = GraphManager::NodeTypeId::REPEATER;
             EventServer::Ref()->emit(event);
         }
     };
@@ -221,7 +221,7 @@ private:
         [this](){
             EventSpawnNode event;
             event.spawn_pos = GraphCamera::Ref()->get_target();
-            event.type = GraphManager::NodeType::MODULE_ENTRY;
+            event.type = GraphManager::NodeTypeId::MODULE_ENTRY;
             EventServer::Ref()->emit(event);
         }
     };
@@ -231,7 +231,7 @@ private:
         [this](){
             EventSpawnNode event;
             event.spawn_pos = GraphCamera::Ref()->get_target();
-            event.type = GraphManager::NodeType::MODULE_NODE;
+            event.type = GraphManager::NodeTypeId::MODULE_NODE;
             EventServer::Ref()->emit(event);
         }
     };
@@ -358,7 +358,7 @@ private:
                 std::floor(first_pos.y / interval) * interval
             };
 
-            GraphManager::NodeType current_type = first_obj->get_type();
+            GraphManager::NodeTypeId current_type = first_obj->get_type();
             int x = 0;
             int y = 0;
             for(OID& id : ids){
@@ -409,7 +409,7 @@ private:
                 std::floor(first_pos.y / interval) * interval
             };
 
-            GraphManager::NodeType current_type = first_obj->get_type();
+            GraphManager::NodeTypeId current_type = first_obj->get_type();
             int x = 0;
             int y = 0;
             for(OID& id : ids){

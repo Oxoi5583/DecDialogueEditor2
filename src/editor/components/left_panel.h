@@ -13,7 +13,7 @@ class EditorLeftPanel : public EditorComponentBase{
 private:
     EditorSpace* m_space = nullptr;
     Rect2 m_shape;
-    Timer* m_double_click_timer = nullptr;
+    TimerWrapper m_double_click_timer = {TimeUnit(TimeUnit::Type::MILLISECOND, 100) ,true};
 
     bool m_is_displaying = false;
     Rect2 m_window_rect;

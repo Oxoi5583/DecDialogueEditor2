@@ -15,6 +15,6 @@ void GraphModuleEntry::process(){}
 void GraphModuleEntry::post_process(){}
 void GraphModuleEntry::draw(){}
 
-GraphManager::NodeType GraphModuleEntry::get_type(){
-    return GraphManager::NodeType::MODULE_ENTRY;
+GraphManager::NodeTypeId GraphModuleEntry::get_type(){
+    return GraphManager::NodeTypeId::MODULE_ENTRY;
 }

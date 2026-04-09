@@ -8,12 +8,9 @@
 
 ClickableObject::ClickableObject(){
     BIND_CLASS(ClickableObject);
-    m_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 250) ,false);
-    m_double_click_timer->stop();
+    m_double_click_timer.stop();
 }
-ClickableObject::~ClickableObject(){
-    m_double_click_timer->queue_free();
-}
+ClickableObject::~ClickableObject(){}
 
 void ClickableObject::ready(){
     
@@ -34,16 +31,16 @@ void ClickableObject::pre_process(){
             ObjectServer::Ref()->move_to_front(this->get_id());
 
             m_click_times += 1;
-            if(!m_double_click_timer->is_timeout()){
-                m_double_click_timer->reset();
-                m_double_click_timer->start();
+            if(!m_double_click_timer.is_timeout()){
+                m_double_click_timer.reset();
+                m_double_click_timer.start();
             }
         }
 
-        if(m_double_click_timer->is_timeout()){
+        if(m_double_click_timer.is_timeout()){
             m_click_times = 0;
-            m_double_click_timer->stop();
-            m_double_click_timer->reset();
+            m_double_click_timer.stop();
+            m_double_click_timer.reset();
         }
     }
 

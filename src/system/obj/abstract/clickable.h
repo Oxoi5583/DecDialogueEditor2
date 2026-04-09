@@ -11,7 +11,7 @@ private:
     bool m_was_just_released = false;
 
     int m_click_times = 0;
-    Timer* m_double_click_timer = nullptr;
+    TimerWrapper m_double_click_timer = {TimeUnit(TimeUnit::Type::MILLISECOND, 250) ,false};
 
     void m_emit_event();
 public:

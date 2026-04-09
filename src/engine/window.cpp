@@ -150,7 +150,7 @@ void EngineWindow::m_init_sdl_show_window(){
 
     m_is_init_done = true;
 }
-void EngineWindow::destory_all(){
+void EngineWindow::shutdown(){
     SDL_DestroyRenderer(m_sdl_renderer);
     SDL_DestroyWindow(m_sdl_window);
     SDL_Quit();

@@ -17,8 +17,7 @@
 
 EditorMenuBar::EditorMenuBar(){
     BIND_CLASS(EditorMenuBar);
-    m_double_click_timer = TimerServer::Ref()->create_timer(TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true);
-    m_double_click_timer->stop();
+    m_double_click_timer.stop();
 }
 EditorMenuBar::~EditorMenuBar(){
 
@@ -275,7 +274,7 @@ void EditorMenuBar::m_end_main_bar(){
     ImGui::PopStyleVar();
 }
 void EditorMenuBar::m_handle_window(){
-    if(!m_double_click_timer->is_timeout() && !is_hover_any && this->was_just_clicked()){
+    if(!m_double_click_timer.is_timeout() && !is_hover_any && this->was_just_clicked()){
         EngineWindow::Ref()->stop_dragging();
         if(EngineWindow::Ref()->is_maximized()){
             EngineWindow::Ref()->restore();
@@ -287,8 +286,8 @@ void EditorMenuBar::m_handle_window(){
     }
 
     if(!is_hover_any && this->was_just_clicked()){
-        m_double_click_timer->reset();
-        m_double_click_timer->start();
+        m_double_click_timer.reset();
+        m_double_click_timer.start();
         EngineWindow::Ref()->start_dragging();
     }
 
@@ -296,8 +295,8 @@ void EditorMenuBar::m_handle_window(){
         EngineWindow::Ref()->stop_dragging();
     }
 
-    if(m_double_click_timer->is_timeout()){
-        m_double_click_timer->stop();
+    if(m_double_click_timer.is_timeout()){
+        m_double_click_timer.stop();
     }
 }
 

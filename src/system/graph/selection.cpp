@@ -11,6 +11,7 @@
 #include "struct/shape/rect2.h"
 #include "theme/theme_loader.h"
 #include <algorithm>
+#include <server/physics_server.h>
 #include <vector>
 
 
@@ -81,6 +82,8 @@ void GraphSelection::pre_update(){
 void GraphSelection::post_update(){
     m_update_state();
     m_process();
+
+    PhysicsServer::Ref()->set_instance(m_shape_id, {m_selection_area.get_left_top(), m_selection_area.get_right_down()});
 }
 
 void GraphSelection::draw(){
@@ -107,11 +110,15 @@ bool GraphSelection::is_selecting(){
     return m_state == State::DRAGGING;
 }
 
-bool GraphSelection::is_in_area(Rect2& p_rect){
+bool GraphSelection::is_in_area(ShapeId p_sid, Rect2& p_rect){
     if(!is_selecting()){
         return false;
     }
 
+    if(!PhysicsServer::Ref()->is_shape_in_same_chunk(m_shape_id, p_sid)){
+        return false;
+    }
+    
     return m_selection_area.is_rect_intersect(p_rect);
 }
 

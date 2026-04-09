@@ -13,6 +13,7 @@
 #include "server/object_base.h"
 #include "server/object_server.h"
 #include "struct/shape/rect2.h"
+#include <glm/fwd.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -42,7 +43,7 @@ private:
     std::string m_workspace_id;
 
     OrderedMap<std::string,Property> m_properties = {
-        {"Unique Id", {"Unique Id","", 50}},
+        {"Node Name", {"Node Name","", 50}},
     };
 
     Rect2& m_init_shape();
@@ -58,6 +59,8 @@ private:
     void m_update_project_data();
     void m_remove_project_data();
     void m_check_if_upload_project_data_needed();
+
+    void m_upload_property(std::string& key, std::string value, uint max_size);
 public:
     GraphBase();
     ~GraphBase();
@@ -72,8 +75,6 @@ public:
     void set_position(vec2& p_position);
     void set_size(vec2& p_size);
 
-    void add_property(std::string name, std::string value, uint max_size);
-
     bool is_point_intersect(vec2& p_point); 
 
     void ready();
@@ -82,7 +83,7 @@ public:
     void post_process();
     void draw();
 
-    virtual GraphManager::NodeType get_type();
+    virtual GraphManager::NodeTypeId get_type();
     std::string get_type_name();
 
     std::string get_name();

@@ -15,6 +15,6 @@ void GraphEntry::process(){}
 void GraphEntry::post_process(){}
 void GraphEntry::draw(){}
 
-GraphManager::NodeType GraphEntry::get_type(){
-    return GraphManager::NodeType::ENTRY;
+GraphManager::NodeTypeId GraphEntry::get_type(){
+    return GraphManager::NodeTypeId::ENTRY;
 }

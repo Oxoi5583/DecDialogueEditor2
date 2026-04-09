@@ -2,6 +2,7 @@
 
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/base.h"
+#include <cstddef>
 #include <limits>
 #include <vector>
 
@@ -11,11 +12,20 @@ struct Rect2 : public ShapeBase {
 private:
     vec2 m_position;
     vec2 m_size;
+    vec2 m_left_top;
+    vec2 m_left_down;
+    vec2 m_right_top;
+    vec2 m_right_down;
+    std::vector<vec2> m_points;
+
+    void m_refresh_data();
 
     bool m_cross_product(vec2 p_pos);
     bool m_compare_xy(vec2 p_pos);
     bool m_segment_intersect(const vec2& p1, const vec2& p2,
                               const vec2& p3, const vec2& p4);
+
+        
 public:
     static constexpr vec2 max_vec2 =  {std::numeric_limits<float>().max(),std::numeric_limits<float>().max()};
     static constexpr vec2 min_vec2 =  {std::numeric_limits<float>().min(),std::numeric_limits<float>().min()};

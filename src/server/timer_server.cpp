@@ -2,326 +2,469 @@
 
 #include "DecToolsBox/core/random_code.h"
 #include "DecToolsBox/debug/messenger.h"
-#include "DecToolsBox/server/random_server.h"
+
+#include <algorithm>
 #include <cstring>
 #include <vector>
-#include <math.h>
-#include <algorithm>
 
+TimerServer::TimerServer() {}
 
-
-
- 
-TimerServer::TimerServer(){}
-
-TimerServer::~TimerServer(){
+TimerServer::~TimerServer() {
 }
 
-void TimerServer::reset_clear_timer(){
-    clear_timer = 0;
+void TimerServer::reset_clear_timer() {
+    m_clear_timer = 0;
 }
-void TimerServer::update_clear_timer(double delta){
-    clear_timer = std::clamp(clear_timer + delta ,(double)0 , this->clear_full_time);
+
+void TimerServer::update_clear_timer(double p_delta) {
+    m_clear_timer = std::clamp(m_clear_timer + p_delta, 0.0, m_clear_full_time);
 }
-bool TimerServer::is_clear_timer_timeout(){
-    bool is_clear_timeup = clear_timer >= clear_full_time;
+
+bool TimerServer::is_clear_timer_timeout() {
+    bool is_clear_timeup = m_clear_timer >= m_clear_full_time;
     return is_clear_timeup;
 }
-void TimerServer::clear_garbage(){
-    if(timer_list.size() > 0){
-    auto new_end = std::remove_if(timer_list.begin(), timer_list.end(),
-                                    [](std::shared_ptr<Timer>  _timer){ 
-                                        bool ret = _timer->is_ready_to_free();
-                                        if(ret){
-                                            return true;
-                                        }else{
-                                            return false;
-                                        }
-                                    });
-    timer_list.erase(new_end, timer_list.end());
+
+void TimerServer::clear_garbage() {
+    if (m_timer_list.size() > 0) {
+        auto new_end = std::remove_if(
+            m_timer_list.begin(),
+            m_timer_list.end(),
+            [this](std::shared_ptr<Timer> p_timer) {
+                bool ret = p_timer->is_ready_to_free();
+                if (ret) {
+                    this->m_id_set.erase(p_timer->get_id().id);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+
+        m_timer_list.erase(new_end, m_timer_list.end());
     }
 }
-void TimerServer::update(double delta){
-    update_clear_timer(delta);
-    if(is_clear_timer_timeout()){
+
+void TimerServer::update(double p_delta) {
+    update_clear_timer(p_delta);
+
+    if (is_clear_timer_timeout()) {
         clear_garbage();
     }
-    for(auto& timer : timer_list){
-        timer->update(delta);
+
+    for (auto& timer : m_timer_list) {
+        timer->update(p_delta);
     }
 }
 
+Timer* TimerServer::create_timer(TimeUnit p_time_unit, bool p_is_finished) {
+    m_timer_list.push_back(std::shared_ptr<Timer>(new Timer(p_time_unit.get_delta())));
+    m_id_set.emplace(m_timer_list.back()->get_id().id);
 
-
-Timer* TimerServer::create_timer(TimeUnit _time_unit, bool is_finished){
-    timer_list.push_back(std::shared_ptr<Timer>(new Timer(_time_unit.get_delta())));
-
-    if(is_finished){
-        timer_list.back()->finish();
+    if (p_is_finished) {
+        m_timer_list.back()->finish();
     }
-    
-    return timer_list.back().get();
-}
-Timer* TimerServer::create_timer(double _full_time, bool is_finished){
-    timer_list.push_back(std::shared_ptr<Timer>(new Timer(_full_time)));
 
-    if(is_finished){
-        timer_list.back()->finish();
-    }
-    
-    return timer_list.back().get();
-}
-Timer* TimerServer::create_timer(double* _full_time_ptr, bool is_finished){
-    timer_list.push_back(std::shared_ptr<Timer>(new Timer((double*)_full_time_ptr)));
-
-    if(is_finished){
-        timer_list.back()->finish();
-    }
-    
-    return timer_list.back().get();
+    return m_timer_list.back().get();
 }
 
-void TimerServer::free_all(){
-    for(size_t i = 0; i < timer_list.size(); i++){
-        timer_list[i]->queue_free();
+Timer* TimerServer::create_timer(double p_full_time, bool p_is_finished) {
+    m_timer_list.push_back(std::shared_ptr<Timer>(new Timer(p_full_time)));
+    m_id_set.emplace(m_timer_list.back()->get_id().id);
+
+    if (p_is_finished) {
+        m_timer_list.back()->finish();
     }
+
+    return m_timer_list.back().get();
+}
+
+Timer* TimerServer::create_timer(double* p_full_time_ptr, bool p_is_finished) {
+    m_timer_list.push_back(std::shared_ptr<Timer>(new Timer(p_full_time_ptr)));
+    m_id_set.emplace(m_timer_list.back()->get_id().id);
+
+    if (p_is_finished) {
+        m_timer_list.back()->finish();
+    }
+
+    return m_timer_list.back().get();
+}
+
+void TimerServer::free_all() {
     clear_garbage();
 }
 
-int TimerServer::get_timer_count(){
-    return timer_list.size();
+int TimerServer::get_timer_count() {
+    return static_cast<int>(m_timer_list.size());
 }
 
-void TimerServer::shutdown(){
+void TimerServer::shutdown() {
+    if(m_is_shutdown){
+        return;
+    }
+
     INFO_MSG("Timer Count (Before Free) : " << this->get_timer_count());
     this->free_all();
     INFO_MSG("Timer Count (After Free) : " << this->get_timer_count());
+
+    m_is_shutdown = true;
+}
+bool TimerServer::is_already_shutdown(){
+    return m_is_shutdown;
 }
 
-bool TimerId::operator ==(const TimerId& other) const{
+bool TimerId::operator==(const TimerId& p_other) const {
     std::string id_s = this->id;
-    std::string other_s = other.id;
+    std::string other_s = p_other.id;
     return id_s == other_s;
 }
-bool TimerId::operator ==(const std::string& other) const{
+
+bool TimerId::operator==(const std::string& p_other) const {
     std::string id_s = this->id;
-    return id_s == other;
+    return id_s == p_other;
 }
 
-TimerId::TimerId(){
+TimerId::TimerId() {
     std::string new_id = RandomCode(12).get() + '\0';
     memcpy(id, new_id.c_str(), new_id.size());
 }
 
-TimeUnit::TimeUnit(const TimeUnit& other)
-    : m_type(other.m_type)
-    , m_value(other.m_value)
-    , m_delta(other.m_delta) {}
+TimeUnit::TimeUnit(const TimeUnit& p_other)
+    : m_type(p_other.m_type)
+    , m_value(p_other.m_value)
+    , m_delta(p_other.m_delta) {
+}
 
-TimeUnit& TimeUnit::operator=(const TimeUnit& other) {
-    if (this != &other) {
-        m_type = other.m_type;
-        m_value = other.m_value;
-        m_delta = other.m_delta;
+TimeUnit& TimeUnit::operator=(const TimeUnit& p_other) {
+    if (this != &p_other) {
+        m_type = p_other.m_type;
+        m_value = p_other.m_value;
+        m_delta = p_other.m_delta;
     }
     return *this;
 }
 
-TimeUnit::TimeUnit(TimeUnit&& other) noexcept
-    : m_type(other.m_type)
-    , m_value(other.m_value)
-    , m_delta(other.m_delta) {}
+TimeUnit::TimeUnit(TimeUnit&& p_other) noexcept
+    : m_type(p_other.m_type)
+    , m_value(p_other.m_value)
+    , m_delta(p_other.m_delta) {
+}
 
-TimeUnit& TimeUnit::operator=(TimeUnit&& other) noexcept {
-    if (this != &other) {
-        m_type = other.m_type;
-        m_value = other.m_value;
-        m_delta = other.m_delta;
+TimeUnit& TimeUnit::operator=(TimeUnit&& p_other) noexcept {
+    if (this != &p_other) {
+        m_type = p_other.m_type;
+        m_value = p_other.m_value;
+        m_delta = p_other.m_delta;
     }
     return *this;
 }
 
-uint32_t TimeUnit::get_delta() const{
+uint32_t TimeUnit::get_delta() const {
     return m_delta;
 }
 
-uint32_t TimeUnit::m_calculate_delta() const{
+uint32_t TimeUnit::m_calculate_delta() const {
     switch (m_type) {
         case Type::MILLISECOND:
             return m_value;
-            break;
         case Type::SECOND:
-            return m_value * 1000; 
-            break;
+            return m_value * 1000;
         case Type::MINUTE:
             return m_value * 60000;
-            break;
         case Type::HOUR:
             return m_value * 3600000;
-            break;
         case Type::DAY:
             return m_value * 86400000;
-            break;
     }
+
     return m_value;
 }
 
-
 // Init Class with pointer
 // In case, Timer created before the origin value was not init.
-Timer::Timer(double* _t_ptr){
-    full_time_store = _t_ptr;
-    full_time = 0;
-    time = 0;
-}
-Timer::Timer(double _t){
-    full_time_store = nullptr;
-    full_time = _t;
-    time = 0;
-}
-Timer::Timer(Timer& t){
-    id              = t.id;
-    state           = t.state;
-    time            = t.time ;
-    full_time       = t.full_time;
-    full_time_store = t.full_time_store;
+Timer::Timer(double* p_t_ptr) {
+    m_full_time_store = p_t_ptr;
+    m_full_time = 0;
+    m_time = 0;
 }
 
-Timer::~Timer(){
-    //INFO_MSG("Timer (id : " << id.id << ") Freed.");
+Timer::Timer(double p_t) {
+    m_full_time_store = nullptr;
+    m_full_time = p_t;
+    m_time = 0;
 }
 
-void Timer::update(double delta){
-    if(full_time_store != nullptr){
-        full_time = *full_time_store;
-        full_time_store = nullptr;
+Timer::Timer(Timer& p_t) {
+    m_id = p_t.m_id;
+    m_state = p_t.m_state;
+    m_time = p_t.m_time;
+    m_full_time = p_t.m_full_time;
+    m_full_time_store = p_t.m_full_time_store;
+}
+
+Timer::~Timer() {
+    // INFO_MSG("Timer (id : " << m_id.id << ") Freed.");
+}
+
+void Timer::update(double p_delta) {
+    if (m_full_time_store != nullptr) {
+        m_full_time = *m_full_time_store;
+        m_full_time_store = nullptr;
         INFO_MSG("Timer full time Init.");
     }
 
-    if(this->is_enabled()){
-        time = std::clamp(time + delta ,(double)0 , this->full_time);
+    if (this->is_enabled()) {
+        m_time = std::clamp(m_time + p_delta, 0.0, m_full_time);
     }
-    if(this->is_enabled() && is_cycle_interval_start){
-        cycle_interval = std::clamp(cycle_interval + delta ,(double)0 , this->max_cycle_interval);
+
+    if (this->is_enabled() && m_is_cycle_interval_start) {
+        m_cycle_interval = std::clamp(m_cycle_interval + p_delta, 0.0, m_max_cycle_interval);
     }
 }
 
-void Timer::reset(){
-    time = 0;
-}
-void Timer::finish(){
-    time = full_time;
+void Timer::reset() {
+    m_time = 0;
 }
 
-double Timer::get_timeleft(){
-    return full_time-time;
-}
-double Timer::get_time(){
-    return time;
-}
-double Timer::get_full_time(){
-    return full_time;
+void Timer::finish() {
+    m_time = m_full_time;
 }
 
-bool Timer::is_timeout(){
-    return time >= full_time;
+double Timer::get_timeleft() {
+    return m_full_time - m_time;
 }
 
-void Timer::modify_full_time_and_reset(double _t){
-    full_time = _t;
+double Timer::get_time() {
+    return m_time;
+}
+
+double Timer::get_full_time() {
+    return m_full_time;
+}
+
+bool Timer::is_timeout() {
+    return m_time >= m_full_time;
+}
+
+void Timer::modify_full_time_and_reset(double p_t) {
+    m_full_time = p_t;
     this->reset();
 }
-void Timer::modify_full_time_and_finish(double _t){
-    full_time = _t;
+
+void Timer::modify_full_time_and_finish(double p_t) {
+    m_full_time = p_t;
     this->finish();
 }
 
-bool Timer::timeout_and_reset(){
-    if(time >= full_time){
+bool Timer::timeout_and_reset() {
+    if (m_time >= m_full_time) {
         this->reset();
         return true;
-    }else{
+    } else {
         return false;
     }
-}
-bool Timer::is_enabled(){
-    if(this->state == Timer::Mode::ST_TIMER_ENABLE){
-        return true;
-    }else{
-        return false;
-    }
-}
-bool Timer::is_ready_to_free(){
-    if(this->state == Timer::Mode::ST_TIMER_GARBAGE || this->is_marked_garbage){
-        return true;
-    }else{
-        return false;
-    }
-}
-void Timer::start(){
-    state = Timer::Mode::ST_TIMER_ENABLE;
-}
-void Timer::stop(){
-    state = Timer::Mode::ST_TIMER_DISABLE;
-}
-void Timer::queue_free(){
-    state = Timer::Mode::ST_TIMER_GARBAGE;
-    is_marked_garbage = true;
-}
-TimerId Timer::get_id(){
-    return this->id;
-}
-void Timer::jump_to(double _t){
-    this->time = std::clamp<double>(_t, 0, full_time);
 }
 
+bool Timer::is_enabled() {
+    if (this->m_state == Timer::Mode::ST_TIMER_ENABLE) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
-bool Timer::timeout_and_reset_in_cycle(uint32_t cycle, double interval){
-    if(max_run_cycle == default_max_run_cycle){
-        max_run_cycle = (int)cycle;
+bool Timer::is_ready_to_free() {
+    if (this->m_state == Timer::Mode::ST_TIMER_GARBAGE || this->m_is_marked_garbage) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void Timer::start() {
+    m_state = Timer::Mode::ST_TIMER_ENABLE;
+}
+
+void Timer::stop() {
+    m_state = Timer::Mode::ST_TIMER_DISABLE;
+}
+
+void Timer::queue_free() {
+    m_state = Timer::Mode::ST_TIMER_GARBAGE;
+    m_is_marked_garbage = true;
+}
+
+TimerId Timer::get_id() {
+    return this->m_id;
+}
+
+void Timer::jump_to(double p_t) {
+    this->m_time = std::clamp<double>(p_t, 0, m_full_time);
+}
+
+bool Timer::timeout_and_reset_in_cycle(uint32_t p_cycle, double p_interval) {
+    if (m_max_run_cycle == m_default_max_run_cycle) {
+        m_max_run_cycle = static_cast<int>(p_cycle);
         reset_cycle();
-        max_cycle_interval = interval;
+        m_max_cycle_interval = p_interval;
         reset_interval();
     }
 
-    if(!is_timeout()){
+    if (!is_timeout()) {
         return false;
     }
 
-    is_cycle_interval_start = true;
+    m_is_cycle_interval_start = true;
 
-    if(is_cycle_done()){
+    if (is_cycle_done()) {
         return false;
     }
-    
-    if(is_interval_done()){
+
+    if (is_interval_done()) {
         this->reset();
         this->reset_interval();
-        run_cycle++;
+        m_run_cycle++;
     }
-    
+
     return true;
 }
-bool Timer::timeout_and_reset_in_cycle(uint32_t cycle, TimeUnit interval){
-    return timeout_and_reset_in_cycle(cycle, interval.get_delta());
-}
-bool Timer::is_cycle_done(){
-    return (run_cycle > max_run_cycle &&  max_run_cycle != default_max_run_cycle);
-}
-void Timer::reset_cycle(){
-    run_cycle = 1;
-}
-void Timer::finish_cycle(){
-    run_cycle = max_run_cycle + 100;
-}
-int Timer::get_current_cycle(){
-    return run_cycle;
+
+bool Timer::timeout_and_reset_in_cycle(uint32_t p_cycle, TimeUnit p_interval) {
+    return timeout_and_reset_in_cycle(p_cycle, p_interval.get_delta());
 }
 
-bool Timer::is_interval_done(){
-    return cycle_interval >= max_cycle_interval;
+bool Timer::is_cycle_done() {
+    return (m_run_cycle > m_max_run_cycle && m_max_run_cycle != m_default_max_run_cycle);
 }
-void Timer::reset_interval(){
-    cycle_interval = 0.0f;
-    is_cycle_interval_start = false;
+
+void Timer::reset_cycle() {
+    m_run_cycle = 1;
+}
+
+void Timer::finish_cycle() {
+    m_run_cycle = m_max_run_cycle + 100;
+}
+
+int Timer::get_current_cycle() {
+    return m_run_cycle;
+}
+
+bool Timer::is_interval_done() {
+    return m_cycle_interval >= m_max_cycle_interval;
+}
+
+void Timer::reset_interval() {
+    m_cycle_interval = 0.0f;
+    m_is_cycle_interval_start = false;
+}
+
+TimerWrapper::TimerWrapper(TimeUnit p_full_time, bool p_is_finished) {
+    m_ptr = TimerServer::Ref()->create_timer(p_full_time, p_is_finished);
+    m_id = m_ptr->get_id();
+}
+
+TimerWrapper::TimerWrapper(double p_full_time, bool p_is_finished) {
+    m_ptr = TimerServer::Ref()->create_timer(p_full_time, p_is_finished);
+    m_id = m_ptr->get_id();
+}
+
+bool TimerServer::is_timer_exists(TimerId p_id){
+    return m_id_set.contains(p_id.id);
+}
+
+TimerWrapper::~TimerWrapper() {
+    if(TimerServer::Ref()->is_timer_exists(m_id)){
+        m_ptr->queue_free();
+    }
+}
+
+bool TimerWrapper::is_enabled() {
+    return m_ptr->is_enabled();
+}
+
+bool TimerWrapper::is_ready_to_free() {
+    return m_ptr->is_ready_to_free();
+}
+
+void TimerWrapper::start() {
+    m_ptr->start();
+}
+
+void TimerWrapper::stop() {
+    m_ptr->stop();
+}
+
+void TimerWrapper::update(double p_delta) {
+    m_ptr->update(p_delta);
+}
+
+void TimerWrapper::reset() {
+    m_ptr->reset();
+}
+
+void TimerWrapper::finish() {
+    m_ptr->finish();
+}
+
+double TimerWrapper::get_timeleft() {
+    return m_ptr->get_timeleft();
+}
+
+double TimerWrapper::get_time() {
+    return m_ptr->get_time();
+}
+
+double TimerWrapper::get_full_time() {
+    return m_ptr->get_full_time();
+}
+
+bool TimerWrapper::is_timeout() {
+    return m_ptr->is_timeout();
+}
+
+bool TimerWrapper::timeout_and_reset() {
+    return m_ptr->timeout_and_reset();
+}
+
+void TimerWrapper::modify_full_time_and_reset(double p_t) {
+    m_ptr->modify_full_time_and_reset(p_t);
+}
+
+void TimerWrapper::modify_full_time_and_finish(double p_t) {
+    m_ptr->modify_full_time_and_finish(p_t);
+}
+
+void TimerWrapper::jump_to(double p_t) {
+    m_ptr->jump_to(p_t);
+}
+
+bool TimerWrapper::timeout_and_reset_in_cycle(uint32_t p_cycle, double p_interval) {
+    return m_ptr->timeout_and_reset_in_cycle(p_cycle, p_interval);
+}
+
+bool TimerWrapper::timeout_and_reset_in_cycle(uint32_t p_cycle, TimeUnit p_interval) {
+    return m_ptr->timeout_and_reset_in_cycle(p_cycle, p_interval);
+}
+
+bool TimerWrapper::is_cycle_done() {
+    return m_ptr->is_cycle_done();
+}
+
+void TimerWrapper::reset_cycle() {
+    m_ptr->reset_cycle();
+}
+
+void TimerWrapper::finish_cycle() {
+    m_ptr->finish_cycle();
+}
+
+int TimerWrapper::get_current_cycle() {
+    return m_ptr->get_current_cycle();
+}
+
+void TimerWrapper::queue_free(){
+    if(m_freed){
+        return;
+    }
+    m_ptr->queue_free();
+    m_freed = true;
 }

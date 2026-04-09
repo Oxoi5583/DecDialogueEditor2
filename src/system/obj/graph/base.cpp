@@ -49,7 +49,7 @@ GraphBase::GraphBase(){
     m_uid = RandomCode(25).get();
 }
 GraphBase::~GraphBase(){
-    GraphManager::Ref()->notify_name_removed(m_properties["Unique Id"].value);
+    GraphManager::Ref()->notify_name_removed(m_properties["Node Name"].value);
     m_remove_project_data();
 }
 
@@ -135,7 +135,7 @@ void GraphBase::m_check_if_upload_project_data_needed(){
 }
 
 void GraphBase::ready(){
-    GraphManager::NodeType type = this->get_type();
+    GraphManager::NodeTypeId type = this->get_type();
     std::string default_name = GraphManager::Ref()->get_default_name(type);
     set_name(default_name);
     m_update_project_data();
@@ -238,15 +238,15 @@ void GraphBase::draw(){
     );
 }
 
-GraphManager::NodeType GraphBase::get_type(){
-    return GraphManager::NodeType::BASE;
+GraphManager::NodeTypeId GraphBase::get_type(){
+    return GraphManager::NodeTypeId::BASE;
 }
 std::string GraphBase::get_type_name(){
     return GraphManager::Ref()->type_to_name(this->get_type());
 }
 
 std::string GraphBase::get_name(){
-    return m_properties["Unique Id"].value;
+    return m_properties["Node Name"].value;
 }
 std::vector<std::string> GraphBase::get_signals(){
     return m_signals;
@@ -255,7 +255,7 @@ std::vector<OID> GraphBase::get_children(bool is_pass_repeater, bool is_all){
     std::vector<OID> ancestor_ids = this->skip_from_repeater();
 
     std::vector<OID> ret;
-    
+
     for(OID& ancestor_id : ancestor_ids){
         GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(ancestor_id);
         if(!ancestor){
@@ -470,12 +470,12 @@ std::vector<OID> GraphBase::get_children_direct(){
 
 void GraphBase::set_name(std::string p_name){
     OID id = this->get_id();
-    p_name = GraphManager::Ref()->new_name_if_duplicated(id,p_name);
-    m_properties["Unique Id"].value = p_name;
-    GraphManager::Ref()->notify_name_added(this->get_id(), m_properties["Unique Id"].value);
+    //p_name = GraphManager::Ref()->new_name_if_duplicated(id,p_name);
+    m_properties["Node Name"].value = p_name;
+    GraphManager::Ref()->notify_name_added(this->get_id(), m_properties["Node Name"].value);
 }
 void GraphBase::set_name_forced(std::string p_name){
-    m_properties["Unique Id"].value = p_name;
+    m_properties["Node Name"].value = p_name;
 }
 void GraphBase::add_signals(){
     m_signals.push_back("");
@@ -624,27 +624,21 @@ void GraphBase::open_details_window(){
     m_details_window->open_for(get_id());
 }
 
-void GraphBase::add_property(std::string name, std::string value, uint max_size){
-    if(m_properties.contains(name)){
-        return;
-    }
-
-    m_properties.push_back(
-        name,
-        {
-            name,
-            value,
-            max_size,
-        }
-    );
-}
-
 void GraphBase::set_property(std::string name, std::string value, uint max_size){
     if(!m_properties.contains(name)){
+        m_properties.push_back(
+            name,
+            {
+                name,
+                value,
+                max_size,
+            }
+        );
+
         return;
     }
 
-    if(name == "Unique Id"){
+    if(name == "Node Name"){
         set_name(value);
         return;
     }
@@ -654,6 +648,22 @@ void GraphBase::set_property(std::string name, std::string value, uint max_size)
         value,
         max_size
     };
+
+    m_upload_property(name, value, max_size);
+}
+
+void GraphBase::m_upload_property(std::string& key, std::string value, uint max_size){
+    ProjectPayload obj_root = m_get_root_project_data_payload();
+    obj_root.keys.push_back("properties");
+    obj_root.keys.push_back(key);
+
+    ProjectPayload val_pl = obj_root;
+    val_pl.keys.push_back("value");
+    ProjectServer::Ref()->set(val_pl, value);
+
+    ProjectPayload size_pl = obj_root;
+    size_pl.keys.push_back("max_size");
+    ProjectServer::Ref()->set(size_pl, (int)max_size);
 }
 
 std::string GraphBase::get_property(std::string p_name){

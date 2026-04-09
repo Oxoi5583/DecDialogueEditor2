@@ -13,7 +13,7 @@ GraphNode::GraphNode(){
 GraphNode::~GraphNode(){}
 
 void GraphNode::ready(){
-    this->add_property("Content", "", 1000);
+    this->set_property("Content", "", 1000);
 }
 void GraphNode::pre_process(){}
 void GraphNode::process(){
@@ -26,6 +26,6 @@ void GraphNode::post_process(){}
 void GraphNode::draw(){}
 
 
-GraphManager::NodeType GraphNode::get_type(){
-    return GraphManager::NodeType::NODE;
+GraphManager::NodeTypeId GraphNode::get_type(){
+    return GraphManager::NodeTypeId::NODE;
 }

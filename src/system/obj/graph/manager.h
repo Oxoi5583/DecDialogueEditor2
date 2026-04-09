@@ -16,11 +16,18 @@
 using namespace glm;
 
 class GraphBase;
+class GraphEntry;
+class GraphOption;
+class GraphNode;
+class GraphRepeater;
+class GraphModuleEntry;
+class GraphModuleNode;
+
 struct EventSpawnNode;
 
 class GraphManager : public Singleton<GraphManager> {
 public:
-    enum NodeType{
+    enum NodeTypeId{
         BASE,
         ENTRY,
         NODE,
@@ -30,10 +37,10 @@ public:
         MODULE_NODE,
         UNKNOWN,
     };
-
+    
     struct NodeInfo{
         OID id;
-        NodeType type;
+        NodeTypeId type;
         std::string name;
         bool is_selected;
         bool is_expanded;
@@ -48,7 +55,9 @@ public:
     };
 private:
     const double m_data_refresh_second = 1.2f;
-    Timer* m_data_refresh_timer;
+    TimerWrapper m_data_refresh_timer = {
+            TimeUnit(TimeUnit::Type::SECOND, 
+            m_data_refresh_second), true};
 
     std::vector<OID> m_all_node_ids;
     std::vector<OID> m_entry_node_ids;
@@ -81,17 +90,17 @@ private:
     void m_spawn_module_node(EventSpawnNode p_event);
 
     struct TypeDict{
-        std::map<NodeType, std::string> type_to_str;
-        std::map<std::string, NodeType> str_to_type;
-        std::map<NodeType, std::string> type_to_default;
-        std::map<NodeType, std::function<OID()>> type_to_spawn;
+        std::map<NodeTypeId , std::string> type_to_str;
+        std::map<std::string, NodeTypeId> str_to_type;
+        std::map<NodeTypeId , std::string> type_to_default;
+        std::map<NodeTypeId , std::function<OID()>> type_to_spawn;
 
-        NodeType get(std::string p_name);
-        std::string get(NodeType p_type);
-        std::string get_default_name(NodeType p_type);
+        NodeTypeId get(std::string p_name);
+        std::string get(NodeTypeId p_type);
+        std::string get_default_name(NodeTypeId p_type);
 
         template<typename T>
-        void add(NodeType p_type, std::string p_name, std::string p_default_name){
+        void add(NodeTypeId p_type, std::string p_name, std::string p_default_name){
             type_to_str.emplace(p_type, p_name);
             str_to_type.emplace(p_name, p_type);
             type_to_default.emplace(p_type, p_default_name);
@@ -101,7 +110,7 @@ private:
             type_to_spawn.try_emplace(p_type, fn);
         }
 
-        OID spawn(NodeType p_type);
+        OID spawn(NodeTypeId p_type);
     } m_type_dict;
 public:
     GraphManager();
@@ -112,17 +121,25 @@ public:
 
     bool is_name_duplicated(OID p_id, std::string p_name);
     std::string new_name_if_duplicated(OID p_id, std::string p_name);
-    std::string get_default_name(NodeType p_type);
+    std::string get_default_name(NodeTypeId p_type);
 
     void notify_name_removed(std::string p_name);
     void notify_name_added(OID p_id, std::string p_name);
 
     PanelData get_panel_data();
 
-    std::string type_to_name(NodeType p_type);
-    NodeType name_to_type(std::string p_name);
+    std::string type_to_name(NodeTypeId p_type);
+    NodeTypeId name_to_type(std::string p_name);
 
-    OID spawn(NodeType p_type);
+    OID spawn(NodeTypeId p_type);
 
     void clear_nodes();
+
+    template<typename T>
+    void register_type(NodeTypeId p_id, std::string p_name, std::string p_default_name){
+        if(m_type_dict.type_to_str.contains(p_id)){
+            return;
+        }
+        m_type_dict.add<T>(p_name, p_default_name);
+    }
 };

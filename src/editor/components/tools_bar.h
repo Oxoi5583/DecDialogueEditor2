@@ -11,7 +11,7 @@ class EditorToolsBar : public EditorComponentBase{
 private:
     EditorSpace* m_space = nullptr;
     Rect2 m_shape;
-    Timer* m_double_click_timer = nullptr;
+    TimerWrapper m_double_click_timer = {TimeUnit(TimeUnit::Type::MILLISECOND, 200) ,true};
 
     struct PopupWindowWrapper{
         std::string uid;

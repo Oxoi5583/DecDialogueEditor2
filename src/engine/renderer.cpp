@@ -515,7 +515,7 @@ void EngineRenderer::render(){
     */
 }
 
-void EngineRenderer::destory_all(){
+void EngineRenderer::shutdown(){
     glDeleteProgram(basic_shader_programme);
     glDeleteProgram(m_rect_data.shader.programme);
     glDeleteProgram(m_circle_data.shader.programme);
@@ -542,7 +542,6 @@ void EngineRenderer::destory_all(){
     glDeleteBuffers(1, &m_line_data.instance_data.start_vbo);
     glDeleteBuffers(1, &m_line_data.instance_data.end_vbo);
     glDeleteBuffers(1, &m_line_data.instance_data.color_vbo);
-
 }
 
 template<typename  T>

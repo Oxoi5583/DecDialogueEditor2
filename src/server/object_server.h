@@ -53,6 +53,7 @@ private:
     };
 
     std::queue<ReorderCommand> m_commands;
+    
 public:
 
     bool is_id_valid(OID p_id);
@@ -156,6 +157,8 @@ public:
     bool is_obj_freeze(OID p_id);
 
     void shutdown();
+
+    int get_obj_count();
 };
 
 

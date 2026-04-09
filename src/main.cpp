@@ -1,6 +1,8 @@
 #include "DecToolsBox/container/ordered_map.h"
 #include "editor/components/explorer_window.h"
 #include "editor/components/start_up_popup.h"
+#include "engine/input_key.h"
+#include "server/physics_server.h"
 #include "server/project_server.h"
 #include "server/ui_text_bank.h"
 #include "editor/components/detail_window.h"
@@ -37,6 +39,8 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <server/mouse_server.h>
+#include <server/timer_server.h>
 #include <string>
 #include <vector>
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -80,9 +84,6 @@ int main(int argc, char* argv[]) {
     EngineWindowResizer::Ref()->init();
 
     GraphManager::Ref()->init();
-
-    Timer* test_timer = TimerServer::Ref()->create_timer({TimeUnit::Type::SECOND, 1}, false);
-    test_timer->start();
     
     EditorLayout::Ref()->ui_init();
 
@@ -151,16 +152,25 @@ int main(int argc, char* argv[]) {
         EngineRenderer::Ref()->render();
         EngineWindow::Ref()->end();
         
+        PhysicsServer::Ref()->update();
+        
+        if(EngineInputHub::Ref()->keyboard_is_down(K_LCTRL) && MouseServer::Ref()->is_clicked()){
+            EventSpawnNode event;
+            event.spawn_pos = MouseServer::Ref()->get_mouse_world_position();
+            event.type = GraphManager::NodeTypeId::NODE;
+            EventServer::Ref()->emit(event);
+        }
+
         frame++;
     }
-
-    EngineRenderer::Ref()->destory_all();
-    EngineWindow::Ref()->destory_all();
     
     ProjectServer::Ref()->shutdown();
     MouseServer::Ref()->shutdown();
     ObjectServer::Ref()->shutdown();
     TimerServer::Ref()->shutdown();
+
+    EngineRenderer::Ref()->shutdown();
+    EngineWindow::Ref()->shutdown();
 
     return 0;
 }

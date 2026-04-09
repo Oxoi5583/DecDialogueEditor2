@@ -27,7 +27,7 @@ public:
     void post_process();
     void draw();
 
-    GraphManager::NodeType get_type() override;
+    GraphManager::NodeTypeId get_type() override;
 
     std::vector<OID> get_repeater_from();
     std::vector<OID> get_repeater_to();

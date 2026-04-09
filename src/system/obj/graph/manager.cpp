@@ -45,6 +45,9 @@ void GraphManager::m_spawn_entry(EventSpawnNode p_event){
     if(p_event.is_name_custom){
         new_node->set_name(p_event.custom_name);
     }
+    for(auto& item : p_event.init_data){
+        new_node->set_property(item.key, item.value, item.max_size);
+    }
 
     m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
     m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
@@ -209,19 +212,14 @@ std::vector<OID> GraphManager::m_get_all_children(OID p_parent_id, bool p_is_sel
 }
 
 void GraphManager::init(){
-    m_data_refresh_timer = TimerServer::Ref()->create_timer(
-            TimeUnit(TimeUnit::Type::SECOND, 
-            m_data_refresh_second)
-        );
-    
-    m_type_dict.add<GraphBase>(NodeType::BASE, "Base", "B_NewBase");
-    m_type_dict.add<GraphEntry>(NodeType::ENTRY, "Entry", "E_NewEntry");
-    m_type_dict.add<GraphOption>(NodeType::OPTION, "Node", "N_NewNode");
-    m_type_dict.add<GraphOption>(NodeType::NODE, "Option", "O_NewOption");
-    m_type_dict.add<GraphRepeater>(NodeType::REPEATER, "Repeater", "R_NewRepeater");
-    m_type_dict.add<GraphModuleEntry>(NodeType::MODULE_ENTRY, "Module Entry", "ME_NewModuleEntry");
-    m_type_dict.add<GraphModuleNode>(NodeType::MODULE_NODE, "Module Node", "MN_NewModuleNode");
-    m_type_dict.add<GraphBase>(NodeType::UNKNOWN, "Unknown", "U_NewUnknown");
+    m_type_dict.add<GraphBase>(NodeTypeId::BASE, "Base", "B_NewBase");
+    m_type_dict.add<GraphEntry>(NodeTypeId::ENTRY, "Entry", "E_NewEntry");
+    m_type_dict.add<GraphOption>(NodeTypeId::OPTION, "Node", "N_NewNode");
+    m_type_dict.add<GraphNode>(NodeTypeId::NODE, "Option", "O_NewOption");
+    m_type_dict.add<GraphRepeater>(NodeTypeId::REPEATER, "Repeater", "R_NewRepeater");
+    m_type_dict.add<GraphModuleEntry>(NodeTypeId::MODULE_ENTRY, "Module Entry", "ME_NewModuleEntry");
+    m_type_dict.add<GraphModuleNode>(NodeTypeId::MODULE_NODE, "Module Node", "MN_NewModuleNode");
+    m_type_dict.add<GraphBase>(NodeTypeId::UNKNOWN, "Unknown", "U_NewUnknown");
 }
 void GraphManager::update(){
     m_poll_spawn_event();
@@ -369,12 +367,6 @@ void GraphManager::m_regenerate_panel_data(){
 }
 
 void GraphManager::m_data_refresh(){
-    /*
-    if(!m_data_refresh_timer->timeout_and_reset()){
-        return;
-    }
-    */
-    
     m_clear_garbage();
     m_refetch_node_data();
     m_regenerate_panel_data();
@@ -404,36 +396,36 @@ std::string GraphManager::new_name_if_duplicated(OID p_id, std::string p_name){
     return new_name;
 }
 
-GraphManager::NodeType GraphManager::TypeDict::get(std::string p_name){
+GraphManager::NodeTypeId GraphManager::TypeDict::get(std::string p_name){
     if(!str_to_type.contains(p_name)){
-        return NodeType::UNKNOWN;
+        return NodeTypeId::UNKNOWN;
     }
     return str_to_type[p_name];
 }
-std::string GraphManager::TypeDict::get(NodeType p_type){
+std::string GraphManager::TypeDict::get(NodeTypeId p_type){
     if(!type_to_str.contains(p_type)){
-        return type_to_str[NodeType::UNKNOWN];
+        return type_to_str[NodeTypeId::UNKNOWN];
     }
     return type_to_str[p_type];
 }
-std::string GraphManager::TypeDict::get_default_name(NodeType p_type){
+std::string GraphManager::TypeDict::get_default_name(NodeTypeId p_type){
     if(!type_to_default.contains(p_type)){
-        return type_to_default[NodeType::UNKNOWN];
+        return type_to_default[NodeTypeId::UNKNOWN];
     }
     return type_to_default[p_type];
 }
-OID GraphManager::TypeDict::spawn(NodeType p_type){
+OID GraphManager::TypeDict::spawn(NodeTypeId p_type){
     if(!type_to_spawn.contains(p_type)){
         return -1;
     }
-    if(p_type == NodeType::UNKNOWN){
+    if(p_type == NodeTypeId::UNKNOWN){
         return -1;
     }
 
     return type_to_spawn[p_type]();
 }
 
-std::string GraphManager::get_default_name(NodeType p_type){
+std::string GraphManager::get_default_name(NodeTypeId p_type){
     std::string new_name = m_type_dict.get_default_name(p_type);
     return new_name_if_duplicated(-1, new_name);
 }
@@ -450,14 +442,14 @@ void GraphManager::notify_name_added(OID p_id, std::string p_name){
     }
 }
 
-std::string GraphManager::type_to_name(NodeType p_type){
+std::string GraphManager::type_to_name(NodeTypeId p_type){
     return m_type_dict.get(p_type);
 }
-GraphManager::NodeType GraphManager::name_to_type(std::string p_name){
+GraphManager::NodeTypeId GraphManager::name_to_type(std::string p_name){
     return m_type_dict.get(p_name);
 }
 
-OID GraphManager::spawn(NodeType p_type){
+OID GraphManager::spawn(NodeTypeId p_type){
     return m_type_dict.spawn(p_type);
 }
 

@@ -300,3 +300,8 @@ void ObjectServer::shutdown(){
     }
     clear_garbage();
 }
+
+
+int ObjectServer::get_obj_count(){
+    return m_ids.size();
+}

@@ -65,11 +65,13 @@ private:
         bool is_valid;
     };
     CheckResult m_check_theme_file_valid(std::string p_path);
+
+    const std::string m_default_color_string = "000000";
 public:
     void load();
 
-    std::string get_color_string(std::string p_key);
-    vec4 get_color(std::string p_key);
+    const std::string& get_color_string(const std::string& p_key);
+    vec4 get_color(const std::string& p_key);
     ImVec4 get_imgui_color(const std::string& key);
     ImU32 get_imgui_color_int(const std::string& key);
     ImU32 ImVec4_to_int(const ImVec4& v);
