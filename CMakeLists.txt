@@ -56,7 +56,7 @@ endif()
 
 file(GLOB_RECURSE SOURCES src/*.c** src/*/*.c* src_extern/*.c** src_extern/*/*.c*)
 
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(${PROJECT_NAME} ${SOURCES} logo.rc)
 
 find_package(OpenGL REQUIRED)
 
