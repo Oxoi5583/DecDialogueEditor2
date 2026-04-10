@@ -466,7 +466,7 @@ std::vector<OID> GraphBase::get_children_direct(){
 
 void GraphBase::set_name(std::string p_name){
     OID id = this->get_id();
-    //p_name = GraphManager::Ref()->new_name_if_duplicated(id,p_name);
+    p_name = GraphManager::Ref()->new_name_if_duplicated(id,p_name);
     m_properties["Node Name"].value = p_name;
     GraphManager::Ref()->notify_name_added(this->get_id(), m_properties["Node Name"].value);
 }

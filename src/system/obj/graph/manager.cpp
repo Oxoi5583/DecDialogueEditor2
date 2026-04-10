@@ -222,9 +222,9 @@ void GraphManager::init(){
     m_type_dict.add<GraphBase>(NodeTypeId::UNKNOWN, "Unknown", "U_NewUnknown");
 }
 void GraphManager::update(){
+    m_data_refresh();
     m_poll_spawn_event();
     m_poll_create_uid_connection();
-    m_data_refresh();
 }
 
 void GraphManager::m_poll_spawn_event(){
