@@ -13,14 +13,10 @@ GraphNode::GraphNode(){
 GraphNode::~GraphNode(){}
 
 void GraphNode::ready(){
-    this->set_property("Content", "", 1000);
+    this->set_property("Content", "", 150);
 }
 void GraphNode::pre_process(){}
 void GraphNode::process(){
-    if(this->get_mouse_on_time() > TimeUnit(TimeUnit::Type::SECOND, 0.25).get_delta()){
-        QuickTextDisplay::Ref()->set_text(get_property("Content"));
-        QuickTextDisplay::Ref()->show();
-    }
 }
 void GraphNode::post_process(){}
 void GraphNode::draw(){}

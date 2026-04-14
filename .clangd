@@ -11,4 +11,5 @@ CompileFlags:
     -Wall
     -Wextra
     -std=c++20
+    -xc++
     -Iinclude

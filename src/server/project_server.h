@@ -83,15 +83,16 @@ private:
     bool m_action_save_as_project(FPath p_path);
     bool m_action_open_project(FPath p_path);
 
-    enum class SaveAction{
+    enum class ProjectAction{
         SAVE,
         SAVE_AS,
         OPEN,
+        EXPORT,
     };
-    struct SaveActionPackage{
-        SaveAction action;
+    struct ProjectActionPackage{
+        ProjectAction action;
     };
-    std::vector<SaveActionPackage> m_save_action_packages;
+    std::vector<ProjectActionPackage> m_project_action_packages;
     void m_handle_action();
     bool m_handle_action_save();
     bool m_handle_action_save_as();
@@ -172,6 +173,7 @@ public:
     void save_as_project();
     void save_workspace(PString p_uid);
     void save_all_workspaces();
+    void export_project();
 
     bool have_saved_target();
     bool have_explorer_window();

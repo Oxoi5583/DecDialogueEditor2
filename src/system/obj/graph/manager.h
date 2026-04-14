@@ -6,6 +6,7 @@
 #include "server/object_base.h"
 #include <functional>
 #include <map>
+#include <queue>
 #include <server/object_server.h>
 #include <set>
 #include <string>
@@ -49,11 +50,13 @@ public:
     };
 
     struct PanelData{
-        std::vector<NodeInfo> primary_info_list;
-        std::vector<std::vector<NodeInfo>> secondary_info_list;
-        std::vector<NodeInfo> other_info_list;
+        std::vector<OID> primary_info_list;
+        std::vector<std::vector<OID>> secondary_info_list;
+        std::vector<OID> other_info_list;
     };
 private:
+    std::queue<OID> m_nodes_need_info_refresh;
+
     const double m_data_refresh_second = 1.2f;
     TimerWrapper m_data_refresh_timer = {
             TimeUnit(TimeUnit::Type::SECOND, 
@@ -112,12 +115,15 @@ private:
 
         OID spawn(NodeTypeId p_type);
     } m_type_dict;
+
 public:
     GraphManager();
     ~GraphManager();
 
     void init();
     void update();
+
+    void request_info_refresh(OID p_id);
 
     bool is_name_duplicated(OID p_id, std::string p_name);
     std::string new_name_if_duplicated(OID p_id, std::string p_name);
@@ -142,4 +148,6 @@ public:
         }
         m_type_dict.add<T>(p_name, p_default_name);
     }
+
+    const NodeInfo& get_node_info(const OID& p_id);
 };

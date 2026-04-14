@@ -1088,18 +1088,18 @@ bool ProjectServer::m_action_save_as_project(FPath p_path){
 }
 
 void ProjectServer::save_project(){
-    if(m_save_action_packages.empty()){
-        m_save_action_packages.push_back({SaveAction::SAVE});
+    if(m_project_action_packages.empty()){
+        m_project_action_packages.push_back({ProjectAction::SAVE});
     }
 }
 void ProjectServer::save_as_project(){
-    if(m_save_action_packages.empty()){
-        m_save_action_packages.push_back({SaveAction::SAVE_AS});
+    if(m_project_action_packages.empty()){
+        m_project_action_packages.push_back({ProjectAction::SAVE_AS});
     }
 }
 void ProjectServer::open_project(){
-    if(m_save_action_packages.empty()){
-        m_save_action_packages.push_back({SaveAction::OPEN});
+    if(m_project_action_packages.empty()){
+        m_project_action_packages.push_back({ProjectAction::OPEN});
     }
 }
 
@@ -1114,6 +1114,11 @@ void ProjectServer::save_all_workspaces(){
     Project& project = m_project;
     for(auto& it : project.spaces){
         it.second.save();
+    }
+}
+void ProjectServer::export_project(){
+    if(m_project_action_packages.empty()){
+        m_project_action_packages.push_back({ProjectAction::EXPORT});
     }
 }
 
@@ -1226,36 +1231,39 @@ bool ProjectServer::have_explorer_window(){
 }
 
 void ProjectServer::m_handle_action(){
-    if(m_save_action_packages.empty()){
+    if(m_project_action_packages.empty()){
         return;
     }
 
     bool is_list_need_to_clear = false;
 
-    SaveActionPackage& package = m_save_action_packages[0];
+    ProjectActionPackage& package = m_project_action_packages[0];
     switch (package.action) {
-        case SaveAction::SAVE:{
+        case ProjectAction::SAVE:{
             if(m_handle_action_save()){
                 is_list_need_to_clear = true;
             }
             break;
         }
-        case SaveAction::SAVE_AS:{
+        case ProjectAction::SAVE_AS:{
             if(m_handle_action_save_as()){
                 is_list_need_to_clear = true;
             }
             break;
         }
-        case SaveAction::OPEN:{
+        case ProjectAction::OPEN:{
             if(m_handle_action_open()){
                 is_list_need_to_clear = true;
             }
             break;
         }
+        case ProjectAction::EXPORT:{
+            break;
+        }
     }
     
     if(is_list_need_to_clear){
-        m_save_action_packages.clear();
+        m_project_action_packages.clear();
     }
 }
 OID ProjectServer::m_new_explorer_save(){

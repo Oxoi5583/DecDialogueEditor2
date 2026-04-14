@@ -44,17 +44,7 @@ void MovableObject::process(){
     m_is_on_camera = GraphCamera::Ref()->is_rect_id_on_camera(m_shape_id,m_is_full_rect_in_camera);
 }
 void MovableObject::post_process(){
-    vec2 pos = m_shape->get_position();
-    vec2 size = m_shape->get_size();
-    vec2 min = pos - (size / 2.0f);
-    vec2 max = pos + (size / 2.0f);
-    
-    if(last_frame_shape_min != min || last_frame_shape_max != max){
-        PhysicsServer::Ref()->set_instance(m_shape_id, {min, max});
-
-        last_frame_shape_min = min;
-        last_frame_shape_max = max;
-    }
+    update_physics_server_instance();
 }
 void MovableObject::draw(){
 }
@@ -71,4 +61,17 @@ void MovableObject::disable_full_rect_in_camera(){
 }
 ShapeId MovableObject::get_shape_id(){
     return m_shape_id;
+}
+void MovableObject::update_physics_server_instance(){
+    vec2 pos = m_shape->get_position();
+    vec2 size = m_shape->get_size();
+    vec2 min = pos - (size / 2.0f);
+    vec2 max = pos + (size / 2.0f);
+    
+    if(last_frame_shape_min != min || last_frame_shape_max != max){
+        PhysicsServer::Ref()->set_instance(m_shape_id, {min, max});
+
+        last_frame_shape_min = min;
+        last_frame_shape_max = max;
+    }
 }

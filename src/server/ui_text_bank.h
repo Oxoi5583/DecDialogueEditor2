@@ -184,6 +184,18 @@ public:
         "Ouvrir", "Öffnen", "Abrir", "Buka"
     };
 
+    UiText Export = {
+        "Export",
+        "匯出",
+        "エクスポート",
+        "导出",
+        "내보내기",
+        "Exporter",
+        "Exportieren",
+        "Exportar",
+        "Ekspor"
+    };
+    
     UiText SaveAllWS = {
         "Save All Workspaces",
         "儲存所有工作區",

@@ -315,11 +315,17 @@ void GraphManager::m_clear_garbage(){
 }
 
 void GraphManager::m_refetch_node_data(){
-    for(OID& id : m_all_node_ids){
+    while(!m_nodes_need_info_refresh.empty()){
+        OID id = m_nodes_need_info_refresh.front();
         GraphBase* ptr = ObjectServer::Ref()->get_instance<GraphBase>(id);
         NodeInfo info = m_create_info(ptr);
         m_infos[id] = info;
+
+        m_nodes_need_info_refresh.pop();
     }
+}
+void GraphManager::request_info_refresh(OID p_id){
+    m_nodes_need_info_refresh.emplace(p_id);
 }
 
 void GraphManager::m_regenerate_panel_data(){
@@ -333,10 +339,8 @@ void GraphManager::m_regenerate_panel_data(){
 
         used_ids.emplace(id);
 
-        NodeInfo& info = m_infos[id];
-        m_panel_data.primary_info_list.push_back(info);
-        std::vector<NodeInfo> secondary_info_list = std::vector<NodeInfo>();
-
+        m_panel_data.primary_info_list.push_back(id);
+        std::vector<OID> secondary_info_list = std::vector<OID>();
         std::vector<OID> children = m_get_all_children(id, false);
         for(OID& s_id : children){
             if(ObjectServer::Ref()->is_obj_freeze(s_id)){
@@ -344,9 +348,7 @@ void GraphManager::m_regenerate_panel_data(){
             }
 
             used_ids.emplace(s_id);
-
-            NodeInfo s_info = m_infos[s_id];
-            secondary_info_list.push_back(s_info);
+            secondary_info_list.push_back(s_id);
         }
 
         m_panel_data.secondary_info_list.push_back(secondary_info_list);
@@ -361,8 +363,7 @@ void GraphManager::m_regenerate_panel_data(){
             continue;
         }
 
-        NodeInfo info = m_infos[id];
-        m_panel_data.other_info_list.push_back(info);
+        m_panel_data.other_info_list.push_back(id);
     }
 }
 
@@ -457,4 +458,7 @@ void GraphManager::clear_nodes(){
     for(OID id : m_all_node_ids){
         ObjectServer::Ref()->get_instance<ObjectBase>(id)->queue_free();
     }
+}
+const GraphManager::NodeInfo& GraphManager::get_node_info(const OID& p_id){
+    return m_infos[p_id];
 }

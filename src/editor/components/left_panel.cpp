@@ -248,16 +248,17 @@ void EditorLeftPanel::m_update_inpector_primary_list(){
     const ImU32 break_color = ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3");
 
     for (int p = 0; p < pri_item_list.size(); ++p){
-        auto pri_id = pri_item_list[p].id;
+        OID pri_id = pri_item_list[p];
+        const GraphManager::NodeInfo& node_info = GraphManager::Ref()->get_node_info(pri_id);
 
-        const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(pri_id)) ? true : pri_item_list[p].is_selected;
+        const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(pri_id)) ? true : node_info.is_selected;
 
         std::string padding = (is_selected) ? "    " : "";
-        auto pri_name = padding + std::to_string(p + 1) + " - " + pri_item_list[p].name;
+        auto pri_name = padding + std::to_string(p + 1) + " - " + node_info.name;
 
         ImGui::PushStyleColor(ImGuiCol_FrameBg, pri_list_box_color);
         ImGui::PushStyleColor(ImGuiCol_Header, pri_list_box_selected_color);
-        bool is_expanded = pri_item_list[p].is_expanded;
+        bool is_expanded = node_info.is_expanded;
 
         std::string button_name = (is_expanded) ? std::string(ICON_EXPAND_OPEN) + "##BUTTON_" + pri_name : std::string(ICON_EXPAND_CLOSE) + "##BUTTON_" + pri_name;
 
@@ -327,7 +328,10 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
     auto& pri_item_list = GraphManager::Ref()->get_panel_data().primary_info_list;
     auto& sec_item_list = GraphManager::Ref()->get_panel_data().secondary_info_list[p_parent_index];
     const int sec_item_size = sec_item_list.size();
-    if (sec_item_size > 0 && pri_item_list[p_parent_index].is_expanded){
+
+    auto& parent_id = pri_item_list[p_parent_index];
+
+    if (sec_item_size > 0 && GraphManager::Ref()->get_node_info(parent_id).is_expanded){
         const std::string sec_list_box_name = "##InspectorSecListBox";
 
         const double sec_item_height = inpector_item_size.y + 3;
@@ -344,13 +348,14 @@ void EditorLeftPanel::m_update_inpector_secondary_list(int p_parent_index){
 
         if (ImGui::BeginListBox((sec_list_box_name + std::to_string(p_parent_index)).c_str(), sec_list_area)){
             for (int s = 0; s < sec_item_size; ++s){
-                auto sec_id = sec_item_list[s].id;
+                auto sec_id = sec_item_list[s];
+                const GraphManager::NodeInfo& node_info = GraphManager::Ref()->get_node_info(sec_id);
 
-                const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(sec_id)) ? true :  sec_item_list[s].is_selected;
+                const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(sec_id)) ? true :  node_info.is_selected;
 
-                auto sec_type = sec_item_list[s].type;
+                auto sec_type = node_info.type;
                 std::string padding = (is_selected) ? "    " : "";
-                auto sec_name = padding + int_to_roman(s + 1) + " - " + sec_item_list[s].name;
+                auto sec_name = padding + int_to_roman(s + 1) + " - " + node_info.name;
 
                 const ImVec4& sec_list_box_text_color = (is_selected) ? sec_list_box_text_color_selected : sec_list_box_text_color_not_selected;
 
@@ -426,12 +431,13 @@ void EditorLeftPanel::m_update_inpector_other_list(){
             const ImU32 breakline_color = ThemeLoader::Ref()->get_imgui_color_int("SecondaryColour3");
 
             for (int o = 0; o < other_item_size; ++o){
-                auto other_id = other_item_list[o].id;
+                auto other_id = other_item_list[o];
+                const GraphManager::NodeInfo& node_info = GraphManager::Ref()->get_node_info(other_id);
 
-                const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(other_id)) ? true :  other_item_list[o].is_selected;
+                const bool is_selected = (GraphSelection::Ref()->is_id_in_dragging_buffer(other_id)) ? true :  node_info.is_selected;
 
                 std::string padding = (is_selected) ? "    " : "";
-                auto other_name = padding + "*" + std::to_string(o + 1) + " - " + other_item_list[o].name;
+                auto other_name = padding + "*" + std::to_string(o + 1) + " - " + node_info.name;
 
                 const ImVec4 other_list_box_text_color = (is_selected) ? other_list_box_text_color_selected : other_list_box_text_color_not_selected;
 

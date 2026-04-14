@@ -47,5 +47,7 @@ public:
     void enable_full_rect_in_camera();
     void disable_full_rect_in_camera();
 
+    void update_physics_server_instance();
+
     ShapeId get_shape_id();
 };

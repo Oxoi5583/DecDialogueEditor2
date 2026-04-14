@@ -116,6 +116,8 @@ void GraphBase::m_update_project_data(){
             }
         }
     }
+
+    GraphManager::Ref()->request_info_refresh(this->get_id());
 }
 
 void GraphBase::m_remove_project_data(){
@@ -139,7 +141,6 @@ void GraphBase::ready(){
     std::string default_name = GraphManager::Ref()->get_default_name(type);
     set_name(default_name);
     m_update_project_data();
-
 
     switch(get_type()){
         case GraphManager::BASE:

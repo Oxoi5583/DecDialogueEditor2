@@ -86,6 +86,9 @@ void EditorMenuBar::m_update_menu_file(){
         if(ImGui::MenuItem(UiTextBank::Ref()->SaveAsPJ)){
             ProjectServer::Ref()->save_as_project();
         }
+        if(ImGui::MenuItem(UiTextBank::Ref()->Export)){
+            ProjectServer::Ref()->export_project();
+        };
         if(ImGui::MenuItem(UiTextBank::Ref()->Open)){
             ProjectServer::Ref()->open_project();
         };

@@ -58,7 +58,7 @@
 #include "config/config_loader.h"
 #include "server/timer_server.h"
 
-#include "DecToolsBox/core/condition.h"
+#include "DecToolsBox/core/condition.hpp"
 
 
 

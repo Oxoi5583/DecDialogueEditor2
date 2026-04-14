@@ -1,6 +1,7 @@
 #include "system/graph/connection.h"
-#include "DecToolsBox/core/condition.h"
+#include "DecToolsBox/core/condition.hpp"
 #include "DecToolsBox/debug/messenger.h"
+#include "connection_rules.h"
 #include "system/obj/abstract/movable.h"
 #include "system/obj/graph/connection_line.h"
 #include "system/obj/graph/manager.h"
@@ -216,111 +217,6 @@ void GraphConnection::m_refresh_connectables(){
     }
 }
 
-bool GraphConnection::m_test_connection__target_not_self(GraphBase* p_fm, GraphBase* p_to){
-    return p_fm->get_id() != p_to->get_id();
-}
-bool GraphConnection::m_test_connection__target_not_entry(GraphBase* p_fm, GraphBase* p_to){
-    return p_to->get_type() != GraphManager::ENTRY;
-}
-bool GraphConnection::m_test_connection__target_not_connected(GraphBase* p_fm, GraphBase* p_to){
-    std::vector<OID> ancestor_ids = p_fm->skip_from_repeater();
-    for(OID& ancestor_id : ancestor_ids){
-        GraphBase* ancestor = ObjectServer::Ref()->get_instance<GraphBase>(ancestor_id);
-        std::set<OID> children = ancestor->get_children_set(true);
-        if(children.contains(p_to->get_id())){
-            return false;
-        }
-    }
-    return true;
-}
-bool GraphConnection::m_test_connection__target_not_parent_directly(GraphBase* p_fm, GraphBase* p_to){
-    std::set<OID> ancestor_ids = p_fm->get_parent_set(false);
-    if(ancestor_ids.contains(p_to->get_id())){
-        return false;
-    }else{
-        return true;
-    }
-}
-bool GraphConnection::m_test_connection__target_not_parent_proxy(GraphBase* p_fm, GraphBase* p_to){
-    std::set<OID> ancestor_ids = p_fm->get_parent_set(true, false);
-    if(ancestor_ids.contains(p_to->get_id()) && p_fm->get_type() == GraphManager::NODE){
-        return false;
-    }else{
-        return true;
-    }
-}
-bool GraphConnection::m_test_connection__to_repeater_not_have_parent(GraphBase* p_fm, GraphBase* p_to){
-    if(p_to->get_type() == GraphManager::REPEATER){
-        std::set<OID> parent = p_to->get_parent_set();
-        return parent.empty();
-    }
-    return true;
-}
-bool GraphConnection::m_test_connection__fm_repeater_not_have_children(GraphBase* p_fm, GraphBase* p_to){
-    if(p_fm->get_type() == GraphManager::REPEATER){
-        std::set<OID> children = p_fm->get_children_set();
-        return children.empty();
-    }
-    return true;
-}
-bool GraphConnection::m_test_connection__not_connect_to_normal_node_yet(GraphBase* p_fm, GraphBase* p_to){
-    std::vector<OID> check_list;
-
-    auto set = p_fm->get_children(true);
-    for(OID id : set){
-        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(obj->get_type() == GraphManager::NODE){
-            return false;
-        }
-    }
-
-    return true;
-}
-bool GraphConnection::m_test_connection__all_connect_type_is_option(GraphBase* p_fm, GraphBase* p_to){
-    bool is_connected_to_option = false;
-
-    auto set = p_fm->get_children(true);
-    for(OID id : set){
-        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(obj->get_type() == GraphManager::OPTION){
-            is_connected_to_option = true;
-        }
-    }
-
-    if(is_connected_to_option){
-        GraphManager::NodeTypeId to_type = p_to->get_type();
-        if(to_type != GraphManager::OPTION && to_type != GraphManager::REPEATER){
-            return false;
-        }
-    }
-
-    return true;
-}
-bool GraphConnection::m_test_connection__target_not_module_entry(GraphBase* p_fm, GraphBase* p_to){
-    return p_to->get_type() != GraphManager::MODULE_ENTRY;
-}
-bool GraphConnection::m_test_connection__target_not_parent_proxy_module_node(GraphBase* p_fm, GraphBase* p_to){
-    std::set<OID> ancestor_ids = p_fm->get_parent_set(true, false);
-    if(ancestor_ids.contains(p_to->get_id()) && p_fm->get_type() == GraphManager::MODULE_NODE){
-        return false;
-    }else{
-        return true;
-    }
-}
-bool GraphConnection::m_test_connection__not_connect_to_module_normal_node_yet(GraphBase* p_fm, GraphBase* p_to){
-    std::vector<OID> check_list;
-
-    auto set = p_fm->get_children(true);
-    for(OID id : set){
-        GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(id);
-        if(obj->get_type() == GraphManager::MODULE_NODE){
-            return false;
-        }
-    }
-
-    return true;
-}
-
 
 bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
     GraphBase* fm_node = ObjectServer::Ref()->get_instance<GraphBase>(p_fm_id);
@@ -330,11 +226,11 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
     }
 
     Condition c_1 = Condition()
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_self(fm_node, to_node); })
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_entry(fm_node, to_node); })
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_module_entry(fm_node, to_node); })
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_connected(fm_node, to_node); })
-            .add_required([this, fm_node, to_node](){ return this->m_test_connection__target_not_parent_directly(fm_node, to_node); });
+            .add_required(ConnectionRuleTargetNotSelf(fm_node, to_node))
+            .add_required(ConnectionRuleTargetNotType(fm_node, to_node, GraphManager::ENTRY))
+            .add_required(ConnectionRuleTargetNotType(fm_node, to_node, GraphManager::MODULE_ENTRY))
+            .add_required(ConnectionRuleTargetNotAlreadyConnected(fm_node, to_node))
+            .add_required(ConnectionRuleTargetNotParentDirectly(fm_node, to_node));
 
     if(!c_1){
         return false;
@@ -370,16 +266,16 @@ bool GraphConnection::test_connection(OID p_fm_id, OID p_to_id){
 
         for(GraphBase* to_node_2 : to_nodes){
             Condition c_2 = Condition()
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_self(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_entry(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_connected(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_parent_proxy(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__not_connect_to_normal_node_yet(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__all_connect_type_is_option(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__not_connect_to_module_normal_node_yet(fm_sub_node, to_node_2); })
-                .add_required([this, fm_sub_node, to_node_2](){ return this->m_test_connection__target_not_parent_proxy_module_node(fm_sub_node, to_node_2); })
-                .add_alternative(1, [this, fm_sub_node, to_node_2](){ return this->m_test_connection__fm_repeater_not_have_children(fm_sub_node, to_node_2); });
-
+                .add_required(ConnectionRuleTargetNotSelf(fm_sub_node, to_node_2))
+                .add_required(ConnectionRuleTargetNotType(fm_sub_node, to_node_2, GraphManager::ENTRY))
+                .add_required(ConnectionRuleTargetNotAlreadyConnected(fm_sub_node, to_node_2))
+                .add_required(ConnectionRuleTargetNotParentProxyOfType(fm_sub_node, to_node_2, GraphManager::NODE))
+                .add_required(ConnectionRuleFmNotConnectToTypeYet(fm_sub_node, to_node_2, GraphManager::NODE))
+                .add_required(ConnectionRuleIfConnectedToOptionThenTargetMustBeOptionOrRepeater(fm_sub_node, to_node_2))
+                .add_required(ConnectionRuleFmNotConnectToTypeYet(fm_sub_node, to_node_2, GraphManager::MODULE_NODE))
+                .add_required(ConnectionRuleTargetNotParentProxyOfType(fm_sub_node, to_node_2, GraphManager::MODULE_NODE))
+                .add_alternative(1, ConnectionRuleFmRepeaterNotHaveChildren(fm_sub_node, to_node_2));
+                
             bool c_2_ret = c_2.result();
 
             if(!c_2_ret){

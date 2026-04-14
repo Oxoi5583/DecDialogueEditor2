@@ -5,6 +5,7 @@
 #include "system/obj/graph/base.h"
 #include "server/object_base.h"
 #include "struct/shape/rect2.h"
+#include <DecToolsBox/core/condition.hpp>
 #include <map>
 #include <queue>
 #include <set>
@@ -13,6 +14,7 @@
 #include <vector>
 
 using namespace glm;
+
 
 class GraphConnection : public Singleton<GraphConnection>{
 private:
@@ -44,19 +46,6 @@ private:
     void m_refresh_screen_ids();
     std::unordered_set<OID> m_connectables;
     void m_refresh_connectables();
-
-    bool m_test_connection__target_not_self(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__target_not_entry(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__target_not_connected(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__target_not_parent_directly(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__target_not_parent_proxy(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__to_repeater_not_have_parent(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__fm_repeater_not_have_children(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__not_connect_to_normal_node_yet(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__all_connect_type_is_option(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__target_not_module_entry(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__target_not_parent_proxy_module_node(GraphBase* p_fm, GraphBase* p_to);
-    bool m_test_connection__not_connect_to_module_normal_node_yet(GraphBase* p_fm, GraphBase* p_to);
 public:
     void init();
     void pre_update();
