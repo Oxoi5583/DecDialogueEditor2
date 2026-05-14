@@ -180,7 +180,7 @@ void EngineWindow::m_handle_close_request(){
             m_close_confirm_window_uid = m_close_confirm_window->get_uid();
 
             vec2 window_size = EngineWindow::Ref()->get_window_size();
-            m_close_confirm_window->set_content("Project is not saved.\nDo you want to save before leaving?");
+            m_close_confirm_window->set_content(UiTextBank::Ref()->PromptSaveBeforeClose.get());
             m_close_confirm_window->set_size(window_size / 3.0f);
             m_close_confirm_window->add_close_fallback([this](){ this->m_is_close_requested = false; this->m_close_confirm_window = nullptr; });
             m_close_confirm_window->add_option(UiTextBank::Ref()->Yes

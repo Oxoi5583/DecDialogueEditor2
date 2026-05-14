@@ -219,7 +219,17 @@ public:
         "Guardar como proyecto",
         "Simpan sebagai proyek"
     };
-
+    UiText PromptSaveBeforeClose = {
+        "Project not saved. Do you want to save before closing?",
+        "專案尚未儲存，在關閉前是否需要儲存？",
+        "プロジェクトが保存されていません。閉じる前に保存しますか？",
+        "项目尚未保存，在关闭前是否需要保存？",
+        "프로젝트가 저장되지 않았습니다. 닫기 전에 저장하시겠습니까?",
+        "Projet non enregistré. Voulez-vous enregistrer avant de fermer ?",
+        "Projekt nicht gespeichert. Vor dem Schließen speichern?",
+        "Proyecto no guardado. ¿Desea guardar antes de cerrar?",
+        "Proyek belum disimpan. Apakah Anda ingin menyimpan sebelum menutup?"
+    };
     UiText Save = {
         "Save",
         "儲存",
