@@ -1,6 +1,7 @@
 #pragma once
 
 #include <editor/components/explorer_window.h>
+#include <editor/components/popup_window.h>
 #include <functional>
 #include "SDL3/SDL_video.h"
 #include "glm/detail/qualifier.hpp"
@@ -67,6 +68,14 @@ private:
 
     void m_job_imgui_render();
 
+    bool m_is_waiting_for_saving = false;
+
+    PopupWindow* m_close_confirm_window = nullptr;
+    std::string m_close_confirm_window_uid = ""; 
+    bool m_is_close_requested = false;
+    void m_handle_close_request();
+    void m_close();
+
     int m_init_step = 0;
     bool m_is_init_done = false;
 
@@ -106,7 +115,7 @@ public:
 
     void init();
 
-    void shutdown();
+    void close();
 
     void set_clear_color(vec4 p_color);
     vec4 get_clear_color();
@@ -117,7 +126,7 @@ public:
 
     void delay(uint32 p_delay);
     bool is_running();
-    void close();
+    void shutdown();
 
     void begin();
     void end();

@@ -86,10 +86,23 @@ void EditorLayout::m_main_space_init(){
 
     m_left_coordinate_space = m_up_coordinate_other_space->get_children().first;
     m_left_coordinate_other_space = m_up_coordinate_other_space->get_children().second;
+
+    m_space_map = {
+        {"MAIN_SPACE", &m_main_space},
+        {"MENU_BAR_SPACE", m_menu_bar_space},
+        {"MENU_BAR_OTHER_SPACE", m_menu_bar_other_space},
+        {"TOOLS_BAR_SPACE", m_tools_bar_space},
+        {"TOOLS_BAR_OTHER_SPACE", m_tools_bar_other_space},
+        {"LEFT_PANEL_SPACE", m_left_panel_space},
+        {"LEFT_PANEL_OTHER_SPACE", m_left_panel_other_space},
+        {"UP_COORDINATE_SPACE", m_up_coordinate_space},
+        {"UP_COORDINATE_OTHER_SPACE", m_up_coordinate_other_space},
+        {"LEFT_COORDINATE_SPACE", m_left_coordinate_space},
+        {"LEFT_COORDINATE_OTHER_SPACE", m_left_coordinate_other_space}
+    };
 }
 
 void EditorLayout::m_main_space_update(){
-    vec2 cam_pos = GraphCamera::Ref()->get_target();
     vec2 window_size = EngineWindow::Ref()->get_window_size();
 
     m_main_space.set_size(window_size);
@@ -243,4 +256,8 @@ void EditorLayout::refresh_theme(){
     colors[ImGuiCol_Border] = grid_color;
 
     EngineWindow::Ref()->set_clear_color({brand.x,brand.y,brand.z,brand.w});
+}
+
+EditorSpace* EditorLayout::get_space(const std::string& p_code){
+    return (m_space_map.contains(p_code)) ? m_space_map[p_code] : nullptr;
 }

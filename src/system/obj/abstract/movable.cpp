@@ -35,6 +35,10 @@ vec2 MovableObject::get_position(){
 
 void MovableObject::ready(){
 }
+
+/* 
+Should add a detect() for handling the collision before process
+*/
 void MovableObject::pre_process(){
 }
 void MovableObject::process(){

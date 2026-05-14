@@ -90,6 +90,13 @@ public:
     OID get_fstream_obj(FStreamLink p_link);
     bool is_file_hidden(FPath p_path);
     bool is_file_exists(FPath p_path);
+    bool is_in_programme_folder(FPath p_path);
 
     void set_file_to_hidden(FPath p_path);
 };
+
+/*
+Should lock every controled files
+Which have inserted into the files tree
+When everytime it craet a FStream file
+*/

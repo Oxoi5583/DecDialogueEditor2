@@ -18,6 +18,7 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <ios>
 #include <nlohmann/json.hpp>
 #include <server/event_server.h>
@@ -48,6 +49,8 @@ bool ProjectPayload::is_data_exists(){
 }
 
 void Workspace::save(){
+    GraphCamera::Ref()->upload_data_to_project_server();
+
     is_saved = true;
     this->data["workspace_info"]["updated_at"] = std::chrono::utc_clock::now().time_since_epoch().count();
     FStreamFile* file = ObjectServer::Ref()->get_instance<FStreamFile>(this->file_id);
@@ -202,7 +205,6 @@ void ProjectServer::m_refresh_display_data(){
         Workspace& space = workspace.second;
         FStreamBase* file = ObjectServer::Ref()->get_instance<FStreamBase>(space.file_id);
         if(!file){
-            DEBUG_MSG("file not exists.");
             continue;
         }
 
@@ -240,6 +242,7 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, PStrin
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, int p_val){
@@ -258,6 +261,7 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, int p_
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, float p_val){
@@ -276,6 +280,7 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, float 
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(PString p_workspace, PString p_key, bool p_val){
@@ -294,6 +299,7 @@ void ProjectServer::set(PString p_workspace, PString p_key, bool p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 
@@ -313,6 +319,7 @@ void ProjectServer::set(PString p_workspace, PString p_key, PString p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(PString p_workspace, PString p_key, int p_val){
@@ -331,6 +338,7 @@ void ProjectServer::set(PString p_workspace, PString p_key, int p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(PString p_workspace, PString p_key, float p_val){
@@ -349,6 +357,7 @@ void ProjectServer::set(PString p_workspace, PString p_key, float p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, bool p_val){
@@ -367,6 +376,7 @@ void ProjectServer::set(PString p_workspace, std::vector<PString> p_keys, bool p
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 
@@ -386,6 +396,7 @@ void ProjectServer::set(ProjectPayload p_key, PString p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(ProjectPayload p_key, int p_val){
@@ -404,6 +415,7 @@ void ProjectServer::set(ProjectPayload p_key, int p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(ProjectPayload p_key, float p_val){
@@ -422,6 +434,7 @@ void ProjectServer::set(ProjectPayload p_key, float p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 void ProjectServer::set(ProjectPayload p_key, bool p_val){
@@ -440,6 +453,7 @@ void ProjectServer::set(ProjectPayload p_key, bool p_val){
     if(old_val != new_val){
         *data = p_val;
         m_project.spaces[data_key.workspace].is_saved = false;
+        m_project.is_saved = false;
     }
 }
 
@@ -448,6 +462,7 @@ void ProjectServer::list_push_back(PString p_workspace, std::vector<PString> p_k
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -468,6 +483,7 @@ void ProjectServer::list_push_back(PString p_workspace, std::vector<PString> p_k
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -488,6 +504,7 @@ void ProjectServer::list_push_back(PString p_workspace, std::vector<PString> p_k
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -508,6 +525,7 @@ void ProjectServer::list_push_back(PString p_workspace, PString p_key, bool p_va
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -529,6 +547,7 @@ void ProjectServer::list_push_back(PString p_workspace, PString p_key, PString p
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -549,6 +568,7 @@ void ProjectServer::list_push_back(PString p_workspace, PString p_key, int p_val
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -569,6 +589,7 @@ void ProjectServer::list_push_back(PString p_workspace, PString p_key, float p_v
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -589,6 +610,7 @@ void ProjectServer::list_push_back(PString p_workspace, std::vector<PString> p_k
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -610,6 +632,7 @@ void ProjectServer::list_push_back(ProjectPayload p_key, PString p_val){
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -630,6 +653,7 @@ void ProjectServer::list_push_back(ProjectPayload p_key, int p_val){
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -650,6 +674,7 @@ void ProjectServer::list_push_back(ProjectPayload p_key, float p_val){
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -670,6 +695,7 @@ void ProjectServer::list_push_back(ProjectPayload p_key, bool p_val){
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -691,6 +717,7 @@ void ProjectServer::list_clear(PString p_workspace, std::vector<PString> p_keys)
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -705,6 +732,7 @@ void ProjectServer::list_clear(PString p_workspace, PString p_key){
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -720,6 +748,7 @@ void ProjectServer::list_clear(ProjectPayload p_key){
     if(!data_key.is_workspace_exists()) return;
 
     m_project.spaces[data_key.workspace].is_saved = false;
+    m_project.is_saved = false;
 
     nlohmann::json& root = m_project.spaces[data_key.workspace].data;
     nlohmann::json* data = m_route_to_data(&root, data_key.keys, DefaultType::ARRAY);
@@ -1051,15 +1080,22 @@ bool ProjectServer::m_action_open_project(FPath p_path){
         this->go_to_workspace(info.uid);
 
         m_project_file = p_path;
+
+        forced_switch_to_saved(2);
         return true;
     }
     return false;
 }
 
 bool ProjectServer::m_action_save_as_project(FPath p_path){
+    std::streambuf* old_buf = std::cout.rdbuf();
+    std::cout.rdbuf(nullptr); 
     try {
-        std::streambuf* old_buf = std::cout.rdbuf();
-        std::cout.rdbuf(nullptr); 
+        if(FileServer::Ref()->is_in_programme_folder(p_path)){
+            std::cout.rdbuf(old_buf);
+            ERROR_MSG("Please save project outside of the programme file.");
+            return false;
+        }
 
         this->save_all_workspaces();
         p_path = std::filesystem::absolute(p_path);
@@ -1075,31 +1111,94 @@ bool ProjectServer::m_action_save_as_project(FPath p_path){
         zip.save();
         zip.close();
 
-        std::cout.rdbuf(old_buf);
+        forced_switch_to_saved();
 
         m_project_file = p_path;
+        std::cout.rdbuf(old_buf);
         SUCCESS_MSG("Saved project to " << p_path.string() << " successfully");
         return true;
     } catch(std::exception e) {
+        std::cout.rdbuf(old_buf);
         ERROR_MSG("Saving project to " << p_path.string() << " failed.");
+        ERROR_MSG("Error msg : " << e.what());
     }
 
+    std::cout.rdbuf(old_buf);
+    return false;
+}
+bool ProjectServer::m_action_export_project(FPath p_path){
+    std::streambuf* old_buf = std::cout.rdbuf();
+    std::cout.rdbuf(nullptr);
+    try {
+        if(FileServer::Ref()->is_in_programme_folder(p_path)){
+            std::cout.rdbuf(old_buf);
+            ERROR_MSG("Please export project outside of the programme file.");
+            return false;
+        }
+
+        this->save_all_workspaces();
+        p_path = std::filesystem::absolute(p_path);
+
+        basic_json<> export_data = {{"nodes", {}}};
+        basic_json<> name_to_code = {};
+
+        for(auto& it : m_project.spaces){
+            Workspace& workspace = it.second;
+            if(!workspace.data.contains("objects")){
+                continue;
+            }
+
+            auto& ws_data = workspace.data["objects"];
+            for(auto& it : ws_data.items()){
+                auto& obj_code = it.key();
+                auto& obj_data = it.value();
+                auto& obj_name = obj_data["name"];
+
+                if(name_to_code.contains(obj_name)){
+                    continue;
+                }
+                
+                basic_json<> export_obj_data = {
+                    {"children", obj_data["children"]},
+                    {"properties", obj_data["properties"]},
+                };
+
+                name_to_code.emplace(obj_name, obj_code);
+                export_data["nodes"].emplace(obj_code, export_obj_data);
+            }
+        }
+
+        export_data.emplace("mapping", name_to_code);
+        
+        std::ofstream f(p_path);
+        f << std::setw(4) << export_data << std::endl;
+        f.close();
+
+        std::cout.rdbuf(old_buf);
+        SUCCESS_MSG("Exported project to " << p_path.string() << " successfully");
+        return true;
+    } catch(std::exception e) {
+        std::cout.rdbuf(old_buf);
+        ERROR_MSG("Exporting project to " << p_path.string() << " failed.");
+        ERROR_MSG("Error msg : " << e.what());
+    }
+    std::cout.rdbuf(old_buf);
     return false;
 }
 
 void ProjectServer::save_project(){
     if(m_project_action_packages.empty()){
-        m_project_action_packages.push_back({ProjectAction::SAVE});
+        m_project_action_packages.push({ProjectAction::SAVE, 0});
     }
 }
 void ProjectServer::save_as_project(){
     if(m_project_action_packages.empty()){
-        m_project_action_packages.push_back({ProjectAction::SAVE_AS});
+        m_project_action_packages.push({ProjectAction::SAVE_AS, 0});
     }
 }
 void ProjectServer::open_project(){
     if(m_project_action_packages.empty()){
-        m_project_action_packages.push_back({ProjectAction::OPEN});
+        m_project_action_packages.push({ProjectAction::OPEN, 0});
     }
 }
 
@@ -1118,7 +1217,7 @@ void ProjectServer::save_all_workspaces(){
 }
 void ProjectServer::export_project(){
     if(m_project_action_packages.empty()){
-        m_project_action_packages.push_back({ProjectAction::EXPORT});
+        m_project_action_packages.push({ProjectAction::EXPORT, 0});
     }
 }
 
@@ -1237,7 +1336,13 @@ void ProjectServer::m_handle_action(){
 
     bool is_list_need_to_clear = false;
 
-    ProjectActionPackage& package = m_project_action_packages[0];
+    ProjectActionPackage& package = m_project_action_packages.front();
+
+    if(package.delay_frame > 0){
+        package.delay_frame--;
+        return;
+    }
+
     switch (package.action) {
         case ProjectAction::SAVE:{
             if(m_handle_action_save()){
@@ -1258,20 +1363,38 @@ void ProjectServer::m_handle_action(){
             break;
         }
         case ProjectAction::EXPORT:{
+            if(m_handle_action_export()){
+                is_list_need_to_clear = true;
+            }
+            break;
+        }
+        case ProjectAction::FORCE_TO_SAVE_STATUS:{
+            this->save_all_workspaces();
+            m_project.is_saved = true;
+            is_list_need_to_clear = true;
             break;
         }
     }
     
     if(is_list_need_to_clear){
-        m_project_action_packages.clear();
+        m_project_action_packages.pop();
     }
+}
+OID ProjectServer::m_new_explorer_export(){
+    ExplorerWindow* window = EngineWindow::Ref()->create_explorer_window();
+    window->set_allow_multi_select(false);
+    window->set_mode(ExplorerWindow::Mode::SAVE);
+    window->add_filter(ExplorerWindow::FilterOption::DEC_DIALOGUE);
+    window->set_default_path("dialogue_data.json");
+
+    return window->get_id();
 }
 OID ProjectServer::m_new_explorer_save(){
     ExplorerWindow* window = EngineWindow::Ref()->create_explorer_window();
     window->set_allow_multi_select(false);
     window->set_mode(ExplorerWindow::Mode::SAVE);
     window->add_filter(ExplorerWindow::FilterOption::DEC_DIALOGUE);
-    window->set_default_path("New Dialogue Project.ddlg");
+    window->set_default_path("dialogue_project.ddlg");
 
     return window->get_id();
 }
@@ -1280,7 +1403,7 @@ OID ProjectServer::m_new_explorer_open(){
     window->set_allow_multi_select(false);
     window->set_mode(ExplorerWindow::Mode::FILE);
     window->add_filter(ExplorerWindow::FilterOption::DEC_DIALOGUE);
-    window->set_default_path("New Dialogue Project.ddlg");
+    window->set_default_path("dialogue_project.ddlg");
 
     return window->get_id();
 }
@@ -1375,8 +1498,57 @@ bool ProjectServer::m_handle_action_open(){
 
     return false;
 }
+bool ProjectServer::m_handle_action_export(){
+    if(!have_explorer_window()){
+        m_explorer_window_id = m_new_explorer_export();
+    }
+    
+    ExplorerWindow* window = ObjectServer::Ref()->get_instance<ExplorerWindow>(m_explorer_window_id);
+    if(window->have_result()){
+        if(window->get_result().empty()){
+            window->close();
+            return false;
+        }
+
+        std::string path = window->get_result()[0];
+        if(!m_action_export_project(path)){
+            window->close();
+            return  false;
+        }
+
+        window->close();
+        return true;
+    }
+
+    if(window->is_finished()){
+        window->close();
+        return true;
+    }
+
+    return false;
+}
+
 
 void ProjectServer::shutdown(){
     FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_project.folder_id);
     folder->clear();
+}
+
+bool ProjectServer::has_any_unsaved(){
+    for(auto& it : m_project.spaces){
+        Workspace& ws = it.second;
+        if(!ws.is_saved){
+            return true;
+        }
+    }
+
+    if(!m_project.is_saved){
+        return true;
+    }
+
+    return false;
+}
+
+void ProjectServer::forced_switch_to_saved(uint8_t p_delay_frame){
+    this->m_project_action_packages.push({ ProjectAction::FORCE_TO_SAVE_STATUS, p_delay_frame});
 }

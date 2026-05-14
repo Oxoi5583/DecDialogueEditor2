@@ -126,12 +126,10 @@ void GraphCamera::update(){
 void GraphCamera::set_target(const vec2& p_target){
     m_rect.set_center(p_target);
     refresh_left_top_buffer();
-    m_job_upload_data();
 }
 void GraphCamera::set_zoom(const float& p_zoom){
     m_zoom = p_zoom;
     refresh_left_top_buffer();
-    m_job_upload_data();
 }
 
 vec2 GraphCamera::get_origin() const{
@@ -245,7 +243,7 @@ bool GraphCamera::is_rect_id_on_camera(ShapeId p_sid, bool p_is_full_needed){
     return ret;
 }
 
-void GraphCamera::m_job_upload_data(){
+void GraphCamera::upload_data_to_project_server(){
     {
         ProjectPayload payload;
         payload.workspace = ProjectServer::Ref()->current_workspace_uid();

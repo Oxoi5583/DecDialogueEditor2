@@ -117,20 +117,17 @@ void GraphConnection::m_emit_event(){
         case START_CONNECT:{
             m_refresh_screen_ids();
             m_refresh_connectables();
-            EventServer::Ref()->emit(EventLockedAll());
             break;
         }
         case SEARCH_CONNECT:{
             EventTryConnectTo event;
             event.conntectables = m_connectables;
             EventServer::Ref()->emit(event);
-            EventServer::Ref()->emit(EventLockedAll());
             break;
         }
         case PLACED_CONNECT:{
             std::vector<OID>().swap(m_on_screen_ids);
             std::unordered_set<OID>().swap(m_connectables);
-            EventServer::Ref()->emit(EventLockedAll());
             break;
         }
     }

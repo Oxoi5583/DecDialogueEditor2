@@ -70,28 +70,29 @@ void EditorMenuBar::m_begin_main_bar(){
     float border = ImGui::GetStyle().FrameBorderSize;
     float target_padding_y = (bar_size - font_size - border * 2.0f) / 2.0f;
 
-    //ImGui::SetNextWindowFocus();
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, target_padding_y));
     ImGui::BeginMainMenuBar();
 }
 void EditorMenuBar::m_update_menu_file(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->File)){
-        ImGui::MenuItem(UiTextBank::Ref()->New);
-        if(ImGui::MenuItem(UiTextBank::Ref()->SaveAllWS)){
-            ProjectServer::Ref()->save_all_workspaces();
+        if(!EventServer::Ref()->has<EventLockedAll>()){
+            ImGui::MenuItem(UiTextBank::Ref()->New);
+            if(ImGui::MenuItem(UiTextBank::Ref()->SaveAllWS)){
+                ProjectServer::Ref()->save_all_workspaces();
+            }
+            if(ImGui::MenuItem(UiTextBank::Ref()->Save)){
+                ProjectServer::Ref()->save_project();
+            }
+            if(ImGui::MenuItem(UiTextBank::Ref()->SaveAsPJ)){
+                ProjectServer::Ref()->save_as_project();
+            }
+            if(ImGui::MenuItem(UiTextBank::Ref()->Export)){
+                ProjectServer::Ref()->export_project();
+            };
+            if(ImGui::MenuItem(UiTextBank::Ref()->Open)){
+                ProjectServer::Ref()->open_project();
+            };
         }
-        if(ImGui::MenuItem(UiTextBank::Ref()->Save)){
-            ProjectServer::Ref()->save_project();
-        }
-        if(ImGui::MenuItem(UiTextBank::Ref()->SaveAsPJ)){
-            ProjectServer::Ref()->save_as_project();
-        }
-        if(ImGui::MenuItem(UiTextBank::Ref()->Export)){
-            ProjectServer::Ref()->export_project();
-        };
-        if(ImGui::MenuItem(UiTextBank::Ref()->Open)){
-            ProjectServer::Ref()->open_project();
-        };
         ImGui::EndMenu();
     }
     if (ImGui::IsItemHovered()) {
@@ -100,15 +101,17 @@ void EditorMenuBar::m_update_menu_file(){
 }
 void EditorMenuBar::m_update_menu_language(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->Language)){
-        for(auto locale : UiTextBank::Ref()->all_locales){
-            ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
+        if(!EventServer::Ref()->has<EventLockedAll>()){
+            for(auto locale : UiTextBank::Ref()->all_locales){
+                ImGui::PushFont(EngineFontLoader::Ref()->get(FONT_SIZE_MIDDLE));
 
-            ImGui::MenuItem(locale->get_name());
-            if(ImGui::IsItemClicked()){
-                UiTextBank::Ref()->set_locale(locale->get_locale_id());
+                ImGui::MenuItem(locale->get_name());
+                if(ImGui::IsItemClicked()){
+                    UiTextBank::Ref()->set_locale(locale->get_locale_id());
+                }
+
+                ImGui::PopFont();
             }
-
-            ImGui::PopFont();
         }
         ImGui::EndMenu();
     }
@@ -118,8 +121,10 @@ void EditorMenuBar::m_update_menu_language(){
 }
 void EditorMenuBar::m_update_menu_edit(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->Edit)){
-        ImGui::MenuItem(UiTextBank::Ref()->Cut);
-        ImGui::MenuItem(UiTextBank::Ref()->Copy);
+        if(!EventServer::Ref()->has<EventLockedAll>()){
+            ImGui::MenuItem(UiTextBank::Ref()->Cut);
+            ImGui::MenuItem(UiTextBank::Ref()->Copy);
+        }
         ImGui::EndMenu();
     }
     if (ImGui::IsItemHovered()) {
@@ -131,28 +136,30 @@ void EditorMenuBar::m_update_menu_themes(){
     ConfigLoader::Ref()->get_config("UsingTheme", current_theme);
 
     if (ImGui::BeginMenu(UiTextBank::Ref()->Themes)){
-        auto themes = ThemeLoader::Ref()->get_themes();
-        for(auto theme : themes){
-            if(current_theme == theme){
-                vec4 text_colour = ThemeLoader::Ref()->get_color("HighlightTextColour");
-                ImVec4 text_colour_imgui = ImVec4(text_colour.x, text_colour.y, text_colour.z, text_colour.w);
-                vec4 item_colour = ThemeLoader::Ref()->get_color("AccentColour2");
-                ImVec4 item_colour_imgui = ImVec4(item_colour.x, item_colour.y, item_colour.z, item_colour.w);
+        if(!EventServer::Ref()->has<EventLockedAll>()){
+            auto themes = ThemeLoader::Ref()->get_themes();
+            for(auto theme : themes){
+                if(current_theme == theme){
+                    vec4 text_colour = ThemeLoader::Ref()->get_color("HighlightTextColour");
+                    ImVec4 text_colour_imgui = ImVec4(text_colour.x, text_colour.y, text_colour.z, text_colour.w);
+                    vec4 item_colour = ThemeLoader::Ref()->get_color("AccentColour2");
+                    ImVec4 item_colour_imgui = ImVec4(item_colour.x, item_colour.y, item_colour.z, item_colour.w);
 
-                ImGui::PushStyleColor(ImGuiCol_Text, text_colour_imgui);
-                ImGui::PushStyleColor(ImGuiCol_HeaderHovered, item_colour_imgui);
-                ImGui::PushStyleColor(ImGuiCol_HeaderActive, item_colour_imgui);
-            }
-            ImGui::MenuItem(theme.c_str());
-            if(current_theme == theme){
-                ImGui::PopStyleColor(3);
-            }
+                    ImGui::PushStyleColor(ImGuiCol_Text, text_colour_imgui);
+                    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, item_colour_imgui);
+                    ImGui::PushStyleColor(ImGuiCol_HeaderActive, item_colour_imgui);
+                }
+                ImGui::MenuItem(theme.c_str());
+                if(current_theme == theme){
+                    ImGui::PopStyleColor(3);
+                }
 
 
-            if(ImGui::IsItemClicked()){
-                ConfigLoader::Ref()->set_config("UsingTheme", theme);
-                EditorLayout::Ref()->refresh_theme();
-                ConfigLoader::Ref()->save();
+                if(ImGui::IsItemClicked()){
+                    ConfigLoader::Ref()->set_config("UsingTheme", theme);
+                    EditorLayout::Ref()->refresh_theme();
+                    ConfigLoader::Ref()->save();
+                }
             }
         }
         ImGui::EndMenu();

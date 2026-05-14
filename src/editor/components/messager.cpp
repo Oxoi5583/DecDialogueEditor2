@@ -47,7 +47,7 @@ void EditorMessager::draw(){
         ImGui::SetNextWindowSize({block_size.x, block_size.y});
         ImGui::SetNextWindowPos({pos.x, pos.y});
 
-        ImGui::Begin(msg.uid.c_str(), NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+        ImGui::Begin(msg.uid.c_str(), NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNav);
         {
             std::string text = "[INFO] " + msg.content;
 

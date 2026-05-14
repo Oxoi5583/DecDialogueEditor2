@@ -1,4 +1,4 @@
 cd build
-cmake .. -G Ninja --fresh
+cmake .. -G Ninja 
 cmake --build . --config Debug
 cd ..

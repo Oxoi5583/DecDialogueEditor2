@@ -1,0 +1,21 @@
+{
+    "Name": "Dracula Arcade",
+    "BrandColour": "282A36",
+    "SecondaryColour1": "21222C",
+    "SecondaryColour2": "191A21",
+    "SecondaryColour3": "14151B",
+    "AccentColour1": "BD93F9",
+    "AccentColour2": "FFB86C",
+    "TextColour": "F8F8F2",
+    "HighlightTextColour": "E9E9E3",
+    "CloseButtonColour": "FF5555",
+    "GridColour": "191A21",
+    "SelectAreaColour": "44475A80",
+    "SelectAreaBorderColour": "6272A4",
+    "SelectableHighlightColour": "8BE9FD",
+    "EntryColour": "F1FA8C",
+    "NodeColour": "50FA7B",
+    "OptionColour": "FF79C6",
+    "ModuleEntryColour": "FFB86C",
+    "ModuleNodeColour": "8BE9FD"
+}

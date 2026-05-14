@@ -13,6 +13,7 @@
 #include "struct/shape/rect2.h"
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 using namespace glm;
@@ -44,6 +45,8 @@ private:
     EditorMenuBar* m_menu_bar;
     EditorToolsBar* m_tools_bar;
     EditorLeftPanel* m_left_panel;
+
+    std::map<std::string, EditorSpace*> m_space_map;
 public:
     EditorLayout(){}
     ~EditorLayout(){}
@@ -59,6 +62,7 @@ public:
 
     EditorSpace* get_up_coordinate_space();
     EditorSpace* get_left_coordinate_space();
+    EditorSpace* get_space(const std::string& p_code);
     EditorSpace* get_world_space();
     void restore_layout();
 

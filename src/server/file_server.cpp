@@ -229,3 +229,13 @@ void FileServer::set_file_to_hidden(FPath p_path){
         }
     #endif
 }
+
+bool FileServer::is_in_programme_folder(FPath p_path){
+    std::string root_str = m_root_ptr->get_path().string();
+    std::string target_str = p_path.string();
+    if(target_str.starts_with(root_str)){
+        return true;
+    }
+    
+    return false;
+}

@@ -1,0 +1,21 @@
+{
+    "Name": "Cyberpunk Noir",
+    "BrandColour": "10151F",
+    "SecondaryColour1": "151B29",
+    "SecondaryColour2": "0C111A",
+    "SecondaryColour3": "070A10",
+    "AccentColour1": "00D4FF",
+    "AccentColour2": "FFB000",
+    "TextColour": "E6F1FF",
+    "HighlightTextColour": "B7C7D9",
+    "CloseButtonColour": "FF3B5C",
+    "GridColour": "070A10",
+    "SelectAreaColour": "00D4FF80",
+    "SelectAreaBorderColour": "4CC9F0",
+    "SelectableHighlightColour": "64FFDA",
+    "EntryColour": "FFD166",
+    "NodeColour": "06D6A0",
+    "OptionColour": "C77DFF",
+    "ModuleEntryColour": "FFB000",
+    "ModuleNodeColour": "00F5D4"
+}

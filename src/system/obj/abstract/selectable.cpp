@@ -54,6 +54,7 @@ void SelectableObject::m_update_state(){
         }
         case READY:{
             m_state = State::SELECTED;
+            GraphManager::Ref()->request_info_refresh(this->get_id());
             break;
         }
         case SELECTED:{
@@ -65,6 +66,7 @@ void SelectableObject::m_update_state(){
         }
         case RESTORE:{
             m_state = State::IDLE;
+            GraphManager::Ref()->request_info_refresh(this->get_id());
             break;
         }
     }

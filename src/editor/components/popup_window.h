@@ -64,6 +64,8 @@ private:
     };
     std::vector<Input> m_inputs;
 
+    std::vector<std::function<void()>> m_close_callback;
+
     bool m_show = true;
     glm::vec2 m_size = {300.0f, 200.0f };
     bool m_is_first_process  = true;
@@ -73,7 +75,6 @@ private:
     void m_inputs_process();
     void m_buttons_process();
     void m_close_button_process();
-
 
     struct{
         glm::vec2 restore_pos;
@@ -99,6 +100,7 @@ public:
     
     void add_option(std::string p_option_name, std::function<void()> p_action);
     void add_input(std::string p_option_name, InputType p_type);
+    void add_close_fallback(std::function<void()> p_action);
 
     void set_size(glm::vec2 p_size);
     

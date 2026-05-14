@@ -115,7 +115,7 @@ void LeftCoordinate::m_draw_blocks(){
                                                             ImVec2(window_pos.x + applied_width + 6.0f, window_pos.y + line_width),
                                                             ThemeLoader::Ref()->ImVec4_to_int(applied_text_color));
 
-                if(MouseServer::Ref()->is_mouse_in_viewport()){
+                if(MouseServer::Ref()->is_mouse_in_viewport() && !EventServer::Ref()->has<EventLockedAll>()){
                     if(start_screen_pos.y <= m_mouse_pos.y <= end_screen_pos.y){
                         ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, m_mouse_pos.y), 
                                                                 ImVec2(window_pos.x + m_bg_size.y + 6.0f, m_mouse_pos.y + line_width),
@@ -128,7 +128,6 @@ void LeftCoordinate::m_draw_blocks(){
                     max_width = code_width;
                 }
             ImGui::End();
-            
     
 
             ImGui::PopStyleColor(3);

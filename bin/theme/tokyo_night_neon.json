@@ -1,0 +1,21 @@
+{
+    "Name": "Tokyo Night Neon",
+    "BrandColour": "1A1B26",
+    "SecondaryColour1": "16161E",
+    "SecondaryColour2": "101014",
+    "SecondaryColour3": "0B0C12",
+    "AccentColour1": "7AA2F7",
+    "AccentColour2": "FF9E64",
+    "TextColour": "C0CAF5",
+    "HighlightTextColour": "A9B1D6",
+    "CloseButtonColour": "F7768E",
+    "GridColour": "0F1017",
+    "SelectAreaColour": "33467C80",
+    "SelectAreaBorderColour": "565F89",
+    "SelectableHighlightColour": "7DCFFF",
+    "EntryColour": "E0AF68",
+    "NodeColour": "9ECE6A",
+    "OptionColour": "BB9AF7",
+    "ModuleEntryColour": "FF9E64",
+    "ModuleNodeColour": "2AC3DE"
+}

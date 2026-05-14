@@ -1,0 +1,21 @@
+{
+    "Name": "Nord Fjord",
+    "BrandColour": "2E3440",
+    "SecondaryColour1": "26303C",
+    "SecondaryColour2": "202834",
+    "SecondaryColour3": "171D26",
+    "AccentColour1": "88C0D0",
+    "AccentColour2": "D08770",
+    "TextColour": "ECEFF4",
+    "HighlightTextColour": "D8DEE9",
+    "CloseButtonColour": "BF616A",
+    "GridColour": "171D26",
+    "SelectAreaColour": "5E81AC80",
+    "SelectAreaBorderColour": "81A1C1",
+    "SelectableHighlightColour": "8FBCBB",
+    "EntryColour": "EBCB8B",
+    "NodeColour": "A3BE8C",
+    "OptionColour": "B48EAD",
+    "ModuleEntryColour": "D08770",
+    "ModuleNodeColour": "8FBCBB"
+}

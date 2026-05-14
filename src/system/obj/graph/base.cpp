@@ -675,9 +675,11 @@ bool GraphBase::is_expanded(){
 }
 void GraphBase::expand_on_list(){
     m_is_expanded = true;
+    GraphManager::Ref()->request_info_refresh(this->get_id());
 }
 void GraphBase::collapse_on_list(){
     m_is_expanded = false;
+    GraphManager::Ref()->request_info_refresh(this->get_id());
 }
 std::string GraphBase::get_workspace_id(){
     return m_workspace_id;

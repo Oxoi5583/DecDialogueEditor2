@@ -1,5 +1,6 @@
 #include "editor/components/popup_window.h"
 #include "DecToolsBox/core/random_code.h"
+#include "imgui_internal.h"
 #include "DecToolsBox/debug/messenger.h"
 #include "engine/font_loader.h"
 #include "engine/window.h"
@@ -87,6 +88,11 @@ PopupWindow::~PopupWindow(){
         std::string data_id = m_uid + input.uid;
         PopupWindowDataPipeline::Ref()->try_remove(data_id);
     }
+
+    for(auto& action : m_close_callback){
+        action();
+    }
+    
     PopupWindowManager::Ref()->remove_instance(m_uid);
 }
 
@@ -100,7 +106,7 @@ void PopupWindow::process(){
 }
 void PopupWindow::m_pop_window_process(){
     m_set_window_paramter();
-    if(ImGui::Begin(m_uid.c_str(),&m_show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration)){
+    if(ImGui::Begin(m_uid.c_str(),&m_show, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNav)){
         m_emit_event_if_window_hovered();
         m_close_button_process();
 
@@ -131,18 +137,23 @@ void PopupWindow::m_set_window_paramter(){
         m_ratio_data.is_restore_needed = false;
     }
     ImGui::SetNextWindowSize({m_size.x, m_size.y});
+
+    ImGuiWindow* window = ImGui::FindWindowByName(m_uid.c_str());
+    if (window) {
+        ImGui::BringWindowToDisplayFront(window);
+    }
 }
 void PopupWindow::m_emit_event_if_window_hovered(){
+    {
+        EventLockedAll event;
+        EventServer::Ref()->emit(event);
+    }
     if(ImGui::IsWindowHovered()){
         {
             EventMouseHoverObj event;
             event.hovering_pos = MouseServer::Ref()->get_mouse_screen_position();
             event.is_pointer_cursor = false;
             event.obj_id = this->get_id();
-            EventServer::Ref()->emit(event);
-        }
-        {
-            EventLockedAll event;
             EventServer::Ref()->emit(event);
         }
     }
@@ -171,7 +182,7 @@ void PopupWindow::m_inputs_process(){
                 buf.resize(500);
                 ImGui::Text("%s", it.name.c_str());
                 ImGui::SameLine();
-                ImGui::InputText(item_name.c_str(), buf.data(), buf.size());
+                ImGui::InputText(item_name.c_str(), buf.data(), buf.size(), ImGuiWindowFlags_NoFocusOnAppearing);
                 buf.shrink_to_fit();
 
                 std::string data_id = m_uid + it.uid;
@@ -182,7 +193,7 @@ void PopupWindow::m_inputs_process(){
                 int buf = this->get_input_int(i);
                 ImGui::Text("%s", it.name.c_str());
                 ImGui::SameLine();
-                ImGui::InputInt(item_name.c_str(), &buf);
+                ImGui::InputInt(item_name.c_str(), &buf, ImGuiWindowFlags_NoFocusOnAppearing);
 
                 std::string data_id = m_uid + it.uid;
                 PopupWindowDataPipeline::Ref()->set_value(data_id.c_str(), buf);
@@ -192,7 +203,7 @@ void PopupWindow::m_inputs_process(){
                 float buf = this->get_input_float(i);
                 ImGui::Text("%s", it.name.c_str());
                 ImGui::SameLine();
-                ImGui::InputFloat(item_name.c_str(), &buf);
+                ImGui::InputFloat(item_name.c_str(), &buf, ImGuiWindowFlags_NoFocusOnAppearing);
 
                 std::string data_id = m_uid + it.uid;
                 PopupWindowDataPipeline::Ref()->set_value(data_id.c_str(), buf);
@@ -276,9 +287,7 @@ void PopupWindow::m_close_button_process(){
     button_id += m_uid;
 
     ImGui::PushFont(EngineFontLoader::Ref()->get(12));
-    if(ImGui::Button(button_id.c_str(), ImVec2(button_width, button_height))){
-        this->queue_free();
-    }
+    ImGui::Button(button_id.c_str(), ImVec2(button_width, button_height));
     ImGui::PopFont();
     if(ImGui::IsItemHovered()){
         {
@@ -288,10 +297,9 @@ void PopupWindow::m_close_button_process(){
             event.obj_id = this->get_id();
             EventServer::Ref()->emit(event);
         }
-        {
-            EventLockedAll event;
-            EventServer::Ref()->emit(event);
-        }
+    }
+    if(ImGui::IsItemClicked()){
+        this->queue_free();
     }
 }
 void PopupWindow::post_process(){
@@ -312,6 +320,9 @@ void PopupWindow::add_input(std::string p_option_name, InputType p_type){
     m_inputs.push_back({RandomCode(20).get(),p_option_name, p_type});
     std::string data_id = m_uid + m_inputs.back().uid;
     PopupWindowDataPipeline::Ref()->try_add(data_id);
+}
+void PopupWindow::add_close_fallback(std::function<void()> p_action){
+    m_close_callback.push_back(p_action);
 }
 void PopupWindow::set_size(glm::vec2 p_size){
     m_size = p_size;

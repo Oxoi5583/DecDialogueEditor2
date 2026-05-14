@@ -10,6 +10,7 @@
 #include "editor/components/messager.h"
 #include "editor/components/quick_text_display.h"
 #include "editor/components/up_coordinate.h"
+#include "editor/components/lock_window.h"
 #include "editor/layout.h"
 #include "editor/shortcut_menu.h"
 #include "editor/space.h"
@@ -40,6 +41,7 @@
 #include <imgui/backends/imgui_impl_opengl3.h>
 #include <glad/glad.h>
 #include <SDL3/SDL.h>
+#include <server/events.h>
 #include <server/mouse_server.h>
 #include <server/timer_server.h>
 #include <string>
@@ -101,6 +103,10 @@ int main(int argc, char* argv[]) {
             ProjectServer::Ref()->init();
             EditorMessager::Ref()->init();
         }
+        if(frame == 1){
+            ProjectServer::Ref()->save_all_workspaces();
+            ProjectServer::Ref()->forced_switch_to_saved();
+        }
         
         double delta = EngineWindow::Ref()->get_delta();
 
@@ -147,6 +153,8 @@ int main(int argc, char* argv[]) {
         if(frame == 0){
             GraphCamera::Ref()->refresh_left_top_buffer();
         }
+
+        EditorLockWindow::Ref()->process();
 
         EventServer::Ref()->flush();
 

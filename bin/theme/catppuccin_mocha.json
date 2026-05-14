@@ -1,0 +1,21 @@
+{
+    "Name": "Catppuccin Mocha",
+    "BrandColour": "1E1E2E",
+    "SecondaryColour1": "181825",
+    "SecondaryColour2": "141420",
+    "SecondaryColour3": "11111B",
+    "AccentColour1": "CBA6F7",
+    "AccentColour2": "FAB387",
+    "TextColour": "CDD6F4",
+    "HighlightTextColour": "BAC2DE",
+    "CloseButtonColour": "F38BA8",
+    "GridColour": "11111B",
+    "SelectAreaColour": "89B4FA80",
+    "SelectAreaBorderColour": "89B4FA",
+    "SelectableHighlightColour": "94E2D5",
+    "EntryColour": "F9E2AF",
+    "NodeColour": "A6E3A1",
+    "OptionColour": "CBA6F7",
+    "ModuleEntryColour": "FAB387",
+    "ModuleNodeColour": "94E2D5"
+}

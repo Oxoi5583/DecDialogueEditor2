@@ -20,7 +20,6 @@ void QuickTextDisplay::process(){
         ImVec4 color = ThemeLoader::Ref()->get_imgui_color("SecondaryColour3");
         color = ImVec4(color.x , color.y , color.z , color.w * 0.5f);
 
-        //ImGui::SetNextWindowFocus();
         ImGui::PushStyleColor(ImGuiCol_WindowBg, color);
 
         vec2 pos = MouseServer::Ref()->get_mouse_screen_position();

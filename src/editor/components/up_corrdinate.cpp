@@ -107,7 +107,7 @@ void UpCoordinate::m_draw_blocks(){
                                                             ImVec2(window_pos.x + line_width, window_pos.y + height + 6.0f),
                                                             ThemeLoader::Ref()->ImVec4_to_int(applied_text_color));
 
-                if(MouseServer::Ref()->is_mouse_in_viewport()){
+                if(MouseServer::Ref()->is_mouse_in_viewport() && !EventServer::Ref()->has<EventLockedAll>()){
                     if(start_screen_pos.x <= m_mouse_pos.x <= end_screen_pos.x){
                         ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(m_mouse_pos.x, window_pos.y), 
                                                                 ImVec2(m_mouse_pos.x + line_width, window_pos.y  + m_bg_size.x + 6.0f),

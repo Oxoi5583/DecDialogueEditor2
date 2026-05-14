@@ -23,6 +23,7 @@ typedef std::map<PString, Workspace> Workspaces;
 struct Project{
     OID folder_id;
     Workspaces spaces;
+    bool is_saved = true;
 };
 
 struct Workspace{
@@ -82,22 +83,27 @@ private:
 
     bool m_action_save_as_project(FPath p_path);
     bool m_action_open_project(FPath p_path);
+    bool m_action_export_project(FPath p_path);
 
     enum class ProjectAction{
         SAVE,
         SAVE_AS,
         OPEN,
         EXPORT,
+        FORCE_TO_SAVE_STATUS,
     };
     struct ProjectActionPackage{
         ProjectAction action;
+        uint8_t delay_frame;
     };
-    std::vector<ProjectActionPackage> m_project_action_packages;
+    std::queue<ProjectActionPackage> m_project_action_packages;
     void m_handle_action();
     bool m_handle_action_save();
     bool m_handle_action_save_as();
     bool m_handle_action_open();
+    bool m_handle_action_export();
 
+    OID m_new_explorer_export();
     OID m_new_explorer_save();
     OID m_new_explorer_open();
 public:
@@ -181,6 +187,9 @@ public:
     bool is_workspace_file_valid(OID p_file);
 
     void shutdown();
+
+    bool has_any_unsaved();
+    void forced_switch_to_saved(uint8_t p_delay_frame = 0);
 
     friend struct ProjectPayload;
 };

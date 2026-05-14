@@ -36,7 +36,6 @@ private:
     void m_job_update_control_motion();
     void m_job_update_control_zoom();
     void m_job_draw_border();
-    void m_job_upload_data();
 public:
     GraphCamera()
     : m_view(mat4(1.0f))
@@ -47,6 +46,7 @@ public:
     
     void set_target(const vec2& p_target);
     void set_zoom(const float& p_zoom);
+    void upload_data_to_project_server();
     
     void refresh_left_top_buffer();
     vec2 get_left_top_buffer() const;

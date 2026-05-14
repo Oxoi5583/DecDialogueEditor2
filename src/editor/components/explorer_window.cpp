@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <engine/window.h>
+#include <server/event_server.h>
 #include <server/file_server.h>
 #include <server/object_server.h>
 #include <server/ui_text_bank.h>
@@ -97,7 +98,7 @@ void ExplorerWindow::ready(){
     m_open_file_dialog();
 }
 void ExplorerWindow::pre_process(){
-
+    EventServer::Ref()->emit_locked_all();
 }
 void ExplorerWindow::process(){
 

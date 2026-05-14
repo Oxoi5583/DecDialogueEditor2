@@ -19,14 +19,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
 if (MSVC)
     add_compile_options(/utf-8)
 
-    #if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    #    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-    #    add_compile_options(/fsanitize=address
-    #                        #/fsanitize-address-use-after-return
-    #                        /Zi
-    #                        /Od)
-    #    add_link_options(/fsanitize=address /fsanitize-address-use-after-return)
-    #endif()
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
+        add_compile_options(/fsanitize=address
+                            #/fsanitize-address-use-after-return
+                            /Zi
+                            /Od)
+        add_link_options(/fsanitize=address /fsanitize-address-use-after-return)
+    endif()
 endif()
 
 add_compile_options(
@@ -61,10 +61,12 @@ add_executable(${PROJECT_NAME} ${SOURCES} logo.rc)
 find_package(OpenGL REQUIRED)
 
 include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 FetchContent_Declare(
     glad
     GIT_REPOSITORY https://github.com/Dav1dde/glad.git
     GIT_TAG v0.1.36
+    FIND_PACKAGE_ARGS NAMES glad
 )
 FetchContent_MakeAvailable(glad)
 
@@ -72,6 +74,7 @@ FetchContent_Declare(
     SimZip
     GIT_REPOSITORY https://github.com/L-Super/SimZip.git
     GIT_TAG "main"
+    FIND_PACKAGE_ARGS NAMES SimZip
 )
 FetchContent_MakeAvailable(SimZip)
 
@@ -80,6 +83,7 @@ FetchContent_Declare(
     URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
     URL_MD5 893b5203b862eb9bbd08553e24ff146a
     USES_TERMINAL_DOWNLOAD TRUE
+    FIND_PACKAGE_ARGS NAMES Boost
 )
 FetchContent_MakeAvailable(Boost)
 
@@ -87,8 +91,12 @@ FetchContent_Declare(
     SDL3
     GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
     GIT_TAG "main"
+    FIND_PACKAGE_ARGS NAMES SDL3
 )
-FetchContent_MakeAvailable(SDL3)
+FetchContent_GetProperties(SDL3)
+if(NOT SDL3_POPULATED)
+    FetchContent_MakeAvailable(SDL3)
+endif()
 
 find_package(glad CONFIG REQUIRED)
 

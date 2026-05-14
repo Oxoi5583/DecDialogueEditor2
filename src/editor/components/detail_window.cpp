@@ -221,7 +221,12 @@ void EditorDetailsWindow::m_draw_fields(){
         f.raw_value.resize(std::strlen(f.raw_value.c_str()));
 
         if(ImGui::IsItemHovered()){
-            EventServer::Ref()->emit(EventLockedAll());
+            EventMouseHoverObj evt;
+            evt.obj_id = 0;
+            evt.is_pointer_cursor = false;
+            float max = boost_swap_impl::numeric_limits<float>().max();
+            evt.hovering_pos = {max, max};
+            EventServer::Ref()->emit(evt);
         }
     }
 

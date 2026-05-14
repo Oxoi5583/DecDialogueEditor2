@@ -72,8 +72,6 @@ void EditorLeftPanel::pre_process(){
         ImGuiStyle& style = ImGui::GetStyle();
         style.TabRounding = 0.1f;
 
-        //ImGui::SetNextWindowFocus();
-
         ImGui::Begin("EditorLeftPanel", &m_is_displaying, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
         
         if (ImGui::BeginTabBar("TabBar")){

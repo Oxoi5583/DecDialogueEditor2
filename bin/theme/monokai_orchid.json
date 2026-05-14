@@ -1,0 +1,21 @@
+{
+    "Name": "Monokai Orchid",
+    "BrandColour": "272822",
+    "SecondaryColour1": "1E1F1C",
+    "SecondaryColour2": "171813",
+    "SecondaryColour3": "10110E",
+    "AccentColour1": "66D9EF",
+    "AccentColour2": "FD971F",
+    "TextColour": "F8F8F2",
+    "HighlightTextColour": "CFCFC2",
+    "CloseButtonColour": "F92672",
+    "GridColour": "10110E",
+    "SelectAreaColour": "49483E80",
+    "SelectAreaBorderColour": "75715E",
+    "SelectableHighlightColour": "A6E22E",
+    "EntryColour": "E6DB74",
+    "NodeColour": "A6E22E",
+    "OptionColour": "AE81FF",
+    "ModuleEntryColour": "FD971F",
+    "ModuleNodeColour": "66D9EF"
+}

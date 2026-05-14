@@ -1,5 +1,6 @@
 #include "engine/window.h"
 #include "DecToolsBox/debug/messenger.h"
+#include "SDL3/SDL_rect.h"
 #include "SDL3/SDL_render.h"
 #include "editor/components/menu_bar.h"
 #include "editor/layout.h"
@@ -11,6 +12,7 @@
 #include "glm/ext/vector_float2.hpp"
 #include "glm/ext/vector_int3.hpp"
 #include <editor/components/explorer_window.h>
+#include <editor/components/popup_window.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "engine/input_hub.h"
@@ -18,6 +20,7 @@
 #include "server/events.h"
 #include "struct/shape/rect2.h"
 #include <server/object_server.h>
+#include <server/project_server.h>
 #include <vector>
 
 #define ENGINE_INIT_STEP __COUNTER__
@@ -150,12 +153,52 @@ void EngineWindow::m_init_sdl_show_window(){
 
     m_is_init_done = true;
 }
+#include "server/ui_text_bank.h"
+
 void EngineWindow::shutdown(){
     SDL_DestroyRenderer(m_sdl_renderer);
     SDL_DestroyWindow(m_sdl_window);
     SDL_Quit();
 }
+void EngineWindow::m_close(){
+    m_is_running = false;
+}
 
+void EngineWindow::m_handle_close_request(){
+    if(!m_is_close_requested){
+        return;
+    }
+
+    bool is_project_unsaved = ProjectServer::Ref()->has_any_unsaved();
+    if(m_is_waiting_for_saving && is_project_unsaved){
+        return;
+    }
+
+    if(is_project_unsaved){
+        if(!m_close_confirm_window || !PopupWindowManager::Ref()->is_window_exists(m_close_confirm_window_uid)){
+            m_close_confirm_window = ObjectServer::Ref()->queue_create<PopupWindow>();
+            m_close_confirm_window_uid = m_close_confirm_window->get_uid();
+
+            vec2 window_size = EngineWindow::Ref()->get_window_size();
+            m_close_confirm_window->set_content("Project is not saved.\nDo you want to save before leaving?");
+            m_close_confirm_window->set_size(window_size / 3.0f);
+            m_close_confirm_window->add_close_fallback([this](){ this->m_is_close_requested = false; this->m_close_confirm_window = nullptr; });
+            m_close_confirm_window->add_option(UiTextBank::Ref()->Yes
+            ,[this](){
+                ProjectServer::Ref()->save_project();
+                this->m_is_waiting_for_saving = true;
+            });
+            m_close_confirm_window->add_option(UiTextBank::Ref()->No
+            ,[this](){
+                this->m_close();
+            });
+            m_close_confirm_window->show();
+            return;
+        }
+    }else{
+        this->m_close();
+    }
+}
 
 void EngineWindow::m_job_gl_clear(){
     vec2 window_size = this->get_window_size();
@@ -229,7 +272,6 @@ void EngineWindow::m_job_event_handle(){
                 break;
             }
             case Event::CLOSE_WINDOW:{
-                m_is_running = false;
                 break;
             }
             case Event::MAXIMIZE:{
@@ -273,6 +315,7 @@ void EngineWindow::m_job_event_handle(){
 
 void EngineWindow::close(){
     m_events.emplace(Event::CLOSE_WINDOW);
+    m_is_close_requested = true;
 }
 
 void EngineWindow::begin(){
@@ -284,6 +327,7 @@ void EngineWindow::begin(){
     m_job_imgui_new_frame();
     m_job_event_handle();
     m_job_update_window_dragging();
+    m_handle_close_request();
 }
 void EngineWindow::end(){
     EngineWindow::Ref()->m_job_imgui_render();
@@ -348,7 +392,13 @@ void EngineWindow::window_follow_mouse(){
     }
 
     if(!is_maximized() && !is_minimized()){
-        if(m_screen_mouse_position.y == 0 && EngineInputHub::Ref()->is_mouse_left_button_just_released()){
+        SDL_DisplayID display_id = SDL_GetDisplayForWindow(m_sdl_window);
+        SDL_Rect display_rect;
+        if(!SDL_GetDisplayBounds(display_id, &display_rect)){
+            return;
+        }
+
+        if(m_screen_mouse_position.y <= display_rect.y && EngineInputHub::Ref()->is_mouse_left_button_just_released()){
             this->stop_dragging();
             this->maximize();
             return;

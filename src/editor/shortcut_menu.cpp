@@ -124,8 +124,6 @@ void EditorShortcutMenu::m_draw_menu(){
     }
     if (ImGui::BeginPopup(m_root_name, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         if(ImGui::IsWindowHovered()){
-            EventLockedAll evt1;
-            EventServer::Ref()->emit(evt1);
             EventMouseHoverObj evt2;
             EventServer::Ref()->emit(evt2);
         }
@@ -139,8 +137,6 @@ void EditorShortcutMenu::m_draw_options(std::vector<Option>& p_options){
         if(opt.has_options()){
             if(ImGui::BeginMenu(opt.name->c_str())){
                 if(ImGui::IsWindowHovered()){
-                    EventLockedAll evt1;
-                    EventServer::Ref()->emit(evt1);
                     EventMouseHoverObj evt2;
                     EventServer::Ref()->emit(evt2);
                 }

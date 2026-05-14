@@ -1,0 +1,21 @@
+{
+    "Name": "Gruvbox Ember",
+    "BrandColour": "282828",
+    "SecondaryColour1": "1D2021",
+    "SecondaryColour2": "17191A",
+    "SecondaryColour3": "0F1010",
+    "AccentColour1": "83A598",
+    "AccentColour2": "FE8019",
+    "TextColour": "EBDBB2",
+    "HighlightTextColour": "D5C4A1",
+    "CloseButtonColour": "FB4934",
+    "GridColour": "181818",
+    "SelectAreaColour": "45858880",
+    "SelectAreaBorderColour": "928374",
+    "SelectableHighlightColour": "8EC07C",
+    "EntryColour": "FABD2F",
+    "NodeColour": "B8BB26",
+    "OptionColour": "D3869B",
+    "ModuleEntryColour": "FE8019",
+    "ModuleNodeColour": "8EC07C"
+}

@@ -1,0 +1,21 @@
+{
+    "Name": "Rose Pine Dusk",
+    "BrandColour": "191724",
+    "SecondaryColour1": "1F1D2E",
+    "SecondaryColour2": "15131D",
+    "SecondaryColour3": "0E0D14",
+    "AccentColour1": "9CCFD8",
+    "AccentColour2": "F6C177",
+    "TextColour": "E0DEF4",
+    "HighlightTextColour": "C4A7E7",
+    "CloseButtonColour": "EB6F92",
+    "GridColour": "0E0D14",
+    "SelectAreaColour": "31748F80",
+    "SelectAreaBorderColour": "524F67",
+    "SelectableHighlightColour": "9CCFD8",
+    "EntryColour": "F6C177",
+    "NodeColour": "31748F",
+    "OptionColour": "C4A7E7",
+    "ModuleEntryColour": "EBBCBA",
+    "ModuleNodeColour": "9CCFD8"
+}
