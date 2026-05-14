@@ -432,7 +432,7 @@ double EditorSpace::m_get_total_dist(){
     return ret;
 }
 double EditorSpace::m_proportion_to_value(double p_proportion){
-    double total_dist = m_get_total_dist();
+    double total_dist = std::clamp(m_get_total_dist(), 0.01, std::numeric_limits<double>().max());
     return std::clamp(total_dist * p_proportion, 0.0, total_dist);
 }
 double EditorSpace::m_value_to_proportion(double p_value){
@@ -483,7 +483,10 @@ double EditorSpace::m_get_limited_split(double p_value){
         f_max = std::clamp(1.0 - f_min_buf, 0.0, 1.0);
     }
 
-    return std::clamp(p_value, f_min, f_max);
+    double start_clamp = std::min(f_min, f_max);
+    double end_clamp = std::max(f_min, f_max);
+
+    return std::clamp(p_value, start_clamp, end_clamp);
 }
 
 double EditorSpace::m_get_fixed_split(){
@@ -679,7 +682,10 @@ double EditorSpace::m_get_proportion_verticle(vec2 p_pos) const{
     double start = this->get_left_top().y;
     double end = this->get_left_down().y;
 
-    double clamp_pos = std::clamp(pos_y, start, end);
+    double start_clamp = std::min(start, end);
+    double end_clamp = std::max(start, end);
+
+    double clamp_pos = std::clamp(pos_y, start_clamp, end_clamp);
     
     double dist = clamp_pos - start;
     double total_dist = end - start;
@@ -693,7 +699,10 @@ double EditorSpace::m_get_proportion_horizontal(vec2 p_pos) const{
     double start = this->get_left_top().x;
     double end = this->get_right_top().x;
 
-    double clamp_pos = std::clamp(pos_x, start, end);
+    double start_clamp = std::min(start, end);
+    double end_clamp = std::max(start, end);
+
+    double clamp_pos = std::clamp(pos_x, start_clamp, end_clamp);
     
     double dist = clamp_pos - start;
     double total_dist = end - start;

@@ -7,6 +7,7 @@
 #include "glm/ext/vector_float2.hpp"
 #include "struct/shape/rect2.h"
 #include <algorithm>
+#include <limits>
 
 void GraphViewport::init(){
     m_window_size = EngineWindow::Ref()->get_window_size();
@@ -21,12 +22,13 @@ void GraphViewport::update(){
     vec2 buffer_right_down = m_viewport_rect_buffer.get_right_down();
         
     vec2 new_right_down = {
-        std::clamp(buffer_right_down.x, buffer_left_top.x, m_window_size.x),
-        std::clamp(buffer_right_down.y, buffer_left_top.y, m_window_size.y),  
+        std::clamp(buffer_right_down.x, std::clamp(buffer_left_top.x, std::numeric_limits<float>().min(), m_window_size.x), m_window_size.x),
+        std::clamp(buffer_right_down.y, std::clamp(buffer_left_top.y, std::numeric_limits<float>().min(), m_window_size.y), m_window_size.y),  
     };
+    
     vec2 new_left_top = {
-        std::clamp(buffer_left_top.x, 0.0f, new_right_down.x),
-        std::clamp(buffer_left_top.y, 0.0f, new_right_down.y),
+        std::clamp(buffer_left_top.x, 0.0f, std::clamp(new_right_down.x, 0.001f, std::numeric_limits<float>().max())),
+        std::clamp(buffer_left_top.y, 0.0f, std::clamp(new_right_down.y, 0.001f, std::numeric_limits<float>().max())),
     };
 
     m_viewport_rect.set_AABB(new_left_top, new_right_down);
