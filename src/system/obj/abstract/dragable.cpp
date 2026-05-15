@@ -12,8 +12,14 @@
 #include "server/mouse_server.h"
 #include "server/object_server.h"
 #include "theme/theme_loader.h"
+#include <DecToolsBox/debug/messenger.h>
+#include <array>
 #include <cmath>
-
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext/vector_float2.hpp>
+#include <struct/shape/line.h>
+#include <struct/shape/rect2.h>
+#include "ext/debug/messenger_ext.h"
 
 DragableObject::DragableObject(){
     BIND_CLASS(DragableObject);
@@ -132,15 +138,76 @@ void DragableObject::pre_process(){
     m_update_state();
     m_emit_event();
     m_align_grid();
+    m_move_if_hit_border();
 }
 void DragableObject::process(){
 
 }
 void DragableObject::post_process(){
-
+    
 }
 void DragableObject::draw(){
 
+}
+
+void DragableObject::m_move_if_hit_border(){
+    if(!this->was_clicked() || !this->is_dragging()){
+        return;
+    }
+
+    vec2 self_pos = MouseServer::Ref()->get_mouse_world_position();
+    Rect2 cam_rect = GraphCamera::Ref()->get_zoomed_rect();
+    Line up_edge = {cam_rect.get_left_top(), cam_rect.get_right_top(), 1};
+    Line left_edge = {cam_rect.get_left_top(), cam_rect.get_left_down(), 1};
+    Line right_edge = {cam_rect.get_right_top(), cam_rect.get_right_down(), 1};
+    Line down_edge = {cam_rect.get_right_down(), cam_rect.get_left_down(), 1};
+    
+    enum EdgeType{
+        EDGE_UP,
+        EDGE_DOWN,
+        EDGE_RIGHT,
+        EDGE_LEFT,
+    };
+    struct Bucket{
+        Line& edge;
+        EdgeType type;
+    };
+
+    std::array<Bucket, 4> buckets ={{
+        {up_edge, EDGE_UP},
+        { left_edge, EDGE_LEFT},
+        { right_edge, EDGE_RIGHT},
+        { down_edge, EDGE_DOWN},
+    }};
+
+    vec2 move_dir = {0, 0};
+    for(Bucket& b : buckets){
+        if(b.edge.is_point_intersect(self_pos)){
+            switch (b.type) {
+                case EDGE_UP:{
+                    move_dir += vec2(0, -1);
+                    break;
+                }
+                case EDGE_DOWN:{
+                    move_dir += vec2(0, 1);
+                    break;
+                }
+                case EDGE_RIGHT:{
+                    move_dir += vec2(1, 0);
+                    break;
+                }
+                case EDGE_LEFT:{
+                    move_dir += vec2(-1, 0);
+                    break;
+                }
+            }
+        }
+    }
+
+
+    vec2 now_pos = GraphCamera::Ref()->get_target();
+    vec2 new_pos = now_pos + (move_dir * vec2(5 / GraphCamera::Ref()->get_zoom(), 5 / GraphCamera::Ref()->get_zoom()));
+    GraphCamera::Ref()->set_target(new_pos);
 }
 
 bool DragableObject::is_restore_to_idle(){
@@ -176,7 +243,7 @@ void DragableObject::place(){
 }
 
 void DragableObject::m_align_grid(){
-    if(m_is_align_grid){
+    if(m_is_align_grid && !this->is_dragging()){
         vec2 pos = this->get_position();
         double x = pos.x;
         double y = pos.y;

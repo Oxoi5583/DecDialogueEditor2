@@ -86,7 +86,7 @@ void GraphCamera::m_job_update_control_motion(){
 
     vec2 current_mouse_pos = MouseServer::Ref()->get_mouse_screen_position();
     vec2 motion = current_mouse_pos - m_dragging_start_pos;
-    vec2 new_target = m_dragging_start_target - motion;
+    vec2 new_target = m_dragging_start_target - (motion / this->get_zoom());
 
     this->set_target(new_target);
 }

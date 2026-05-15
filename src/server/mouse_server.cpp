@@ -10,6 +10,8 @@
 #include "system/obj/abstract/hoverable.h"
 #include "system/obj/abstract/clickable.h"
 #include <glm/fwd.hpp>
+#include <struct/shape/rect2.h>
+#include <system/graph/camera.h>
 
 MouseServer::MouseServer() {
     m_left_double_click_timer.reset();
@@ -50,7 +52,8 @@ void MouseServer::load_cursor() {
 void MouseServer::update() {
     auto hub = EngineInputHub::Ref();
 
-    m_world_mouse_pos = hub->get_mouse_world_position();
+    Rect2 cam = GraphCamera::Ref()->get_zoomed_rect();
+    m_world_mouse_pos = glm::clamp(hub->get_mouse_world_position(), cam.get_left_top(), cam.get_right_down());
     m_screen_mouse_pos = hub->get_mouse_position();
     m_screen_mouse_pos_center = m_screen_mouse_pos - (EngineWindow::Ref()->get_window_size() / 2.0f);
     m_is_mouse_in_window = hub->is_mouse_in_window();

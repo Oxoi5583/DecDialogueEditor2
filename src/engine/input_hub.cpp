@@ -718,8 +718,13 @@ vec2 EngineInputHub::get_mouse_position(){
     return m_mouse_position;
 }
 vec2 EngineInputHub::get_mouse_world_position(){
-    vec2 viewport_mouse_pos = GraphViewport::Ref()->screen_to_viewport(m_mouse_position);
-    vec2 world_pos = GraphCamera::Ref()->viewport_to_world(viewport_mouse_pos);
+    Rect2 rect = GraphViewport::Ref()->get_viewport_rect();
+    vec2 lt = rect.get_left_top();
+    vec2 rd = rect.get_right_down();
+
+    vec2 clamped_pos = glm::clamp(m_mouse_position, lt, rd);
+    vec2 vp_mouse_pos = GraphViewport::Ref()->screen_to_viewport(clamped_pos);
+    vec2 world_pos = GraphCamera::Ref()->viewport_to_world(vp_mouse_pos);
     return world_pos;
 }
 vec2 EngineInputHub::get_mouse_wheel(){

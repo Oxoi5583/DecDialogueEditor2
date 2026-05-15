@@ -4,6 +4,7 @@
 #include "system/obj/abstract/clickable.h"
 #include "system/obj/abstract/hoverable.h"
 #include "server/object_base.h"
+#include <struct/shape/line.h>
 
 class DragableObject : public ClickableObject {
 private:
@@ -21,6 +22,8 @@ private:
     void m_handle_action();
 
     void m_emit_event();
+
+    void m_move_if_hit_border();
 
     vec2 m_ready_mouse_pos;
     vec2 m_dragging_position_offset;
