@@ -381,7 +381,6 @@ The executable output is configured to `bin/`, and the app expects runtime folde
 - There is no formal automated test suite yet.
 - Some systems are experimental and intentionally direct because this is also a first larger C++ editor project.
 - `include/DecToolsBox` is a required submodule. If it is empty after cloning, run the submodule command above.
-- `.gitmodules` still lists `third_party/SDL3`, while the current `CMakeLists.txt` fetches SDL3 through `FetchContent`. Treat the CMake file as the current source of truth.
 - The project file/export schema should be considered unstable until the editor reaches a more mature version.
 
 ## Good Places to Start Reading
