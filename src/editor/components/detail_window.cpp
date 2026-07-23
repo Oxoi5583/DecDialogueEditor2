@@ -227,6 +227,7 @@ void EditorDetailsWindow::m_draw_fields(){
             float max = boost_swap_impl::numeric_limits<float>().max();
             evt.hovering_pos = {max, max};
             EventServer::Ref()->emit(evt);
+            this->block_hovering();
         }
     }
 

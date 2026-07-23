@@ -6,6 +6,7 @@
 #include "server/mouse_server.h"
 #include "server/object_server.h"
 #include "struct/shape/base.h"
+#include <complex.h>
 #include <memory>
 #include <server/physics_server.h>
 
@@ -18,6 +19,11 @@ HoverableObject::~HoverableObject(){
 }
 
 bool HoverableObject::m_check_hovering(){
+    if(m_was_blocked_hovering){
+        m_was_blocked_hovering = false;
+        return false;
+    }
+
     EventMouseHoverObj event = EventServer::Ref()->poll_first<EventMouseHoverObj>();
     if(event.is_event_occurred && event.obj_id != get_id()){
         return false;
@@ -39,6 +45,9 @@ bool HoverableObject::m_check_hovering(){
     return true;
 }
 
+void HoverableObject::block_hovering(){
+    m_was_blocked_hovering = true;
+}
 
 bool HoverableObject::was_hovered(){
     return m_was_hovered;

@@ -15,8 +15,20 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <vector>
+#include <ranges>
 
+FString link_to_str(FStreamLink p_link){
+    FString ret = "";
+    for(size_t i = 0; i < p_link.size() - 1; i++){
+        FString& part = p_link[i];
+        part += "\\";
+    }
+    for(size_t i = 0; i < p_link.size(); i++){
+        FString& part = p_link[i];
+        ret += part;
+    }
+    return ret;
+};
 namespace std {
     string to_string(FSizeUnit p_size){
         return p_size.to_string();
@@ -117,13 +129,14 @@ void FileServer::init(){
             }
             msg += ") not found!";
             ERROR_MSG(msg);
-            exit(-1);
-        }else{
-            FStreamBase* folder_obj = ObjectServer::Ref()->get_instance<FStreamBase>(id);
-            if(need_hidden && !folder_obj->is_hidden()){
-                folder_obj->set_hidden();
-            }
+            id = m_root_ptr->create_folder(link_to_str(folder.link));
+            //exit(-1);
         }
+        FStreamBase* folder_obj = ObjectServer::Ref()->get_instance<FStreamBase>(id);
+        if(need_hidden && !folder_obj->is_hidden()){
+            folder_obj->set_hidden();
+        }
+    
     }
 
 

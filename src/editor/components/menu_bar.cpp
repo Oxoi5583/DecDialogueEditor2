@@ -76,7 +76,9 @@ void EditorMenuBar::m_begin_main_bar(){
 void EditorMenuBar::m_update_menu_file(){
     if (ImGui::BeginMenu(UiTextBank::Ref()->File)){
         if(!EventServer::Ref()->has<EventLockedAll>()){
-            ImGui::MenuItem(UiTextBank::Ref()->New);
+            if(ImGui::MenuItem(UiTextBank::Ref()->New)){
+                ProjectServer::Ref()->new_project_with_save_check();
+            }
             if(ImGui::MenuItem(UiTextBank::Ref()->SaveAllWS)){
                 ProjectServer::Ref()->save_all_workspaces();
             }

@@ -121,7 +121,7 @@ target_link_libraries(
     PRIVATE 
         ${OPENGL_LIBRARIES}
         SDL3::SDL3
-        glad::glad
+        glad
         SimZip
         Boost::interprocess
         Boost::headers

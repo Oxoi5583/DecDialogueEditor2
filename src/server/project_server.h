@@ -84,6 +84,7 @@ private:
     bool m_action_save_as_project(FPath p_path);
     bool m_action_open_project(FPath p_path);
     bool m_action_export_project(FPath p_path);
+    bool m_action_new_project();
 
     enum class ProjectAction{
         SAVE,
@@ -91,6 +92,8 @@ private:
         OPEN,
         EXPORT,
         FORCE_TO_SAVE_STATUS,
+        NEW,
+        NEW_WITH_SAVE_CHECK,
     };
     struct ProjectActionPackage{
         ProjectAction action;
@@ -180,6 +183,8 @@ public:
     void save_workspace(PString p_uid);
     void save_all_workspaces();
     void export_project();
+    void new_project();
+    void new_project_with_save_check();
 
     bool have_saved_target();
     bool have_explorer_window();

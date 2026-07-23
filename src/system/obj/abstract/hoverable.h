@@ -30,6 +30,8 @@ public:
 
     Type get_hovering_type();
     void set_hovering_type(Type p_type);
+
+    void block_hovering();
 private:
     bool m_was_hovered = false;
     bool m_check_hovering();
@@ -37,6 +39,8 @@ private:
     bool m_changed_cursor = true;
     
     Type m_type = Type::WORLD;
+
+    bool m_was_blocked_hovering = false;
 
     vec2 get_mouse_pos();
 };

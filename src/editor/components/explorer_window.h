@@ -53,6 +53,7 @@ public:
         SHADERS,
         DEC_DIALOGUE,
         ALL_FILES,
+        JSON,
     };
     enum class State{
         IDLE,
@@ -88,6 +89,7 @@ private:
         {FilterOption::SHADERS, {"Shaders", "vert;frag;geom;comp"}},
         {FilterOption::DEC_DIALOGUE, {"DecDialogue", "ddlg"}},
         {FilterOption::ALL_FILES, {"All files", "*"}},
+        {FilterOption::JSON, {"JSON", "json"}},
     };
 
     void m_open_file_dialog();

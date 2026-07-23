@@ -182,11 +182,16 @@ void EngineWindow::m_handle_close_request(){
             vec2 window_size = EngineWindow::Ref()->get_window_size();
             m_close_confirm_window->set_content(UiTextBank::Ref()->PromptSaveBeforeClose.get());
             m_close_confirm_window->set_size(window_size / 3.0f);
-            m_close_confirm_window->add_close_fallback([this](){ this->m_is_close_requested = false; this->m_close_confirm_window = nullptr; });
+            m_close_confirm_window->add_close_fallback([this](){
+                this->m_is_close_requested = false;
+                this->m_close_confirm_window = nullptr;
+                this->m_close_confirm_window_uid = "";
+            });
             m_close_confirm_window->add_option(UiTextBank::Ref()->Yes
             ,[this](){
                 ProjectServer::Ref()->save_project();
                 this->m_is_waiting_for_saving = true;
+                this->m_close_confirm_window->close();
             });
             m_close_confirm_window->add_option(UiTextBank::Ref()->No
             ,[this](){
@@ -197,6 +202,51 @@ void EngineWindow::m_handle_close_request(){
         }
     }else{
         this->m_close();
+    }
+}
+
+void EngineWindow::m_handle_new_project_save_check_request(){
+    if(!m_is_save_check_requested){
+        return;
+    }
+
+    bool is_project_unsaved = ProjectServer::Ref()->has_any_unsaved();
+    if(m_is_waiting_for_saving && is_project_unsaved){
+        return;
+    }
+
+    if(is_project_unsaved){
+        if(!m_new_project_save_check_confirm_window || !PopupWindowManager::Ref()->is_window_exists(m_new_project_save_check_confirm_window_uid)){
+            m_new_project_save_check_confirm_window = ObjectServer::Ref()->queue_create<PopupWindow>();
+            m_new_project_save_check_confirm_window_uid = m_new_project_save_check_confirm_window->get_uid();
+
+            vec2 window_size = EngineWindow::Ref()->get_window_size();
+            m_new_project_save_check_confirm_window->set_content(UiTextBank::Ref()->PromptSaveBeforeClose.get());
+            m_new_project_save_check_confirm_window->set_size(window_size / 3.0f);
+            m_new_project_save_check_confirm_window->add_close_fallback([this](){
+                this->m_new_project_save_check_confirm_window = nullptr;
+                this->m_new_project_save_check_confirm_window_uid = "";
+                this->m_is_save_check_requested = false;
+            });
+            m_new_project_save_check_confirm_window->add_option(UiTextBank::Ref()->Yes
+            ,[this](){
+                ProjectServer::Ref()->save_project();
+                this->m_is_waiting_for_saving = true;
+            });
+            m_new_project_save_check_confirm_window->add_option(UiTextBank::Ref()->No
+            ,[this](){
+                ProjectServer::Ref()->new_project();
+                this->m_is_save_check_requested = false;
+                this->m_new_project_save_check_confirm_window->close();
+            });
+            m_new_project_save_check_confirm_window->show();
+            return;
+        }
+    }else{
+        ProjectServer::Ref()->new_project();
+        this->m_is_waiting_for_saving = false;
+        this->m_is_save_check_requested = false;
+        this->m_new_project_save_check_confirm_window->close();
     }
 }
 
@@ -272,6 +322,7 @@ void EngineWindow::m_job_event_handle(){
                 break;
             }
             case Event::CLOSE_WINDOW:{
+                m_is_close_requested = true;
                 break;
             }
             case Event::MAXIMIZE:{
@@ -308,6 +359,10 @@ void EngineWindow::m_job_event_handle(){
                 SDL_ShowWindow(m_sdl_window);
                 break;
             }
+            case Event::NEW_PROJECT_SAVE_CHECK:{
+                m_is_save_check_requested = true;
+                break;
+            }
         }
         m_events.pop();
     }
@@ -315,7 +370,9 @@ void EngineWindow::m_job_event_handle(){
 
 void EngineWindow::close(){
     m_events.emplace(Event::CLOSE_WINDOW);
-    m_is_close_requested = true;
+}
+void EngineWindow::new_project_save_check(){
+    m_events.emplace(Event::NEW_PROJECT_SAVE_CHECK);
 }
 
 void EngineWindow::begin(){
@@ -328,6 +385,7 @@ void EngineWindow::begin(){
     m_job_event_handle();
     m_job_update_window_dragging();
     m_handle_close_request();
+    m_handle_new_project_save_check_request();
 }
 void EngineWindow::end(){
     EngineWindow::Ref()->m_job_imgui_render();

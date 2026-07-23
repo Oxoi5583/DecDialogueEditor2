@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iomanip>
 #include <ios>
+#include <iostream>
 #include <nlohmann/json.hpp>
 #include <server/event_server.h>
 #include <server/events.h>
@@ -1087,12 +1088,28 @@ bool ProjectServer::m_action_open_project(FPath p_path){
     return false;
 }
 
+struct CoutController{
+    std::streambuf* old_buf;
+
+    CoutController(){
+        old_buf = std::cout.rdbuf();
+        std::cout.rdbuf(nullptr);
+    }
+
+    void release(){
+        std::cout.rdbuf(old_buf);
+    }
+
+    ~CoutController(){
+        std::cout.rdbuf(old_buf);
+    }
+};
+
 bool ProjectServer::m_action_save_as_project(FPath p_path){
-    std::streambuf* old_buf = std::cout.rdbuf();
-    std::cout.rdbuf(nullptr); 
+    CoutController cc;
     try {
         if(FileServer::Ref()->is_in_programme_folder(p_path)){
-            std::cout.rdbuf(old_buf);
+            cc.release();
             ERROR_MSG("Please save project outside of the programme file.");
             return false;
         }
@@ -1114,25 +1131,24 @@ bool ProjectServer::m_action_save_as_project(FPath p_path){
         forced_switch_to_saved();
 
         m_project_file = p_path;
-        std::cout.rdbuf(old_buf);
+        cc.release();
         SUCCESS_MSG("Saved project to " << p_path.string() << " successfully");
         return true;
     } catch(std::exception e) {
-        std::cout.rdbuf(old_buf);
+        cc.release();
         ERROR_MSG("Saving project to " << p_path.string() << " failed.");
         ERROR_MSG("Error msg : " << e.what());
     }
-
-    std::cout.rdbuf(old_buf);
     return false;
 }
+
 bool ProjectServer::m_action_export_project(FPath p_path){
-    std::streambuf* old_buf = std::cout.rdbuf();
-    std::cout.rdbuf(nullptr);
+    // Disable Terminal Outpu for SimZip
+    CoutController cc;
     try {
         if(FileServer::Ref()->is_in_programme_folder(p_path)){
-            std::cout.rdbuf(old_buf);
-            ERROR_MSG("Please export project outside of the programme file.");
+            cc.release();
+            ERROR_MSG("Please export project outside of the programme folder.");
             return false;
         }
 
@@ -1149,6 +1165,7 @@ bool ProjectServer::m_action_export_project(FPath p_path){
             }
 
             auto& ws_data = workspace.data["objects"];
+
             for(auto& it : ws_data.items()){
                 auto& obj_code = it.key();
                 auto& obj_data = it.value();
@@ -1157,10 +1174,17 @@ bool ProjectServer::m_action_export_project(FPath p_path){
                 if(name_to_code.contains(obj_name)){
                     continue;
                 }
-                
+
+                basic_json<> properties = nlohmann::json::object();
+                if(obj_data.contains("properties")){
+                    properties = obj_data["properties"];
+                }
+
                 basic_json<> export_obj_data = {
+                    {"name", obj_name},
                     {"children", obj_data["children"]},
-                    {"properties", obj_data["properties"]},
+                    {"properties", properties},
+                    {"workspace", workspace.data["workspace_info"]["name"]},
                 };
 
                 name_to_code.emplace(obj_name, obj_code);
@@ -1174,18 +1198,39 @@ bool ProjectServer::m_action_export_project(FPath p_path){
         f << std::setw(4) << export_data << std::endl;
         f.close();
 
-        std::cout.rdbuf(old_buf);
+        cc.release();
         SUCCESS_MSG("Exported project to " << p_path.string() << " successfully");
         return true;
     } catch(std::exception e) {
-        std::cout.rdbuf(old_buf);
+        cc.release();
         ERROR_MSG("Exporting project to " << p_path.string() << " failed.");
         ERROR_MSG("Error msg : " << e.what());
     }
-    std::cout.rdbuf(old_buf);
     return false;
 }
 
+bool ProjectServer::m_action_new_project(){
+    // Disable Terminal Outpu for SimZip
+    CoutController cc;
+
+    FStreamFolder* folder = ObjectServer::Ref()->get_instance<FStreamFolder>(m_project.folder_id);
+    if(folder){
+        folder->clear();
+        m_project.spaces.clear();
+        GraphManager::Ref()->clear_nodes();
+
+        PString ws_code = this->create_workspace();
+        this->go_to_workspace(ws_code);
+
+        m_refresh_display_data();
+        m_project_file = "";
+
+        forced_switch_to_saved(2);
+        return true;
+    }
+
+    return true;
+}
 void ProjectServer::save_project(){
     if(m_project_action_packages.empty()){
         m_project_action_packages.push({ProjectAction::SAVE, 0});
@@ -1219,6 +1264,14 @@ void ProjectServer::export_project(){
     if(m_project_action_packages.empty()){
         m_project_action_packages.push({ProjectAction::EXPORT, 0});
     }
+}
+void ProjectServer::new_project(){
+    if(m_project_action_packages.empty()){
+        m_project_action_packages.push({ProjectAction::NEW, 0});
+    }
+}
+void ProjectServer::new_project_with_save_check(){
+    m_project_action_packages.push({ProjectAction::NEW_WITH_SAVE_CHECK, 0});
 }
 
 
@@ -1374,6 +1427,20 @@ void ProjectServer::m_handle_action(){
             is_list_need_to_clear = true;
             break;
         }
+        case ProjectAction::NEW:{
+            m_action_new_project();
+            is_list_need_to_clear = true;
+            break;
+        }
+        case ProjectAction::NEW_WITH_SAVE_CHECK:{
+            if(this->has_any_unsaved()){
+                EngineWindow::Ref()->new_project_save_check();
+            }else{
+                this->new_project();
+            }
+            is_list_need_to_clear = true;
+            break;
+        }
     }
     
     if(is_list_need_to_clear){
@@ -1384,7 +1451,7 @@ OID ProjectServer::m_new_explorer_export(){
     ExplorerWindow* window = EngineWindow::Ref()->create_explorer_window();
     window->set_allow_multi_select(false);
     window->set_mode(ExplorerWindow::Mode::SAVE);
-    window->add_filter(ExplorerWindow::FilterOption::DEC_DIALOGUE);
+    window->add_filter(ExplorerWindow::FilterOption::JSON);
     window->set_default_path("dialogue_data.json");
 
     return window->get_id();

@@ -74,6 +74,12 @@ private:
     std::string m_close_confirm_window_uid = ""; 
     bool m_is_close_requested = false;
     void m_handle_close_request();
+
+    PopupWindow* m_new_project_save_check_confirm_window = nullptr;
+    std::string m_new_project_save_check_confirm_window_uid = ""; 
+    bool m_is_save_check_requested = false;
+    void m_handle_new_project_save_check_request();
+    
     void m_close();
 
     int m_init_step = 0;
@@ -101,6 +107,7 @@ private:
         MAXIMIZE,
         MINIMIZE,
         RESTORE,
+        NEW_PROJECT_SAVE_CHECK,
     };
     std::queue<Event> m_events;
 
@@ -116,6 +123,7 @@ public:
     void init();
 
     void close();
+    void new_project_save_check();
 
     void set_clear_color(vec4 p_color);
     vec4 get_clear_color();

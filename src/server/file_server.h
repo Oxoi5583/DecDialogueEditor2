@@ -5,6 +5,7 @@
 #include "server/object_base.h"
 #include "system/obj/fstream/folder.h"
 #include <cassert>
+#include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <map>
@@ -58,6 +59,7 @@ struct FSizeUnit{
 };
 
 typedef std::vector<FString> FStreamLink;
+
 
 class FileServer : public Singleton<FileServer>{
 private:
