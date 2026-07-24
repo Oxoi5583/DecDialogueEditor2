@@ -5,6 +5,7 @@
 #include "imgui/imgui.h"
 #include <map>
 #include <filesystem>
+#include <vector>
 
 #define FONT_PATH(ARG) std::filesystem::absolute(std::filesystem::path(ARG)).string()
 
