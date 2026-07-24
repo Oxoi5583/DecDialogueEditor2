@@ -6,6 +6,7 @@
 #include "engine/window.h"
 #include "glm/ext/vector_float2.hpp"
 #include "imgui/imgui.h"
+#include "popup_window.h"
 #include "server/event_server.h"
 #include "server/events.h"
 #include "server/mouse_server.h"
@@ -17,6 +18,7 @@
 
 #include "ext/debug/messenger_ext.h"
 #include "server/ui_icon_unicode.h"
+#include "server/ui_text_bank.h"
 
 
 std::string PopupWindowDataPipeline::get_string(std::string p_id){
@@ -387,6 +389,10 @@ void PopupWindow::hide(){
 void PopupWindow::close(){
     this->queue_free();
 }
+void PopupWindow::close_without_fallback(){
+    this->m_close_callback.clear();
+    this->queue_free();
+}
 
 void PopupWindow::m_update_on_screen_ratio(){
     ImVec2 imgui_pos = ImGui::GetWindowPos();
@@ -423,4 +429,41 @@ void PopupWindowManager::restore_all_pos(){
 
 bool PopupWindowManager::is_window_exists(std::string p_uid){
     return m_instances.contains(p_uid.c_str());
+}
+
+bool PopupWindowWrapper::is_exists(){
+    return PopupWindowManager::Ref()->is_window_exists(m_uid);
+}
+void PopupWindowWrapper::create_if_not_exists(){
+    if(!this->is_exists()){
+        m_ptr = ObjectServer::Ref()->queue_create<PopupWindow>();
+        m_uid = m_ptr->get_uid();
+
+        if(m_window_size == vec2(0, 0)){
+            m_window_size = EngineWindow::Ref()->get_window_size();
+        }
+
+        m_ptr->set_content(m_text);
+        m_ptr->set_size(m_window_size / 3.0f);
+        for(PopupWindowCloseCallbackPayload& payload : m_close_callback_payloads){
+            m_ptr->add_close_fallback(payload.action);
+        }
+        m_ptr->add_close_fallback([this](){
+            m_ptr = nullptr;
+            m_uid = "";
+        });
+
+        for(PopupWindowOptionsPayload& payload : m_options_payloads){
+            m_ptr->add_option(
+                payload.label
+                ,payload.action);
+        }
+        for(PopupWindowInputsPayload& payload : m_inputs_payloads){
+            m_ptr->add_input(payload.label, payload.type);
+        }
+        m_ptr->show();
+    }
+}
+void PopupWindowWrapper::close(){
+    m_ptr->close();
 }

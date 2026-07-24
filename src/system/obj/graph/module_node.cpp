@@ -13,7 +13,7 @@ GraphModuleNode::GraphModuleNode(){
 GraphModuleNode::~GraphModuleNode(){}
 
 void GraphModuleNode::ready(){
-    this->set_property("Module Id", "", 50);
+    this->set_init_property("Module Id", "", 50);
 }
 void GraphModuleNode::pre_process(){}
 void GraphModuleNode::process(){

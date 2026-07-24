@@ -72,6 +72,9 @@ void GraphManager::m_spawn_node(EventSpawnNode p_event){
     if(p_event.is_name_custom){
         new_node->set_name(p_event.custom_name);
     }
+    for(auto& item : p_event.init_data){
+        new_node->set_property(item.key, item.value, item.max_size);
+    }
 
     m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
     m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
@@ -95,6 +98,9 @@ void GraphManager::m_spawn_option(EventSpawnNode p_event){
     }
     if(p_event.is_name_custom){
         new_node->set_name(p_event.custom_name);
+    }
+    for(auto& item : p_event.init_data){
+        new_node->set_property(item.key, item.value, item.max_size);
     }
 
     m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
@@ -120,6 +126,9 @@ void GraphManager::m_spawn_repeater(EventSpawnNode p_event){
     if(p_event.is_name_custom){
         new_node->set_name(p_event.custom_name);
     }
+    for(auto& item : p_event.init_data){
+        new_node->set_property(item.key, item.value, item.max_size);
+    }
 
     m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
     m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
@@ -144,6 +153,9 @@ void GraphManager::m_spawn_module_entry(EventSpawnNode p_event){
     if(p_event.is_name_custom){
         new_node->set_name(p_event.custom_name);
     }
+    for(auto& item : p_event.init_data){
+        new_node->set_property(item.key, item.value, item.max_size);
+    }
 
     m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());
     m_id_to_uid.emplace(new_node->get_id(), new_node->get_uid());
@@ -167,6 +179,9 @@ void GraphManager::m_spawn_module_node(EventSpawnNode p_event){
     }
     if(p_event.is_name_custom){
         new_node->set_name(p_event.custom_name);
+    }
+    for(auto& item : p_event.init_data){
+        new_node->set_property(item.key, item.value, item.max_size);
     }
 
     m_uid_to_id.emplace(new_node->get_uid(), new_node->get_id());

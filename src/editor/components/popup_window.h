@@ -6,8 +6,8 @@
 #include "server/object_base.h"
 #include <cstddef>
 #include <functional>
+#include <server/ui_text_bank.h>
 #include <string>
-#include <map>
 #include <unordered_map>
 #include <vector>
 #include "DecToolsBox/core/random_code.h"
@@ -112,6 +112,7 @@ public:
     void show();
     void hide();
     void close();
+    void close_without_fallback();
 
     void restore_screen_ratio();
 
@@ -131,4 +132,54 @@ public:
     void restore_all_pos();
 
     bool is_window_exists(std::string p_uid);
+};
+
+struct PopupWindowInputsPayload{
+    UiText label;
+    PopupWindow::InputType type;
+};
+struct PopupWindowOptionsPayload{
+    UiText label;
+    std::function<void()> action;
+};
+struct PopupWindowCloseCallbackPayload{
+    std::function<void()> action;
+};
+
+
+class PopupWindowWrapper{
+public:
+    PopupWindowWrapper(
+        UiText p_text,
+        glm::vec2 p_window_size = {0,0},
+        std::vector<PopupWindowInputsPayload> p_inputs_payloads = {},
+        std::vector<PopupWindowOptionsPayload> p_options_payloads = {},
+        std::vector<PopupWindowCloseCallbackPayload> p_close_callback_payloads = {}
+    ): m_text(p_text),
+       m_window_size(p_window_size),
+       m_inputs_payloads(p_inputs_payloads),
+       m_options_payloads(p_options_payloads),
+       m_close_callback_payloads(p_close_callback_payloads){};
+    PopupWindowWrapper(){};
+    ~PopupWindowWrapper(){
+        if(is_exists()){
+            m_ptr->close_without_fallback();
+        }
+    };
+
+    void close();
+    bool is_exists();
+    void create_if_not_exists();
+    PopupWindow* operator->(){
+        return m_ptr;
+    }
+private:
+    PopupWindow* m_ptr = nullptr;
+    std::string m_uid = "";
+
+    UiText m_text;
+    glm::vec2 m_window_size;
+    std::vector<PopupWindowInputsPayload> m_inputs_payloads;
+    std::vector<PopupWindowOptionsPayload> m_options_payloads;
+    std::vector<PopupWindowCloseCallbackPayload> m_close_callback_payloads;
 };

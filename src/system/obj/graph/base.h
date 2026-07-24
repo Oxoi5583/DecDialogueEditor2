@@ -94,6 +94,7 @@ public:
     void set_signal(int p_index, std::string p_signal);
 
     void set_property(std::string name, std::string value, uint max_size);
+    void set_init_property(std::string name, std::string value, uint max_size);
     std::string get_property(std::string p_name);
 
     void add_children(OID p_id);

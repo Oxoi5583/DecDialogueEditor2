@@ -3,6 +3,7 @@
 #include "engine/renderer.h"
 #include "engine/window.h"
 #include "glm/geometric.hpp"
+#include "popup_window.h"
 #include "system/graph/camera.h"
 #include "glm/ext/vector_float2.hpp"
 #include "system/graph/selection.h"
@@ -17,6 +18,7 @@
 #include "struct/shape/rect2.h"
 #include "system/obj/graph/base.h"
 #include "theme/theme_loader.h"
+#include "server/ui_text_bank.h"
 #include <cstddef>
 #include <cstring>
 #include <string>
@@ -58,10 +60,10 @@ void EditorDetailsWindow::pre_process(){
         ImGui::SetNextWindowPos({screen_lt_pos.x, screen_lt_pos.y});
         ImGui::SetNextWindowSize({size.x, size.y});
 
-
         ImGui::Begin((m_obj_name + " " + m_name).c_str(),&m_opened, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
         if(size.x > 200){
             m_draw_fields();
+            m_draw_add_button();
         }
         ImGui::End();
     }
@@ -162,7 +164,6 @@ int EditorDetailsWindow::m_draw_fields_auto_wrap_callback(ImGuiInputTextCallback
     bool searching = true;
 
     int last_lb_pos = 0;
-    int run = 0;
     while(searching){
         for(size_t pos = last_lb_pos ;pos < original_len; pos++){
             if(!searching){
@@ -212,7 +213,8 @@ void EditorDetailsWindow::m_draw_fields(){
             f.max_size,
             ImVec2(-1, rows * (ImGui::GetTextLineHeight() + 5.0f)),
             ImGuiInputTextFlags_CallbackAlways | ImGuiInputTextFlags_NoHorizontalScroll,
-            m_draw_fields_auto_wrap_callback
+            m_draw_fields_auto_wrap_callback,
+            this
         );
 
         std::string no_lb = f.value;
@@ -233,15 +235,23 @@ void EditorDetailsWindow::m_draw_fields(){
 
     ImGui::PopStyleColor(2);
 }
-void EditorDetailsWindow::open_for(OID p_id){
-    GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(p_id);
+
+void EditorDetailsWindow::m_draw_add_button(){
+    if(ImGui::Button("+", {25, 25})){
+        if(!ObjectServer::Ref()->is_id_valid(m_parent_id)){
+            return;
+        }
+        
+        m_pop_window.create_if_not_exists();
+    }
+}
+void EditorDetailsWindow::refresh_fields(){
+    GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(m_parent_id);
     if(!obj){
         return;
     }
 
-    m_parent_id = p_id;
-
-    m_opened = true;
+    this->save();
 
     std::vector<Field>().swap(m_fields);
     auto properties = obj->get_properties();
@@ -260,6 +270,59 @@ void EditorDetailsWindow::open_for(OID p_id){
             property_max_size
         });
     }
+
+}
+
+void EditorDetailsWindow::open_for(OID p_id){
+    GraphBase* obj = ObjectServer::Ref()->get_instance<GraphBase>(p_id);
+    if(!obj){
+        return;
+    }
+
+    m_parent_id = p_id;
+    m_parent_ptr = obj;
+    m_pop_window = PopupWindowWrapper(
+            UiTextBank::Ref()->PromptSetNameForNewProperty,
+            EngineWindow::Ref()->get_window_size(),
+            {
+                {UiTextBank::Ref()->Name, PopupWindow::InputType::STRING}
+            },
+            {
+                {
+                    UiTextBank::Ref()->Yes,
+                        [this](){
+                            std::string input = this->m_pop_window->get_input_string(0);
+                            
+                            std::set<std::string> field_set;
+                            for(Field& f : m_fields){
+                                field_set.emplace(f.name);
+                            }
+
+                            if(input == ""){
+                                ERROR_MSG("New Field Name Should Not Be Empty String.");
+                                return;
+                            }
+                            if(field_set.contains(input)){
+                                ERROR_MSG("New Field Name Should Be Unique.");
+                                return;
+                            }
+
+                            save();
+                            m_parent_ptr->set_property(input, "", 100);
+                            refresh_fields();
+                            m_pop_window.close();
+                        }
+                    },
+                    {
+                        UiTextBank::Ref()->No,
+                        [this](){
+                            m_pop_window->close();
+                        }
+                    }
+            });
+
+    m_opened = true;
+    this->refresh_fields();
 }
 
 void EditorDetailsWindow::save(){

@@ -11,7 +11,7 @@ GraphEntry::GraphEntry(){
 GraphEntry::~GraphEntry(){}
 
 void GraphEntry::ready(){
-    this->set_property("Hint", "", 150);
+    this->set_init_property("Hint", "", 150);
 }
 void GraphEntry::pre_process(){}
 void GraphEntry::process(){

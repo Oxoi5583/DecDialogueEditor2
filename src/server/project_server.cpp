@@ -18,6 +18,7 @@
 #include <exception>
 #include <filesystem>
 #include <fstream>
+#include <glm/ext/vector_float2.hpp>
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -77,6 +78,7 @@ void ProjectServer::init(){
 }
 
 ProjectServer::~ProjectServer(){
+
 }
 
 void ProjectServer::m_update_workspace_selection(){
@@ -1180,11 +1182,19 @@ bool ProjectServer::m_action_export_project(FPath p_path){
                     properties = obj_data["properties"];
                 }
 
+                auto children = obj_data["children"].get_ref<json::array_t&>();
+                std::sort(children.begin(), children.end()
+                    ,[ws_data](const json& lhs, const json& rhs){
+                        float ly = ws_data[lhs]["position"]["y"].get<float>();
+                        float ry = ws_data[rhs]["position"]["y"].get<float>();
+                        return ly < ry;
+                });
+
                 basic_json<> export_obj_data = {
                     {"name", obj_name},
-                    {"children", obj_data["children"]},
+                    {"children", children},
                     {"properties", properties},
-                    {"workspace", workspace.data["workspace_info"]["name"]},
+                    {"workspace", workspace.data["workspace_info"]},
                 };
 
                 name_to_code.emplace(obj_name, obj_code);

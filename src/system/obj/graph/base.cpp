@@ -648,6 +648,11 @@ void GraphBase::set_property(std::string name, std::string value, uint max_size)
 
     m_upload_property(name, value, max_size);
 }
+void GraphBase::set_init_property(std::string name, std::string value, uint max_size){
+    if(!m_properties.contains(name)){
+        this->set_property(name, value, max_size);
+    }
+}
 
 void GraphBase::m_upload_property(std::string& key, std::string value, uint max_size){
     ProjectPayload obj_root = m_get_root_project_data_payload();

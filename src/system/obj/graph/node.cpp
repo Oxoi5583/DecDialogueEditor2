@@ -13,7 +13,7 @@ GraphNode::GraphNode(){
 GraphNode::~GraphNode(){}
 
 void GraphNode::ready(){
-    this->set_property("Content", "", 150);
+    this->set_init_property("Content", "", 150);
 }
 void GraphNode::pre_process(){}
 void GraphNode::process(){

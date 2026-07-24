@@ -24,6 +24,7 @@ private:
 
 public:
     // constructor
+    UiText(){};
     UiText(
         const char* p_en,
         const char* p_zh,
@@ -229,6 +230,28 @@ public:
         "Projekt nicht gespeichert. Vor dem Schließen speichern?",
         "Proyecto no guardado. ¿Desea guardar antes de cerrar?",
         "Proyek belum disimpan. Apakah Anda ingin menyimpan sebelum menutup?"
+    };
+    UiText PromptSetNameForNewProperty = {
+        "Please enter a name for the new property.",
+        "請輸入新屬性的名稱。",
+        "新しいプロパティの名前を入力してください。",
+        "请输入新属性的名称。",
+        "새 속성의 이름을 입력해 주세요.",
+        "Veuillez saisir un nom pour la nouvelle propriété.",
+        "Bitte geben Sie einen Namen für die neue Eigenschaft ein.",
+        "Introduzca un nombre para la nueva propiedad.",
+        "Silakan masukkan nama untuk properti baru."
+    };  
+    UiText Name = {
+        "Name",
+        "名稱",
+        "名前",
+        "名称",
+        "이름",
+        "Nom",
+        "Name",
+        "Nombre",
+        "Nama"
     };
     UiText Save = {
         "Save",

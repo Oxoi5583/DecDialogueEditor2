@@ -8,3 +8,7 @@ so that I can add type easier.
 Multi-Language
 
 Left Panel Performance Issue
+
+2026-07-24：
+Character Features
+Replace All Features
